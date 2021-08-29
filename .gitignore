@@ -1,0 +1,14 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+#Tokens and stuff
+.ini
+data/secrets.ini
+
+# Other
+.vscode/settings.json
+*.db
+pyrightconfig.json
+local/*
+data/*
+tools/*
