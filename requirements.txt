@@ -1,0 +1,17 @@
+git+shh://git@github.com:Mmesek/MFramework.py.git
+git+ssh://git@github.com:Mmesek/mdiscord.git
+git+ssh://git@github.com:Mmesek/mlib.git
+beautifulsoup4
+html2text
+lxml
+Pillow
+numpy
+sklearn
+scipy
+scikit-learn
+pandas
+gitpython
+upsidedown
+pycountry
+howlongtobeatpy
+python-i18n
