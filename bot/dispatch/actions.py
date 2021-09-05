@@ -92,6 +92,10 @@ async def dm_reply(ctx: Bot, msg: Message):
 @onDispatch(event="message_create", priority=5)
 async def deduplicate_messages(self: Bot, data: Message) -> bool:
     c = self.cache[data.guild_id].last_messages
+    from MFramework.commands._utils import detect_group
+    _g = detect_group(self, data.author.id, data.guild_id, data.member.roles)
+    if _g.can_use(Groups.MODERATOR):
+        return
     _last_message = c.get(data.channel_id, None)
     if (_last_message and 
         _last_message[0].content == data.content and 
