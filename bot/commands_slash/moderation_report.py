@@ -22,7 +22,7 @@ async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *ar
     infractions = s.query(db.log.Infraction).filter(db.log.Infraction.server_id == int(guild_id), db.log.Infraction.timestamp >= last_month, db.log.Infraction.timestamp < next_month).all()
     moderators = {}
     table = ["Warn", "Temp_Mute", "Mute", "Unmute",
-        "Kick", "Temp_Ban", "Ban", "Unban"] #, "chat", "voice"]
+        "Kick", "Temp_Ban", "Ban", "Unban", "Commands Used"] #, "chat", "voice"]
     uids = {}
     for infraction in infractions:
         if infraction.moderator_id not in uids:
@@ -39,6 +39,14 @@ async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *ar
             moderators[uname][infraction.type.name] += 1
         except:
             pass
+    commands_used = ctx.db.influx.get_command_usage(guild_id)
+    for _table in commands_used:
+        for record in _table.records:
+            user = record.values.get("user")
+            if user not in uids:
+                continue
+            if moderators[uids.get(user)]["Commands Used"] == 0:
+                moderators[uids.get(user)]["Commands Used"] = record.get_value() or 0
     #for uid in uids:
         #activity = s.query(db.log.Activity).filter(db.log.Activity.server_id == int(guild_id), db.log.Activity.user_id == uid, db.log.Activity.timestamp >= last_month, db.log.Activity.timestamp <= now).first()
         #moderators[uids.get(uid)]["chat"] = activity.Chat if activity else 0
