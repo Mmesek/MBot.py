@@ -191,7 +191,7 @@ async def loadout(ctx: Context):
 @register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
 async def when(ctx: Context, arg:str=None):
     '''
-    Shows remaining delta    
+    Shows remaining delta
     '''
     from random import SystemRandom as random
     if arg:
@@ -203,12 +203,19 @@ async def when(ctx: Context, arg:str=None):
             bad_words = set()
         if any(i in bad_words for i in arg.lower().split(' ')):
             return await ctx.reply("Hey, that's rude! <:pepemad:676181484238798868>")
-    if random().random() < 5 / 100:
+    r = random().random()
+    if r < 2.5 / 100:
         return await ctx.reply("When it's ready.")
+    elif r < 5 / 100:
+        return await ctx.reply("If you put a bread into your toaster, do you also constantly looks at it?")
+    elif r < 7.5 / 100:
+        return await ctx.reply("If you set a timer for a few hours, do you also check it every few seconds?")
+    elif r < 10 / 100:
+        return await ctx.reply("Good question.")
     from datetime import datetime
     date = datetime(2021, 12, 7, 19)
     timestamp = int(date.timestamp())
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
         return await ctx.reply("Released!")
-    await ctx.reply(f"Remaining `{delta}` until <t:{timestamp}:D> which is <t:{timestamp}:R>")
+    await ctx.reply(f"Remaining `{delta}` until (according to Steam) <t:{timestamp}:D> which is <t:{timestamp}:R>")
