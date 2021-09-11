@@ -144,7 +144,7 @@ async def add_rss(ctx: Context, name: str, url: str, feed_language: str='en', *,
     await ctx.reply("RSS Source added succesfully")
 
 @register(group=Groups.NITRO, guild_only=True)
-async def nitro(ctx: Context, hex_color: str=None, name: str="Nitro Booster", *, language):
+async def nitro(ctx: Context, hex_color: str=None, name: str=None, *, language):
     '''
     Create self role. Only one per booster
     Params
@@ -153,6 +153,7 @@ async def nitro(ctx: Context, hex_color: str=None, name: str="Nitro Booster", *,
         Value in hexadecimal notation. For example: #00aaff
     name:
         Name of role'''
+    await ctx.deferred(private=True)
     reserved_colors = set()
     reserved_names = set()
     nitro_position = 0
@@ -175,19 +176,27 @@ async def nitro(ctx: Context, hex_color: str=None, name: str="Nitro Booster", *,
 
     if color in reserved_colors:
         return await ctx.reply("Color is too similiar to admin colors")
-    if name.lower() in reserved_names:
+    if name and name.lower() in reserved_names:
         return await ctx.reply("Sorry, choose different name")
-
-    if '(Nitro Booster)' not in name:
-        name += ' (Nitro Booster)'
 
     s = ctx.db.sql.session()
     c = db.Role.filter(s, server_id=ctx.guild_id).filter(
         db.Role.with_setting(db.types.Setting.Custom, ctx.user_id)
     ).first()
+
+    if not name:
+        if c:
+            name = ctx.cache.roles.get(c.id)
+        else:
+            name = "Nitro Booster"
+    if '(Nitro Booster)' not in name:
+        name += ' (Nitro Booster)'
+
     if c:
         try:
             role = await ctx.bot.modify_guild_role(ctx.guild_id, c.id, name, 0, color=color, reason="Updated Role of Nitro user")
+            ctx.cache.roles.update(role)
+            state = "updated"
         except NotFound:
             s.delete(c)
             c = None
@@ -196,8 +205,10 @@ async def nitro(ctx: Context, hex_color: str=None, name: str="Nitro Booster", *,
         await ctx.bot.modify_guild_role_positions(ctx.guild_id, role.id, nitro_position+1)
         await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.member.user.id, role.id, "Nitro role")
         c = db.Role.fetch_or_add(s, server_id=ctx.guild_id, id=role.id)
+        ctx.cache.roles.store(role)
+        state = "created"
 
     if not c.get_setting(db.types.Setting.Custom):
         c.add_setting(db.types.Setting.Custom, ctx.user_id)
         s.commit()
-    await ctx.reply("Role Created Successfully")
+    await ctx.reply(f"Role <@&{role.id}> {state} Successfully. Name: {role.name}\nColor: {role.color}")
