@@ -212,3 +212,11 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, *, language):
         c.add_setting(db.types.Setting.Custom, ctx.user_id)
         s.commit()
     await ctx.reply(f"Role <@&{role.id}> {state} Successfully. Name: {role.name}\nColor: {role.color}")
+    _id, _token = ctx.cache.webhooks.get("nitro_role", (None, None))
+    if _id:
+        await ctx.bot.execute_webhook(
+            webhook_id=_id, 
+            webhook_token=_token, 
+            content="{user} {state} <@&{role}> with name {name} and color {color}".format(
+                ctx.user.username, state, role.id, role.name, role.color), 
+            username="Nitro Role")
