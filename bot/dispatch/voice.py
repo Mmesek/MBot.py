@@ -1,5 +1,5 @@
 from MFramework import onDispatch, Bot, Snowflake, Voice_State, Voice_Server_Update
-from MFramework.utils import levels, timers#, log
+from MFramework.utils import levels, timers
 
 async def _handle_dynamic_channel(self: Bot, data: Voice_State):
     template = self.cache[data.guild_id].dynamic_channels[data.channel_id]
@@ -86,8 +86,8 @@ async def _handle_voice_activity(self: Bot, data: Voice_State):
             if not moved:
                 await self.cache[data.guild_id].logging["voice"](data)
 
-        else: #Not a channel switch event
-            print('???')
+        #else: #Not a channel switch event, possibly happening if user was already on a channel somehow.
+            #pass
 
     else:  #User is not on Voice channel anymore
         for channel in v:
