@@ -53,6 +53,8 @@ async def help(ctx: Context, command: str=None, *, language):
     for cmd in filter(lambda x: x.interaction, allowed_commands):
         if cmd.guild and cmd.guild != ctx.guild_id:
             continue
+        if ' ' in cmd.name or cmd.name.isupper():
+            continue
         string += f"**/{cmd.name}**"
         string += f" - {cmd.help.strip()}"
         string += '\n'
