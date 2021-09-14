@@ -7,7 +7,7 @@ from mlib.localization import tr
 from MFramework import register, Context, Groups, Embed
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def randomquote(ctx: Context):
+async def randomquote(ctx: Context) -> str:
     '''Sends random quote'''
     from os import path
     if not path.isfile("data/quotes.json"):
@@ -17,7 +17,7 @@ async def randomquote(ctx: Context):
     with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
         q = json.load(file)
     r = random.SystemRandom().randrange(len(q))
-    await ctx.reply('_'+q[r]["text"] + "_\n    ~" + q[r]["author"])
+    return '_'+q[r]["text"] + "_\n    ~" + q[r]["author"]
 
 
 def load_words():
@@ -35,7 +35,7 @@ async def anagram(ctx: Context, *args, **kwargs):
 
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def word(ctx: Context, word: str, letter_count: int):
+async def word(ctx: Context, word: str, letter_count: int) -> Embed:
     '''Checks if provided word exists. Use * as wildcard character'''
     dig = int(letter_count)
     m = word.replace("*", "(.+?)")
@@ -58,11 +58,11 @@ async def word(ctx: Context, word: str, letter_count: int):
             field = word
     if field != '':
         embed.addField('\u200b', field)
-    await ctx.reply(embeds=[embed])
+    return embed
 
 
 @register(group=Groups.SYSTEM, interaction=False)
-async def today(ctx: Context, difference: str = None, *, language):
+async def today(ctx: Context, difference: str = None, *, language) -> Embed:
     '''Summary of what is today'''
     import datetime
     from bs4 import BeautifulSoup
@@ -159,7 +159,7 @@ async def today(ctx: Context, difference: str = None, *, language):
     # embed.addField("New on Spotify", f"", True)
     # embed.addField("Song for today", f"", True)
     embed.addField(tr("commands.today.quote", language), quote["text"] + "\n- " + quote["author"])
-    await ctx.reply(embeds=[embed])
+    return embed
 
 async def getLink(url):
     r = requests.get(
@@ -181,7 +181,7 @@ async def getChords(self):
             self.chords[img['alt']] = 'https:' + img['src']
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def chord(ctx: Context, instrument='guitar', chord: str=None):
+async def chord(ctx: Context, instrument='guitar', chord: str=None) -> Embed:
     '''Sends Diagram of provided Chord for instrument'''
     if not hasattr(ctx.bot, 'chords'):
         await getChords(ctx.bot)
@@ -193,11 +193,11 @@ async def chord(ctx: Context, instrument='guitar', chord: str=None):
             t = chord_
             l = ctx.bot.chords[chord_]
     embed = Embed().setTitle(t).setImage(l)
-    await ctx.reply(embeds=[embed])
+    return embed
 
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def xkcdpassword(ctx: Context):
+async def xkcdpassword(ctx: Context) -> str:
     '''Generates random xkcd 936 styled password'''
     import secrets
     # On standard Linux systems, use a convenient dictionary file.
@@ -205,11 +205,11 @@ async def xkcdpassword(ctx: Context):
     with open('/usr/share/dict/words') as f:
         words = [word.strip() for word in f]
         password = ' '.join(secrets.choice(words) for i in range(4))
-    await ctx.reply(password)
+    return password
 
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def chord(ctx: Context, chords: str, *, all=False):
+async def chord(ctx: Context, chords: str, *, all=False) -> Embed:
     '''Shows guitar chord(s) diagram(s)'''
     import json
     with open('data/chords.json','r',newline='',encoding='utf-8') as file:
@@ -257,7 +257,7 @@ async def chord(ctx: Context, chords: str, *, all=False):
             #text += "\nStarting fret: " + _c[0:-6]
             _chord += f' (Fret: {_c[0:-6]})'
         e.addField(_chord, text, True)
-    await ctx.reply(embeds=[e])
+    return e
 
 @register(group=Groups.SYSTEM, interaction=False)
 async def add_chord(ctx: Context, chord, *frets, language):
@@ -269,7 +269,7 @@ async def add_chord(ctx: Context, chord, *frets, language):
         json.dump(_chords, file)
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def tuning(ctx: Context, tuning: str = None):
+async def tuning(ctx: Context, tuning: str = None) -> str:
     '''Shows chords on frets for specified tuning'''
     base = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
     if not tuning:
@@ -283,7 +283,7 @@ async def tuning(ctx: Context, tuning: str = None):
     fret_numbers = ""
     fret_numbers += ' | '.join([str(i)+' ' if len(str(i)) == 1 else str(i) for i in range(len(base)+1)])
     separator = '-' * len(fret_numbers)
-    await ctx.reply(f"```md\n{fret_numbers}\n{separator}{final}```")
+    return f"```md\n{fret_numbers}\n{separator}{final}```"
 
 '''
 |_E_|_A_|_C_|_G_|_B_|_E_|
