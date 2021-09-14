@@ -222,5 +222,5 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, *, language):
             webhook_id=_id, 
             webhook_token=_token, 
             content="{user} {state} <@&{role}> with name {name} and color {color}".format(
-                ctx.user.username, state, role.id, role.name, role.color), 
+                user=ctx.user.username, state=state, role=role.id, name=role.name, color=role.color), 
             username="Nitro Role")
