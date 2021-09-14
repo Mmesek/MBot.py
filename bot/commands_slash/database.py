@@ -186,7 +186,11 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, *, language):
 
     if not name:
         if c:
-            name = ctx.cache.roles.get(c.id)
+            _r = ctx.cache.roles.get(c.id)
+            if _r:
+                name = _r.name
+            else:
+                name = "Nitro Booster"
         else:
             name = "Nitro Booster"
     if '(Nitro Booster)' not in name:
@@ -211,7 +215,7 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, *, language):
     if not c.get_setting(db.types.Setting.Custom):
         c.add_setting(db.types.Setting.Custom, ctx.user_id)
         s.commit()
-    await ctx.reply(f"Role <@&{role.id}> {state} Successfully. Name: {role.name}\nColor: {role.color}")
+    await ctx.reply(f"Role <@&{role.id}> {state} Successfully.\nName: {role.name}\nColor: {role.color}")
     _id, _token = ctx.cache.webhooks.get("nitro_role", (None, None))
     if _id:
         await ctx.bot.execute_webhook(
