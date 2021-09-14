@@ -213,7 +213,7 @@ async def when(ctx: Context, arg:str=None):
     elif r < 10 / 100:
         return await ctx.reply("Good question.")
     from datetime import datetime
-    date = datetime(2021, 12, 7, 19)
+    date = datetime(2022, 2, 4, 19)
     timestamp = int(date.timestamp())
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
