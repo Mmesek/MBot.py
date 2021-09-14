@@ -26,7 +26,7 @@ def load_words():
     return valid_words
 
 
-@register(group=Groups.GLOBAL, interaction=False, notImpl=True)
+#@register(group=Groups.GLOBAL, interaction=False, notImpl=True)
 async def anagram(ctx: Context, *args, **kwargs):
     '''Assembles english words from provided letters/solves anagrams'''
     words = load_words()
@@ -35,7 +35,7 @@ async def anagram(ctx: Context, *args, **kwargs):
 
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def word(ctx: Context, word, letter_count):
+async def word(ctx: Context, word: str, letter_count: int):
     '''Checks if provided word exists. Use * as wildcard character'''
     dig = int(letter_count)
     m = word.replace("*", "(.+?)")
@@ -209,12 +209,13 @@ async def xkcdpassword(ctx: Context):
 
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def chord(ctx: Context, *chords, language, all=False):
+async def chord(ctx: Context, chords: str, *, all=False):
     '''Shows guitar chord(s) diagram(s)'''
     import json
     with open('data/chords.json','r',newline='',encoding='utf-8') as file:
         _chords = json.load(file)
     #_chords = {"Em": "022000", "C": "x32010", "A":"x02220", "G": "320033", "E": "022100", "D": "xx0232", "F": "x3321x", "Am": "x02210", "Dm": "xx0231"}
+    chords = chords.split(" ")
     base_notes = "EADGBE"
     e = Embed()
     if all:
@@ -268,13 +269,13 @@ async def add_chord(ctx: Context, chord, *frets, language):
         json.dump(_chords, file)
 
 @register(group=Groups.GLOBAL, interaction=False)
-async def tuning(ctx: Context, *tuning, language):
+async def tuning(ctx: Context, tuning: str = None):
     '''Shows chords on frets for specified tuning'''
     base = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
-    if tuning == ():
+    if not tuning:
         tuning = ["E", "B", "G", "D", "A", "E"]
     else:
-        tuning = [i.upper() for i in tuning]
+        tuning = [i.upper() for i in (tuning.split() if " " in tuning else tuning)]
     final = ""
     for note in tuning:
         n = base.index(note)
