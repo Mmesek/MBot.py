@@ -144,7 +144,7 @@ async def add_rss(ctx: Context, name: str, url: str, feed_language: str='en', *,
     await ctx.reply("RSS Source added succesfully")
 
 @register(group=Groups.NITRO, guild_only=True)
-async def nitro(ctx: Context, hex_color: str=None, name: str=None, *, language):
+async def nitro(ctx: Context, hex_color: str=None, name: str=None) -> str:
     '''
     Create self role. Only one per booster
     Params
@@ -170,19 +170,21 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, *, language):
         try:
             color = int(hex_color.strip('#'), 16)
         except ValueError as ex:
-            return await ctx.reply("Color has to be provided as a hexadecimal value (between 0 to F for example `#012DEF`) not `"+ str(ex).split(": '")[-1].replace("'","`"))
+            return "Color has to be provided as a hexadecimal value (between 0 to F for example `#012DEF`) not `"+ str(ex).split(": '")[-1].replace("'","`")
     else:
         color=None
 
     if color in reserved_colors:
-        return await ctx.reply("Color is too similiar to admin colors")
+        return "Color is too similiar to admin colors"
     if name and name.lower() in reserved_names:
-        return await ctx.reply("Sorry, choose different name")
+        return "Sorry, choose different name"
 
     s = ctx.db.sql.session()
-    c = db.Role.filter(s, server_id=ctx.guild_id).filter(
+    _roles = db.Role.filter(s, server_id=ctx.guild_id)
+    c = _roles.filter(
         db.Role.with_setting(db.types.Setting.Custom, ctx.user_id)
     ).first()
+    total_roles = len(_roles.filter(db.Role.settings.any(name=db.types.Setting.Custom)).all())
 
     if not name:
         if c:
@@ -205,6 +207,8 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, *, language):
             s.delete(c)
             c = None
     if c and role and role.id != c.id or not c:
+        if not c and total_roles >= 20:#ctx.cache.settings.get(db.types.Setting.Limit_Nitro_Roles, 20):
+            return f"Sorry, limit ({total_roles}) of custom roles has been reached :("
         role = await ctx.bot.create_guild_role(ctx.guild_id, name, 0, color, False, False, "Created Role for Nitro user "+ctx.member.user.username)
         await ctx.bot.modify_guild_role_positions(ctx.guild_id, role.id, nitro_position+1)
         await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.member.user.id, role.id, "Nitro role")
