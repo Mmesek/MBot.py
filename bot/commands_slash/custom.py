@@ -54,19 +54,19 @@ async def bookmark(ctx: Context, title: str=None):
     await ctx.send_dm(content=title+': \n'+Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.message_id))
 
 @register(group=Groups.GLOBAL)
-async def Bookmark(ctx: Context, message: Message):
+async def Bookmark(ctx: Context, message: Message) -> str:
     '''Bookmark a moment in chat to save in your DMs for easy navigation'''
     await ctx.deferred(private=True)
     e = Embed(title="Your bookmark", description=message.content or None)
     e = message.attachments_as_embed(e)
     try:
         await ctx.send_dm(content=Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=message.channel_id, message_id=message.id), embeds=[e])
-        await ctx.reply("Bookmarked in your DM successfully!")
+        return "Bookmarked in your DM successfully!"
     except:
-        await ctx.reply("Couldn't send you a DM message!")
+        return "Couldn't send you a DM message!"
 
 @register(group=Groups.GLOBAL)
-async def Quote(ctx: Context, message: Message):
+async def Quote(ctx: Context, message: Message) -> Embed:
     '''Quotes a message'''
     if any(Bitwise_Permission_Flags.check(None, int(i.deny), 2048) for i in list(filter(lambda x: x.id in ctx.member.roles+[ctx.guild_id], ctx.channel.permission_overwrites))):
         await ctx.deferred(private=True)
@@ -83,10 +83,10 @@ async def Quote(ctx: Context, message: Message):
     )
     e.setFooter(text=f"Quoted by {ctx.user.username}#{ctx.user.discriminator}")
     e.setColor("#3275a8")
-    await ctx.reply(embeds=e)
+    return e
 
 @register(group=Groups.GLOBAL, guild=340185368655560704)
-async def loadout(ctx: Context):
+async def loadout(ctx: Context) -> Embed:
     '''
     Losuje ekwipunek
     '''
@@ -186,10 +186,10 @@ async def loadout(ctx: Context):
     for k, v in r.items():
         embed.addField(tr("commands.loadout."+k, language='pl'), v, True)
 
-    await ctx.reply(None, [embed])
+    return embed
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
-async def when(ctx: Context, arg:str=None):
+async def when(ctx: Context, arg:str=None) -> str:
     '''
     Shows remaining delta
     '''
@@ -202,20 +202,20 @@ async def when(ctx: Context, arg:str=None):
         except:
             bad_words = set()
         if any(i in bad_words for i in arg.lower().split(' ')):
-            return await ctx.reply("Hey, that's rude! <:pepemad:676181484238798868>")
+            return "Hey, that's rude! <:pepemad:676181484238798868>"
     r = random().random()
     if r < 2.5 / 100:
-        return await ctx.reply("When it's ready.")
+        return "When it's ready."
     elif r < 5 / 100:
-        return await ctx.reply("If you put a bread into your toaster, do you also constantly looks at it?")
+        return "If you put a bread into your toaster, do you also constantly look at it?"
     elif r < 7.5 / 100:
-        return await ctx.reply("If you set a timer for a few hours, do you also check it every few seconds?")
+        return "If you set a timer for a few hours, do you also check it every few seconds?"
     elif r < 10 / 100:
-        return await ctx.reply("Good question.")
+        return "Good question."
     from datetime import datetime
     date = datetime(2022, 2, 4, 19)
     timestamp = int(date.timestamp())
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
-        return await ctx.reply("Released!")
-    await ctx.reply(f"Remaining `{delta}` until (according to Steam) <t:{timestamp}:D> which is <t:{timestamp}:R>")
+        return "Released!"
+    return f"Remaining `{delta}` until (according to Steam) <t:{timestamp}:D> which is <t:{timestamp}:R>"
