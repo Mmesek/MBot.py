@@ -133,3 +133,60 @@ async def rps(ctx: Context, move: Moves, *args, language, **kwargs):
 async def coin(ctx: Context, *args, language, **kwargs):
     '''Flips coin'''
     await ctx.reply(content=f"{'Heads' if random.randint(0, 1) else 'Tails'}")
+
+@register(group=Groups.GLOBAL)
+async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, rounds: int = 1, lives: int=None, hints: bool=True):
+    '''
+    Hangman game
+    Params
+    ------
+    words:
+        List of words to pick hidden one from for others to guess. Separate with comma
+    multiplayer:
+        Whether Bot should accept answers from other users
+    rounds:
+        Amount of rounds using single Hangman (Not implemented yet)
+    lives:
+        Amount of lives. Default is sum of unique letters in hidden word
+    hints:
+        Whether Bot should reveal a letter in case of wrong answer        
+    '''
+    if not words:
+        with open('/usr/share/dict/words') as f:
+            words = [word.strip() for word in f]
+    else:
+        words = [word.strip() for word in words.split(',')]
+    msg = await ctx.reply("...")
+    hidden = random.choice(list(words))
+    uncovered = set()
+    secret = set(hidden.lower())
+    steps = range(lives or len(secret))
+    missed = []
+    for x, step in enumerate(steps):
+        word = [letter if letter in uncovered else "-" for letter in hidden]
+        await msg.edit(
+            "Word: `{}`\n[Remaining Hangman lines to draw]: `{}`\nMissed: {}".format("".join(word), steps.stop - x, " ".join(missed)))
+        last_answer = await ctx.bot.wait_for("message_create",
+                                    check = lambda x: 
+                                            x.channel_id == ctx.channel_id and 
+                                            (x.author.id == ctx.user_id if not multiplayer else True), 
+                                    timeout = 360)
+        answer = last_answer.content.lower().strip()
+        if answer == hidden.lower():
+            # Guessed word
+            await last_answer.reply("You won, congratulations")
+            break
+        elif len(answer) == 1 and answer in secret:
+            # Guessed letter
+            uncovered.add(answer)
+        elif hints and (x % (len(steps) / len(set(hidden))) == 0 and len(secret) != 1 and x > 3):
+            # Hint
+            uncovered.add(random.choice(list(secret)))
+        if answer not in uncovered and answer not in missed:
+            # Wrong letter/word
+            missed.append(answer)
+        secret = set(hidden.lower()).difference(uncovered)
+        if not secret:
+            # All letters are known
+            break
+    await msg.edit(f"The word was `{hidden}`! Took `{x+1}` rounds to guess")
