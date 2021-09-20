@@ -83,6 +83,8 @@ class Story(Base):
     intro: List[str] = []
     epilogue: List[str] = []
     errors: Dict[str, str] = {}
+    webhook_id: Snowflake
+    webhook_token: str
 
     async def check_constraints(self, input_constraints: Dict[str, Any], answer: Message) -> bool:
         constraints = {
@@ -177,10 +179,10 @@ class ContextStory:
     async def start(self):
         await self.story.send(self.ctx, self.story.intro)
         await self.chapter()
-        #await self.story.send(self.ctx, self.story.epilogue)
+        await self.story.send(self.ctx, self.story.epilogue)
         from mlib.types import aInvalid
         answers = {k: self.messages.get(v).content for k, v in self.user_responses.items()}
-        await types.get(self.story.type, aInvalid)(self.ctx, answers, self.translated)
+        await types.get(self.story.type, aInvalid)(self.ctx, answers, self.translated, self.story.webhook_id, self.story.webhook_token)
 
 
 @register(group=Groups.DM)
@@ -190,7 +192,7 @@ async def story(ctx: Context, name: str="createcharacter", *, language):
     story = ContextStory(ctx, name, language)
     await story.start()
 
-async def createcharacter(ctx: Context, answers: Dict[str, str], translated: Dict[str, str]=None):
+async def createcharacter(ctx: Context, answers: Dict[str, str], translated: Dict[str, str]=None, wid: Snowflake=None, wtoken: str=None):
     from MFramework.database import alchemy as db
     s = ctx.db.sql.session()
     character = db.Character.filter(s, user_id=ctx.user_id).first()
@@ -244,11 +246,19 @@ async def createcharacter(ctx: Context, answers: Dict[str, str], translated: Dic
     s.commit()
     e.setTitle(character.name).setColor(character.color).setDescription(character.story)
     await ctx.reply(embeds=[e])
-    await ctx.bot.execute_webhook(webhook_id=721248452679434251, webhook_token="QEmhIELl-7VsyBbro2jP0U6GbbHAOay_xe1aqMa1Mhw1vcKaXAH4k6CYH16g1lyOzQhw", username=ctx.user.username, embeds=[e])
-    
+    await ctx.bot.execute_webhook(webhook_id=wid, webhook_token=wtoken, username=ctx.user.username, embeds=[e])
+
+async def survey(ctx: Context, answers: Dict[str, str], translated: Dict[str, str]=None, wid: Snowflake=None, wtoken: str=None):
+    e = Embed()
+    for answer in answers:
+        e.addField(translated.get(answer), answers[answer])
+    await ctx.reply(embeds=[e])
+    e.setAuthor(f"{ctx.user.username}#{ctx.user.discriminator}", icon_url=ctx.user.get_avatar()).setFooter(ctx.user_id)
+    await ctx.bot.execute_webhook(wid, wtoken, embeds=[e])
 
 types = {
-    "createcharacter":createcharacter
+    "createcharacter":createcharacter,
+    "survey":survey
 }
 
 
