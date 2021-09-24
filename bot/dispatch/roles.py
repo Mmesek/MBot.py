@@ -21,7 +21,7 @@ async def end_booster(ctx: Bot, user_id: Snowflake, guild_id: Snowflake):
         s.delete(c)
         s.commit()
 
-@onDispatch
+@onDispatch(priority=90)
 async def guild_member_update(self: Bot, data: Guild_Member_Update):
     await self.cache[data.guild_id].logging["member_update"](data)
     await self.cache[data.guild_id].logging["muted_change"](data)
@@ -31,5 +31,3 @@ async def guild_member_update(self: Bot, data: Guild_Member_Update):
         await new_booster(self, data.user.id, data.guild_id)
     elif is_boosting is False and self.cache[data.guild_id].nitro_channel:
         await end_booster(self, data.user.id, data.guild_id)
-
-    self.cache[data.guild_id].members.update(data)

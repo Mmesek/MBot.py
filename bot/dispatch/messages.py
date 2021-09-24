@@ -1,4 +1,4 @@
-from MFramework import onDispatch, Bot, Message, Message_Delete
+from MFramework import onDispatch, Bot, Message
 
 import re
 EMOJI = re.compile(r":\w+:")
@@ -18,16 +18,3 @@ async def direct_message_create(self: Bot, data: Message):
         from MFramework.database.cache import Cache
         self.cache[data.guild_id][data.channel_id] = Cache()
     self.cache[data.guild_id][data.channel_id].store(data)
-
-@onDispatch
-async def message_update(self: Bot, data: Message):
-    if not data.author or data.webhook_id or not data.guild_id or not data.content:
-        return
-    from .actions import roll_dice
-    await roll_dice(self, data, True)
-
-    self.cache[data.guild_id].messages.update(data)
-
-@onDispatch
-async def message_delete(self: Bot, data: Message_Delete):
-    self.cache[data.guild_id].messages.delete(data.id)
