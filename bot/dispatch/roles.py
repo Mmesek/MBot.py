@@ -23,7 +23,6 @@ async def end_booster(ctx: Bot, user_id: Snowflake, guild_id: Snowflake):
 
 @onDispatch(priority=90)
 async def guild_member_update(self: Bot, data: Guild_Member_Update):
-    await self.cache[data.guild_id].logging["member_update"](data)
     await self.cache[data.guild_id].logging["muted_change"](data)
     is_boosting = await self.cache[data.guild_id].logging["nitro_change"](data)
 
