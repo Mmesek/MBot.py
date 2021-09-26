@@ -256,6 +256,13 @@ async def survey(ctx: Context, answers: Dict[str, str], translated: Dict[str, st
     e.setAuthor(f"{ctx.user.username}#{ctx.user.discriminator}", icon_url=ctx.user.get_avatar()).setFooter(ctx.user_id)
     await ctx.bot.execute_webhook(wid, wtoken, embeds=[e])
 
+@register(group=Groups.DM, interaction=False)
+async def modapp(ctx: Context):
+    '''
+    Apply for a mod!
+    '''
+    return await story(ctx, "modapp", language="en")
+
 types = {
     "createcharacter":createcharacter,
     "survey":survey
