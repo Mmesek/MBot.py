@@ -5,8 +5,8 @@ from random import SystemRandom
 from mlib.localization import tr
 
 from MFramework import Context, User, Snowflake, Groups, register, Cooldown, EventBetween
-from MFramework.database.alchemy.types import Statistic, HalloweenRaces as Race
-from MFramework.database import alchemy as db
+from ...database.types import Statistic, HalloweenRaces as Race
+from ... import database as db
 def _t(key: str, language: str='en', **kwargs):
     return tr("events.halloween."+key, language, **kwargs)
 

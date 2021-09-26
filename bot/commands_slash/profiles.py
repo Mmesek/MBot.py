@@ -1,5 +1,5 @@
 from MFramework import register, Groups, Context, Embed
-from MFramework.database.alchemy import models
+from ..database import models
 
 from mlib.localization import secondsToText, tr
 

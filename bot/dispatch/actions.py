@@ -1,5 +1,5 @@
 from MFramework import *
-from MFramework.database.alchemy import types
+from ..database import types
 async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _type: types.Item=None, 
                     wait: bool=True, delete_own: bool=True, store_in_cache: bool=False, first_only=False, all_reactions: bool=True, 
                     logger: str=None, statistic: types.Statistic=None):
@@ -20,18 +20,20 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     
     s = ctx.db.sql.Session()
     
-    from MFramework.database.alchemy import models
+    from ..database import models
     if statistic:
         models.Statistic.increment(s, data.guild_id, statistic)
     if all_reactions:
         users = await data.get_reactions(reaction)
     
-        from MFramework.database.alchemy import items, helpers
-        item = helpers.fetch_or_add(s, items.Item, name, _type)
+        from ..database import items, Log
+        item = items.Item.fetch_or_add(s, name=name, type=_type)
         i = items.Inventory(item)
         for user in users:
-            helpers.add_item(s, data.guild_id, user.id, item=i)
-            models.Log.claim(data.guild_id, user.id, _type)
+            u = models.User.fetch_or_add(s, id=user.id)
+            u.claim_items(data.guild_id, [i])
+            #user.add_item(s, data.guild_id, user.id, item=i)
+            #Log.claim(data.guild_id, user.id, _type)
         await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
 
@@ -60,6 +62,32 @@ async def responder(ctx: Bot, msg: Message, emoji: str):
         await msg.reply(emoji)
     elif type(emoji) is tuple:
         await msg.reply(file=emoji[1], filename=emoji[0])
+
+from MFramework.utils.log import Message as LogMessage
+class Message_Replay_QnA(LogMessage):
+    username = None
+    async def log(self, msg: Message) -> Message:
+        rmsg = msg.referenced_message
+        question = self.set_metadata(rmsg).setTitle("Question")
+        question.author = None
+        question.setColor("#45f913")
+        question.setUrl(Discord_Paths.MessageLink.link.format(
+            guild_id=rmsg.guild_id, channel_id=rmsg.channel_id, message_id=rmsg.id))
+        self.user_in_footer(question, rmsg)
+        if rmsg.attachments != []:
+            question.setImage(url=rmsg.attachments[0].url)
+
+        answer = self.set_metadata(msg).setTitle("Answer")
+        answer.author = None
+        answer.setColor("#ec2025")
+        answer.setUrl(Discord_Paths.MessageLink.link.format(
+            guild_id=msg.guild_id, channel_id=msg.channel_id, message_id=msg.id))
+        self.user_in_footer(answer, msg)
+        if msg.attachments != []:
+            answer.setImage(url=msg.attachments[0].url)
+
+        await self._log(None, embeds=[question, answer])
+
 
 @onDispatch(event="message_create")
 async def parse_reply(self: Bot, data: Message):
@@ -109,8 +137,6 @@ async def deduplicate_messages(self: Bot, data: Message) -> bool:
             return True
     else:
         self.cache[data.guild_id].last_messages[data.channel_id] = []
-    from copy import copy
-    self.cache[data.guild_id].messages.store(copy(data))
     self.cache[data.guild_id].last_messages[data.channel_id].append(data)# = data
     return False
 
@@ -179,7 +205,7 @@ async def roll_dice(self: Bot, data: Message, updated: bool = False):
 @onDispatch(event="message_create")
 async def handle_level(self: Bot, data: Message):
     if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
-        from MFramework.utils import levels
+        from ..utils import levels
         await levels.exp(self, data)
 
 

@@ -104,7 +104,7 @@ async def graph_infractions(ctx: Context, infraction_type='all', resample='D', l
     f = time.time()
     await ctx.deferred()
     _s = ctx.db.sql.session()
-    import MFramework.database.alchemy.log as db
+    from ..database import log as db
     infractions = _s.query(db.Infractions).filter(db.Infraction.server_id == ctx.guild_id)
     if infraction_type != 'all':
         infractions = infractions.filter(db.Infraction.type == infraction_type)
@@ -169,12 +169,12 @@ async def graph_infractions(ctx: Context, infraction_type='all', resample='D', l
 async def graph_words(ctx: Context, channel_id, *word_or_phrase, limit_messages=10000, resample='W-MON', locator='Week', interval=1, growth=False, language, **kwargs):
     '''Plots word usage over days'''
     import time
+    from datetime import date
+    from mlib.utils import truncate
     b = time.time()
     from mlib import graphing
     import matplotlib.pyplot as plt
     import pandas as pd
-    from MFramework.utils.utils import truncate
-    from datetime import date
     f = time.time()
     await ctx.deferred()
 

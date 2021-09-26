@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 
 from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove
 from MFramework.utils.log import Log
-from MFramework.database.alchemy import types, models
+from ..database import types, models
 #/infraction 
 #  | | |---- InfractionType
 #  | |           |--------- [User] [reason] [duration]
@@ -229,7 +229,7 @@ async def counter(ctx: Context, type: str, user: User, number: int=1, reason: st
     affect_total:
         Whether it should affect total count as well
     '''
-    from MFramework.database.alchemy import log, types, models
+    from ..database import log, types, models
     session = ctx.db.sql.session()
     #TODO: Save reason somewhere!
     u = models.User.fetch_or_add(session, id=user.id)
@@ -254,7 +254,7 @@ async def counter(ctx: Context, type: str, user: User, number: int=1, reason: st
 @register(group=Groups.HELPER, main=infraction, aliases=["warn"])
 async def warn(ctx: Context, user: User, reason: str = "", *, language):
     '''Warns user'''
-    return await infraction(ctx, type=types.Infraction.Warn, user=user, reason=reason)
+    await infraction(ctx, type=types.Infraction.Warn, user=user, reason=reason)
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["mute"])
 async def mute(ctx: Context, user: User, reason: str = "", *, language):
@@ -341,7 +341,7 @@ async def expire(ctx: Context, infraction_id: int, *, language):
         Infraction to expire
     '''
     session = ctx.db.sql.session()
-    from MFramework.database.alchemy import Infraction
+    from ..database import Infraction
     infraction = Infraction.filter(session, server_id=ctx.guild_id, id=infraction_id).first()
     if not infraction:
         return await ctx.reply("Couldn't find infraction with provided id")
@@ -408,7 +408,7 @@ class Infraction_Event(Infraction):
             string = f'[<@{data.user.id}> | {data.user.username}#{data.user.discriminator}] has been {type}'
         if reason and reason == "Too many infractions":
             s = self.bot.db.sql.session()
-            from MFramework.database.alchemy import Infraction as db_Infraction
+            from ..database import Infraction as db_Infraction
             infractions = db_Infraction.filter(s, server_id=self.guild_id, user_id=data.user.id, active=True).all()
             if infractions:
                 string += " for:\n" + "\n".join([f"- {infraction.reason}" for infraction in infractions])
@@ -435,7 +435,7 @@ class Infraction_Event(Infraction):
             reason = await self.bot.get_guild_ban(data.guild_id, data.user.id)
             reason = reason.reason
         s = self.bot.db.sql.session()
-        from MFramework.database.alchemy import Infraction as db_Infraction
+        from ..database import Infraction as db_Infraction
         r = db_Infraction.filter(s, server_id=self.guild_id, user_id=data.user.id, reason=reason, type=type).first()
         if r is None:
             if reason and not "Massbanned by" in reason:

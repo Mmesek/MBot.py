@@ -1,5 +1,5 @@
 from MFramework import onDispatch, Bot, Snowflake, Voice_State, Voice_Server_Update
-from MFramework.utils import levels, timers
+from ..utils import levels, timers
 
 async def _handle_dynamic_channel(self: Bot, data: Voice_State):
     template = self.cache[data.guild_id].dynamic_channels[data.channel_id]

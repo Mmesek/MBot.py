@@ -1,7 +1,7 @@
 from MFramework import register, Groups, Event, User, UserID, Embed, Snowflake
 from mlib.localization import tr, secondsToText
 from MFramework.bot import Context
-from MFramework.database.alchemy import log, types
+from ..database import log, types
 
 @register()
 async def leaderboard(ctx: Context, *args, language, **kwargs):
@@ -270,7 +270,7 @@ async def aoc(ctx: Context, year:int=None, *args, language, **kwargs):
     await ctx.reply(embeds=[e])
 
 from typing import List
-from MFramework.database.alchemy import items
+from ..database import items
 def format_leaderboard2(ranks: List[items.Inventory], user_id=None):
     rank = []
     for x, rank in enumerate(ranks):

@@ -6,8 +6,8 @@ from mlib.utils import replaceMultiple
 from mlib.converters import total_seconds
 from mlib.localization import tr
 from mlib.random import chance, pick
-from MFramework.utils.scheduler import scheduledTask, add_task, wait_for_scheduled_task
-import MFramework.database.alchemy.models as db
+from ..utils.scheduler import scheduledTask, add_task, wait_for_scheduled_task
+from ..database import models as db
 
 @register(group=Groups.MODERATOR)
 async def giveaway(ctx: Context, *, language):

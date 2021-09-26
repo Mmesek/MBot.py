@@ -1,6 +1,6 @@
 from MFramework import register, Groups, Context, log
-from MFramework.utils.timers import finalize
-from MFramework.database.alchemy.types import Flags
+from ..utils.timers import finalize
+from ..database.types import Flags
 
 @register(group=Groups.SYSTEM, interaction=False)
 async def shutdown(ctx: Context, *args, **kwargs):

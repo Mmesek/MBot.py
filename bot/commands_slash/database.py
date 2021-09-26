@@ -1,6 +1,6 @@
 from datetime import timedelta
 from MFramework import register, Groups, Context, RoleID, User, Embed, NotFound
-from MFramework.database import alchemy as db
+from .. import database as db
 
 @register(group=Groups.NITRO)
 async def add(ctx: Context, 

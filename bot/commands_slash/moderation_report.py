@@ -1,8 +1,8 @@
 from MFramework import *
-import MFramework.database.alchemy as db
 from MFramework.utils.utils import get_usernames
 from datetime import datetime, timedelta, timezone
 from MFramework import register, Groups
+from .. import database as db
 
 @register(group=Groups.SYSTEM, interaction=False)
 async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *args, **kwargs):

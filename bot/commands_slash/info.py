@@ -84,7 +84,7 @@ async def user(ctx: Context, member: Guild_Member = None):
     embed.addField("\u200b", "\u200b")
 
     s = ctx.db.sql.session()
-    from MFramework.database.alchemy import User
+    from ..database import User
     u = User.by_id(s, id=member.user.id)
     if u:
         infractions = list(filter(lambda x: x.server_id == ctx.guild_id, u.infractions))
