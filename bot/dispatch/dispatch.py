@@ -9,7 +9,7 @@ async def ready(self: Bot, ready: Ready):
     self.start_time = time.time()
     log.info("Connected as %s", ready.user.username)
 
-from MFramework import Presence_Update, Activity_Types
+from MFramework import Presence_Update, Activity_Types, Activity
 
 @onDispatch
 async def presence_update(self: Bot, data: Presence_Update):
@@ -41,3 +41,14 @@ async def presence_update(self: Bot, data: Presence_Update):
         if any(i.type == Activity_Types.GAME.value and i.name == presence_name for i in data.activities):
             await self.add_guild_member_role(data.guild_id, data.user.id, role, "Presence Role")
             break
+
+from MFramework.utils.log import Log
+class Stream(Log):
+    username = "Stream Log"
+    async def log(self, data: Presence_Update, stream: Activity):
+        if not hasattr(self, 'logged_streams'):
+            self.logged_streams = {}
+        if self.logged_streams.get(data.user.id) == stream.created_at:
+            return
+        self.logged_streams[data.user.id] = stream.created_at
+        await self._log(f"<@{data.user.id}> właśnie transmituje {stream.state} na [{stream.name}]({stream.url})!")
