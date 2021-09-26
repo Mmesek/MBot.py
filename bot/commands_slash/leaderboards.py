@@ -34,18 +34,6 @@ async def exp(ctx: Context, user: User=None):
     )
     await ctx.reply(embeds=[embed])
 
-@register(group=Groups.GLOBAL)
-async def Experience(ctx: Context, user: User):
-    '''
-    Shows Experience of user
-    Params
-    ------
-    user:
-        User's exp to show
-    '''
-    await ctx.deferred(private=True)
-    return await exp(ctx, user)
-
 from enum import Enum
 class TopLeaderboards(Enum):
     Chat = 'chat'

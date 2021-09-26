@@ -197,17 +197,6 @@ async def list_(ctx: Context, user: User=None):
         return await ctx.reply(embeds=[e])
     return await ctx.reply(tr("commands.infractions.no_infractions", language))
 
-@register(group=Groups.GLOBAL)
-async def Infractions(ctx: Context, user: User):
-    '''
-    Shows user Infractions
-    Params
-    ------
-    user:
-        User which infractions to show
-    '''
-    await ctx.deferred(private=True)
-    return await list_(ctx, user)
 
 @register(group=Groups.MODERATOR, main=infraction)
 async def counter(ctx: Context, type: str, user: User, number: int=1, reason: str=None, affect_total: bool=False):
