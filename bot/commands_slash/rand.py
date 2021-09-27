@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context
+from MFramework import register, Groups, Context, Embed
 from random import SystemRandom
 random = SystemRandom()
 
@@ -162,10 +162,34 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     secret = set(hidden.lower())
     steps = range(lives or len(secret))
     missed = []
+    wrong = 19-steps.stop if steps.stop < 19 else 19
+    drawing = '''```
+{s7}{s8}{s9}{s10}{s11}
+{s6} {s12} {s13}
+{s5}{s12}  {s14}
+{s4}  {s16}{s15}{s17}
+{s3}  {s18} {s19}
+{s2}{s1}```'''
+    process = {
+        's7':'_', 's8':'_','s9':'_','s10':'_', 's11':'_',
+        's6':'|', 's13':'|',
+        's5':'|', 's12':'/', 's14':'O',
+        's4':'|', 's16':'/', 's15':'|', 's17':'\\',
+        's3':'|', 's18':'/', 's19':'\\',
+        's2':'|', 's1':'_'
+    }
     for x, step in enumerate(steps):
         word = [letter if letter in uncovered else "-" for letter in hidden]
-        await msg.edit(
-            "Word: `{}`\n[Remaining Hangman lines to draw]: `{}`\nMissed: {}".format("".join(word), steps.stop - x, " ".join(missed)))
+        steps_so_far = {}
+        for x, (_step, char) in enumerate(process.items()):
+            steps_so_far[_step] = char if wrong >= int(_step[1:]) else ' '
+        e = (
+            Embed(description=drawing.format(**steps_so_far))
+            .setTitle(f'Word: `{"".join(word)}`')
+            .addField("Missed", " ".join(missed))
+            .setFooter(text=f"Remaining lives: {steps.stop - x}")
+        )
+        await msg.edit(embeds=[e])
         last_answer = await ctx.bot.wait_for("message_create",
                                     check = lambda x: 
                                             x.channel_id == ctx.channel_id and 
@@ -185,8 +209,9 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
         if answer not in uncovered and answer not in missed:
             # Wrong letter/word
             missed.append(answer)
+            wrong += 1
         secret = set(hidden.lower()).difference(uncovered)
         if not secret:
             # All letters are known
             break
-    await msg.edit(f"The word was `{hidden}`! Took `{x+1}` rounds to guess")
+    await msg.edit(f"The word was `{hidden}`! Took `{x+1}` rounds to guess", embeds=[e])
