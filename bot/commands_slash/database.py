@@ -6,8 +6,7 @@ from .. import database as db
 async def add(ctx: Context, 
     type: db.types.Snippet, name: str, content: str, trigger: str=None,
     minimum_group: Groups= Groups.GLOBAL, required_role: RoleID = None, cooldown: timedelta=None, 
-    locale: str = None, 
-    *, language):
+    locale: str = None) -> str:
     '''Adds to or edits existing entry in database
     Params
     ------
@@ -35,11 +34,11 @@ async def add(ctx: Context,
     s = ctx.db.sql.session()
     existing = db.Snippet.filter(s, server_id=ctx.guild_id, user_id=ctx.user_id, name=name, type=type).first()
     ctx.db.sql.merge_or_add(existing, snippet)
-    await ctx.reply("Added Succesfully")
     rebuild_cache(ctx, s)
+    return "Added Succesfully"
 
 @register(group=Groups.NITRO)
-async def remove(ctx: Context, type: db.types.Snippet, name: str, *, user: User=None, language):
+async def remove(ctx: Context, type: db.types.Snippet, name: str, *, user: User=None) -> str:
     '''
     Removes from database
     Params
@@ -61,11 +60,11 @@ async def remove(ctx: Context, type: db.types.Snippet, name: str, *, user: User=
         return await ctx.reply(f"Couldn't find anything matching these values: `server = {ctx.guild_id}`, `user = {ctx.user_id}`, `name = {name}`, `type = {type}`")
     s.delete(snippet)
     s.commit()
-    await ctx.reply("Deleted Succesfully")
-    rebuild_cache(ctx, s)
+    ctx.cache.load_from_database(ctx)
+    return "Deleted Succesfully"
 
 @register(group=Groups.GLOBAL)
-async def stashed(ctx: Context, type: db.types.Snippet, name: str=None, search_content: bool=False, *, language):
+async def stashed(ctx: Context, type: db.types.Snippet, name: str=None, search_content: bool=False) -> Embed:
     '''
     Stashed snippet to fetch
     Params
@@ -94,7 +93,7 @@ async def stashed(ctx: Context, type: db.types.Snippet, name: str=None, search_c
     if desc:
         embed.setDescription('\n'.join(desc))
     embed.addField("Total", str(len(snippets)))
-    await ctx.reply(embeds=[embed])
+    return embed
 
 
 def rebuild_cache(ctx: Context, s: db.Session=None):
@@ -113,7 +112,7 @@ def rebuild_cache(ctx: Context, s: db.Session=None):
 
 
 @register(group=Groups.SYSTEM, interaction=False)
-async def add_spotify(ctx: Context, artist: str, *, language):
+async def add_spotify(ctx: Context, artist: str) -> str:
     '''
     Adds new Artist to observed list
     Params
@@ -129,10 +128,10 @@ async def add_spotify(ctx: Context, artist: str, *, language):
     await s.disconnect()
     v = db.Spotify(id=_id, artist=artist, added_by=ctx.user_id)
     ctx.db.sql.add(v)
-    await ctx.reply(f"Spotify Artist {artist} with ID {_id} added succesfully")
+    return f"Spotify Artist {artist} with ID {_id} added succesfully"
 
 @register(group=Groups.SYSTEM, interaction=False)
-async def add_rss(ctx: Context, name: str, url: str, feed_language: str='en', *, language):
+async def add_rss(ctx: Context, name: str, url: str, feed_language: str='en') -> str:
     '''Adds new RSS to list'''
     from mlib.colors import get_main_color, getIfromRGB
     import feedparser
@@ -141,7 +140,7 @@ async def add_rss(ctx: Context, name: str, url: str, feed_language: str='en', *,
     color = getIfromRGB(get_main_color(av))
     r = db.models.RSS(source=name, url=url, language=feed_language, color=color, last=0, avatar_url=av)
     ctx.db.sql.add(r)
-    await ctx.reply("RSS Source added succesfully")
+    return "RSS Source added succesfully"
 
 @register(group=Groups.NITRO, guild_only=True)
 async def nitro(ctx: Context, hex_color: str=None, name: str=None) -> str:

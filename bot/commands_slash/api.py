@@ -2,12 +2,12 @@ from MFramework import register, Groups, Embed, Context
 import requests
 
 @register(group=Groups.GLOBAL)
-async def search(ctx: Context, *, language):
+async def search(ctx: Context):
     '''Searches things'''
     pass
 
 @register(group=Groups.GLOBAL, main=search, interaction=False)
-async def api(ctx: Context, category: str, random: bool=False, desc: str='', title: str='', cors: str='', https: bool=True, auth: str='', *args, language='en', **kwargs):
+async def api(ctx: Context, category: str, random: bool=False, desc: str='', title: str='', cors: str='', https: bool=True, auth: str='') -> Embed:
     '''Search for API
     Params
     ------
@@ -50,11 +50,11 @@ async def api(ctx: Context, category: str, random: bool=False, desc: str='', tit
         e.addField("HTTPS", f'{response["HTTPS"]}', True).addField("Category", response["Category"], True).addField("Cross-Origin Resource Sharing", response["Cors"], True).addField("URL", response["Link"], True)
         if response['Auth'] != "":
             e.addField("Auth", response["Auth"], True)
-        return await ctx.reply(embeds=[e])
+        return e
     if params == [] and category == ():
         r = requests.get(base_url + "categories")
         categories = ', '.join(r.json())
-        return await ctx.reply("Available categories: " + categories)
+        return "Available categories: " + categories
     url = base_url + "entries"
     url += '?' + '&'.join(params)
     r = requests.get(url)
@@ -74,10 +74,10 @@ async def api(ctx: Context, category: str, random: bool=False, desc: str='', tit
                 break
     if apis != '':
         embed.setDescription(apis)
-    await ctx.reply(embeds=[embed])
+    return embed
 
 @register(group=Groups.GLOBAL, main=search, interaction=False)
-async def stack(ctx: Context, search: str, *, language):
+async def stack(ctx: Context, search: str) -> Embed:
     '''Search Stack Overflow
     search:
         Query to search'''
@@ -106,10 +106,10 @@ async def stack(ctx: Context, search: str, *, language):
                 break
         if desc != '':
             e.setDescription(desc)
-    await ctx.reply(embeds=[e])
+    return e
 
 @register(group=Groups.GLOBAL, main=search, interaction=False)
-async def spotify(ctx: Context, query: str, *, language):
+async def spotify(ctx: Context, query: str) -> Embed:
     '''Search Spotify
     Params
     ------
@@ -123,11 +123,11 @@ async def spotify(ctx: Context, query: str, *, language):
     for i in res['artists']['items']:
         l += f"\n- [{i['name']}](https://open.spotify.com/artist/{i['id']})"
     embed = Embed().setDescription(l).setColor(1947988).setAuthor(query,res['artists']['href'].replace('api','open').replace('/v1/','/').replace('?query=','/').split('&')[0],'https://images-eu.ssl-images-amazon.com/images/I/51rttY7a%2B9L.png').setThumbnail(res['artists']['items'][0]['images'][0]['url'])
-    await ctx.reply(embeds=[embed])
     await s.disconnect()
+    return embed
 
 @register(group=Groups.GLOBAL, main=search)
-async def urban(ctx: Context, phrase: str, *, language):
+async def urban(ctx: Context, phrase: str) -> Embed:
     '''
     Searches Urban Dictionary for provided phrase
     Params
@@ -153,10 +153,10 @@ async def urban(ctx: Context, phrase: str, *, language):
         .setTimestamp(r["written_on"])
         .setColor(1975351)
     )
-    await ctx.reply(embeds=e)
+    return e
 
 @register(group=Groups.GLOBAL, main=search, interaction=False)
-async def fileext(ctx: Context, ext: str, *, language):
+async def fileext(ctx: Context, ext: str) -> Embed:
     '''Shows file extension details
     Params
     ------
@@ -168,7 +168,7 @@ async def fileext(ctx: Context, ext: str, *, language):
     if r.status_code == 200:
         soup = BeautifulSoup(r.content, "html.parser")
     else:
-        return await ctx.reply("Error")
+        return "Error"
     article = soup.find('article')
     header = article.find('h1').text
     ftype = article.find('h2').text.replace('File Type','')
@@ -182,10 +182,10 @@ async def fileext(ctx: Context, ext: str, *, language):
             e.addField('Category', i.text[8:], True)
         elif 'format' in i.text.lower():
             e.addField('Format', i.text[6:], True)
-    await ctx.reply(embeds=[e])
+    return e
 
 @register(group=Groups.SYSTEM, main=search, interaction=False)
-async def google(ctx: Context, query: str):
+async def google(ctx: Context, query: str) -> Embed:
     '''Searches google
     Params
     ------
@@ -203,7 +203,7 @@ async def google(ctx: Context, query: str):
     if resp.status_code == 200:
         soup = BeautifulSoup(resp.content, "html.parser")
     else:
-        return await ctx.reply("Error")
+        return "Error"
     for x, g in enumerate(soup.find_all("div", class_="r")):
         anchors = g.find_all("a")
         if anchors:
@@ -220,7 +220,7 @@ async def google(ctx: Context, query: str):
         embed.addField(result["title"], f"[Link]({result['link']})\n{result['description'][:900]}")
         if x == limit:
             break
-    await ctx.reply(embeds=[embed])
+    return embed
 
 async def azlyrics(artist, song):
     from bs4 import BeautifulSoup
@@ -270,7 +270,7 @@ async def glyrics(artist, song):
     return embed
 
 @register(group=Groups.GLOBAL, main=search, interaction=False)
-async def lyrics(ctx: Context, artist: str, song: str):
+async def lyrics(ctx: Context, artist: str, song: str) -> Embed:
     '''Sends Lyrics for provided song
     Params
     ------
@@ -278,14 +278,10 @@ async def lyrics(ctx: Context, artist: str, song: str):
         Artist of the song
     song:
         Song to fetch lyrics of'''
-    embe = await azlyrics(artist, song)
-    if embe != '404':
-        await ctx.reply(embeds=[embe])
-    else:
-        await ctx.reply('404')
+    return await azlyrics(artist, song)
 
 @register(group=Groups.GLOBAL, main=search, interaction=False)
-async def steam(ctx: Context, game: str):
+async def steam(ctx: Context, game: str) -> Embed:
     '''Search Steam Index'''
     from difflib import get_close_matches
     game = " ".join(game)
@@ -297,4 +293,4 @@ async def steam(ctx: Context, game: str):
     for g in game:
         t += '\n- ' + g
     embed = Embed().setDescription(t[:2024])
-    await ctx.reply(embeds=[embed])
+    return embed

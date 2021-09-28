@@ -52,7 +52,7 @@ def ping(host='discord.com'):
     return ping.lstrip().strip('\n')
 
 @register(group=Groups.GLOBAL, main=bot)
-async def status(ctx: Context, show_ping: bool=False, *args, language="en", **kwargs):
+async def status(ctx: Context, show_ping: bool=False, *, language="en") -> Embed:
     '''
     Shows statistics related to bot and system
     Params
@@ -142,10 +142,10 @@ async def status(ctx: Context, show_ping: bool=False, *args, language="en", **kw
     r = await ctx.bot.get_gateway_bot()
     embed.addField("Remaining sessions", r.get('session_start_limit', {}).get('remaining', -1))
     embed.setColor(ctx.cache.color)
-    await ctx.reply(embeds=[embed])
+    return embed
 
 @register(group=Groups.GLOBAL, main=bot)
-async def version(ctx: Context, *args, language, **kwargs):
+async def version(ctx: Context) -> Embed:
     '''
     Shows bot's version
     '''
@@ -192,10 +192,10 @@ async def version(ctx: Context, *args, language, **kwargs):
     )
     embed.setTimestamp(ver_date).setFooter("Last Commit")
     embed.setColor(ctx.cache.color).setDescription(desc)
-    await ctx.reply(embeds=[embed])
+    return embed
 
 @register(group=Groups.GLOBAL, main=bot)
-async def stats(ctx: Context, *args, language, **kwargs):
+async def stats(ctx: Context) -> Embed:
     '''
     Shows received events & registered commands
     '''
@@ -214,7 +214,7 @@ async def stats(ctx: Context, *args, language, **kwargs):
 
     e.addField("Events Received", msg, True)
     e.addField("Registered Commands", cmds, True)
-    await ctx.send(embeds=[e])
+    return e
 
 @register(group=Groups.GLOBAL, main=bot)
 async def support(ctx: Context, *args, language, **kwargs):
@@ -238,7 +238,7 @@ async def credits(ctx: Context, *args, language, **kwargs):
     pass
 
 @register(group=Groups.MODERATOR, interaction=False)
-async def memberchange(ctx: Context, period: str = "7d", *args, language, **kwargs):
+async def memberchange(ctx: Context, period: str = "7d") -> str:
     '''
     Shows how many users joined and left server within last period
     '''
@@ -248,6 +248,6 @@ async def memberchange(ctx: Context, period: str = "7d", *args, language, **kwar
         left = ctx.db.influx.getMembersChange(ctx.guild_id, period, state="left")[0].records[0].values["_value"]
         from mlib.utils import truncate
         retention = truncate((1 - (left / joined["_value"])) * 100, 2)
-        await ctx.reply(f"Membercount change witin last {period}\n` Start:` `[{joined['_start']}]`\n`   End:` `[{joined['_stop']}]`\n`Joined:` `{joined['_value']}`\n`  Left:` `{left}`\n`User Retention`: `{retention}%`")
+        return f"Membercount change witin last {period}\n` Start:` `[{joined['_start']}]`\n`   End:` `[{joined['_stop']}]`\n`Joined:` `{joined['_value']}`\n`  Left:` `{left}`\n`User Retention`: `{retention}%`"
     except:
-        await ctx.reply("Not enough to show data. (Possibly zero users joined)")
+        return "Not enough to show data. (Possibly zero users joined)"

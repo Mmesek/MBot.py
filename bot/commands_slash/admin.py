@@ -16,7 +16,7 @@ async def edit_emoji(ctx: Context, emojis, roles, *args,  **kwargs):
 
 
 @register(group=Groups.ADMIN, interaction=False)
-async def aemoji(ctx: Context, emoji_name, *args,  **kwargs):
+async def aemoji(ctx: Context, emoji_name) -> str:
     '''Sends animated emoji'''
     emojis = await ctx.bot.list_guild_emoji(ctx.guild_id)
     message = ""
@@ -27,11 +27,11 @@ async def aemoji(ctx: Context, emoji_name, *args,  **kwargs):
             else:
                 message += f"<:{emoji.name}:{emoji.id}> "
     await ctx.delete()
-    await ctx.reply(message)
+    return message
 
 
 @register(group=Groups.ADMIN, interaction=False)
-async def list_emoji(ctx: Context, *args,  all=False, regular=False, **kwargs):
+async def list_emoji(ctx: Context, *args,  all=False, regular=False) -> Embed:
     '''Lists all available emoji's in guild'''
     emojis = await ctx.bot.list_guild_emojis(ctx.guild_id)
     _animated = ""
@@ -50,16 +50,16 @@ async def list_emoji(ctx: Context, *args,  all=False, regular=False, **kwargs):
         else:
             inline = False
         e.addFields("Regular", _regular, inline)
-    await ctx.reply(embeds=[e])
+    return e
 
 
 @register(group=Groups.ADMIN, interaction=False)
-async def delete(ctx: Context, channel, *message,  **kwargs):
+async def delete(ctx: Context, channel, *message):
     '''Delete's message'''
     await ctx.bot.delete_message(channel, *message)
 
 @register(group=Groups.ADMIN, interaction=False)
-async def getmessages(ctx: Context, user, *args,  **kwargs):
+async def getmessages(ctx: Context, user) -> Embed:
     '''Retrives messages from DM'''
     dm = await ctx.bot.create_dm(user)
     messages = await ctx.bot.get_messages(dm.id)
@@ -67,10 +67,10 @@ async def getmessages(ctx: Context, user, *args,  **kwargs):
     for each in messages:
         message += f"\n`[{each.timestamp[:19]}]` - `{each.author.username}`: {each.content}"
     e = Embed().setFooter("", f"DM ID: {dm.id}").setDescription(message[:2000])
-    await ctx.reply(embeds=[e])
+    return e
 
 @register(group=Groups.ADMIN, interaction=False)
-async def prunecount(ctx: Context, days=7, *args,  language, **kwargs):
+async def prunecount(ctx: Context, days=7) -> str:
     '''Shows prune count'''
     count = await ctx.bot.get_guild_prune_count(ctx.guild_id, days)
-    await ctx.reply(count)
+    return str(count)

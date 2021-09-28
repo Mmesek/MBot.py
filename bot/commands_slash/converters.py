@@ -82,7 +82,7 @@ async def morse(ctx: Context, message: str, decode: bool=False, *args, language,
     await ctx.reply('Orginal: '+org, [Embed(title=t, description=reward)])
 
 @register(group=Groups.GLOBAL, main=convert, interaction=False)
-async def roman(ctx: Context, value: str, *args, language, **kwargs):
+async def roman(ctx: Context, value: str) -> str:
     '''Converts Roman to digits, or vice versa
     value:
         Value to convert'''
@@ -132,10 +132,10 @@ async def roman(ctx: Context, value: str, *args, language, **kwargs):
             s = f'Roman: {value} -> Int: {r}'
         except KeyError:
             s = f'An error occured, perhas non roman numeral was provided? Only `I`, `V`, `X`, `L`, `C`, `D` and `M` are allowed'
-    await ctx.reply(f'{s}')
+    return str(s)
 
 @register(group=Groups.GLOBAL, main=convert)
-async def timeunits(ctx: Context, duration: int, from_unit: str='s', to: str='w', *args, language, **kwargs):
+async def timeunits(ctx: Context, duration: int, from_unit: str='s', to: str='w', *, language) -> str:
     '''Converts for example 3600s into 1h. Works with s, m, h, d and w
     duration:
         Value to calculate
@@ -145,10 +145,10 @@ async def timeunits(ctx: Context, duration: int, from_unit: str='s', to: str='w'
         Opposite to from_unit. Accepts same values'''
     from mlib.converters import total_seconds
     from mlib.localization import secondsToText
-    await ctx.reply(secondsToText(total_seconds(f"{duration}{from_unit}").total_seconds(), language))
+    return secondsToText(total_seconds(f"{duration}{from_unit}").total_seconds(), language)
 
 @register(group=Groups.GLOBAL, main=convert)
-async def timezone(ctx: Context, yymmdd: str='YYYY-MM-DD', hhmm:str='HH:MM', timezones: str=[], *args, language, **kwargs):
+async def timezone(ctx: Context, yymmdd: str='YYYY-MM-DD', hhmm:str='HH:MM', timezones: str=[], *args, language) -> Embed:
     '''Shows current time in specified timezone(s)
     yymmdd:
         Base Date
@@ -256,18 +256,18 @@ async def timezone(ctx: Context, yymmdd: str='YYYY-MM-DD', hhmm:str='HH:MM', tim
             dt = ex
         if len(e.fields) <= 25:
             e.addField(timezone, dt)
-    await ctx.reply(embeds=[e])
+    return e
 
 @register(group=Groups.GLOBAL, main=convert)
-async def upside(ctx: Context, text: str, *args, language, **kwargs):
+async def upside(ctx: Context, text: str) -> str:
     '''Makes text uʍop ǝpᴉsdn!
     text:
         Text to invert'''
     import upsidedown
-    await ctx.reply(upsidedown.transform(text))
+    return upsidedown.transform(text)
 
 @register(group=Groups.GLOBAL, main=convert)
-async def rot(ctx: Context, message: str, shift: int=13, alphabet: str='ABCDEFGHIJKLMNOPQRSTUVWXYZ', *args, language, **kwargs):
+async def rot(ctx: Context, message: str, shift: int=13, alphabet: str='ABCDEFGHIJKLMNOPQRSTUVWXYZ') -> Embed:
     '''Caesar Cipher
     message:
         Message to rotate
@@ -309,10 +309,10 @@ async def rot(ctx: Context, message: str, shift: int=13, alphabet: str='ABCDEFGH
         except:
             from_key += k
     e = Embed().addField("Alphabet", f"`{alphabet}`\n"+msg).setDescription(from_key)
-    await ctx.reply(embeds=[e])
+    return e
 
 @register(group=Groups.GLOBAL, main=convert, interaction=False)
-async def asciitohex(ctx: Context, ascii_:str, *args, **kwargs):
+async def asciitohex(ctx: Context, ascii_:str) -> Embed:
     '''Converts Ascii to Numbers
     ascii_:
         Value to Convert'''
@@ -321,10 +321,10 @@ async def asciitohex(ctx: Context, ascii_:str, *args, **kwargs):
     f.addField('Bin',str(bin(int.from_bytes(bytearray(ascii_, encoding='ascii'), 'big')))[2:1023])
     f.addField('Hex',str(hex(int.from_bytes(bytearray(ascii_, encoding='ascii'), 'big')))[2:1023])
     f.addField('Oct',str(oct(int.from_bytes(bytearray(ascii_, encoding='ascii'), 'big')))[2:1023])
-    await ctx.reply(embeds=[f])
+    return f
 
 @register(group=Groups.GLOBAL, main=convert)
-async def currency(ctx: Context, amount: float=1, from_currency: str="EUR", to_currency: str="USD", *args, language, **kwargs):
+async def currency(ctx: Context, amount: float=1, from_currency: str="EUR", to_currency: str="USD", *, language) -> str:
     '''Converts currency
     amount:
         Amount to convert
@@ -367,10 +367,10 @@ async def currency(ctx: Context, amount: float=1, from_currency: str="EUR", to_c
                 result = "Error"
     from mlib.localization import tr
     r = tr('commands.currency_exchange.result', language, result=result, to_currency=to_currency, amount=amount, currency=from_currency)
-    await ctx.reply(r+'\n'+src)
+    return r+'\n'+src
 
 @register(group=Groups.GLOBAL, main=convert)
-async def reverse(ctx: Context, message: str, in_place: bool=False, *args, language, **kwargs):
+async def reverse(ctx: Context, message: str, in_place: bool=False) -> str:
     '''Reverses letters
     message:
         Message to reverse
@@ -380,7 +380,7 @@ async def reverse(ctx: Context, message: str, in_place: bool=False, *args, langu
         r = ' '.join([i[::-1] for i in message.split(' ')])
     else:
         r = message[::-1]
-    await ctx.reply(r)
+    return r
 
 @register(group=Groups.GLOBAL, main=convert, interaction=False)
 async def electricity(ctx: Context, interaction: Interaction, price: float=0.64, watts: float=1, active_hours: float=24, active_days: int=30, *args, language, **kwargs):

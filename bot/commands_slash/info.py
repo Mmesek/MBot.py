@@ -1,12 +1,12 @@
 from MFramework import register, Groups, Context, Embed, Snowflake, RoleID, ChannelID, Role, Bitwise_Permission_Flags, Guild_Member, Premium_Types, User_Flags
 
 @register()
-async def info(ctx: Context, *args, language, **kwargs):
+async def info(ctx: Context):
     '''Shows info'''
     pass
 
 @register(group=Groups.GLOBAL, main=info)
-async def user(ctx: Context, member: Guild_Member = None):
+async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     '''Shows user info
     Params
     ------
@@ -103,7 +103,7 @@ async def user(ctx: Context, member: Guild_Member = None):
         if _stats:
             embed.addField("Statistics", "\n".join(format_values(_stats)), False)
 
-    await ctx.reply(embeds=[embed])
+    await embed
 
 from typing import Callable, List, Tuple
 def format_values(iterable: List[Tuple[str, str]], check: Callable = None):
@@ -116,7 +116,7 @@ def format_values(iterable: List[Tuple[str, str]], check: Callable = None):
     return r
 
 @register(group=Groups.MODERATOR, main=info)
-async def server(ctx: Context, guild_id: Snowflake = 0, *args, language, group, **kwargs):
+async def server(ctx: Context, guild_id: Snowflake = 0, *, group) -> Embed:
     '''Shows server info'''
     await ctx.deferred()
     if group < Groups.SYSTEM or guild_id == 0:
@@ -158,10 +158,10 @@ async def server(ctx: Context, guild_id: Snowflake = 0, *args, language, group, 
     if bans != []:
         embed.addField(f"Amount of Bans", str(len(bans)), True)
 
-    await ctx.reply(embeds=[embed])
+    return embed
 
 @register(group=Groups.MODERATOR, main=info)
-async def role(ctx: Context, role_id: RoleID = 0, *args, language, group, **kwargs):
+async def role(ctx: Context, role_id: RoleID = 0) -> Embed:
     '''Shows role info'''
     await ctx.deferred()
     if role_id == 0:
@@ -203,7 +203,7 @@ async def role(ctx: Context, role_id: RoleID = 0, *args, language, group, **kwar
     await ctx.reply(embeds=[embed], file=f, filename="color.png")
 
 @register(group=Groups.MODERATOR, main=info)
-async def channel(ctx: Context, channel_id: ChannelID = 0, *args, language, group, **kwargs):
+async def channel(ctx: Context, channel_id: ChannelID = 0) -> Embed:
     '''Shows channel info'''
     await ctx.deferred()
     if channel_id == 0:
@@ -212,10 +212,10 @@ async def channel(ctx: Context, channel_id: ChannelID = 0, *args, language, grou
 
     embed = Embed().setTitle("Channel Info").setThumbnail("").setDescription("")
 
-    await ctx.reply(embeds=[embed])
+    return embed
 
 @register(group=Groups.ADMIN, main=info)
-async def members(ctx: Context, role: Role, force_update: bool=False, *args, language, **kwargs):
+async def members(ctx: Context, role: Role, force_update: bool=False) -> Embed:
     '''
     Lists users with provided role
     Params
@@ -237,10 +237,10 @@ async def members(ctx: Context, role: Role, force_update: bool=False, *args, lan
     from MFramework import Embed
     embed = Embed().setDescription(''.join([f'<@{i}>' for i in total])).setFooter(f'Total users/members: {len(total)}/{len(ctx.cache.members)}')
     embed.setColor(role.color).setTitle(f'List of members with role {role.name}')
-    await ctx.reply(embeds=[embed])
+    return embed
 
 @register(group=Groups.GLOBAL, main=info)
-async def created(ctx: Context, snowflake: Snowflake, *, language):
+async def created(ctx: Context, snowflake: Snowflake) -> Embed:
     '''
     Shows when the snowflake was created
     Params
@@ -272,4 +272,4 @@ async def created(ctx: Context, snowflake: Snowflake, *, language):
             pass
     embed = Embed()
     embed.addField(f"{snowflake}",'\n'.join(format_values(names)))
-    await ctx.reply(embeds=[embed])
+    return embed

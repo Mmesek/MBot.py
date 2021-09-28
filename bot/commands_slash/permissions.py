@@ -2,14 +2,14 @@ from MFramework import register, Groups, Context, Embed, UserID
 
 
 @register(group=Groups.MODERATOR, interaction=False)
-async def permission(ctx: Context, *, language):
+async def permission(ctx: Context):
     '''
     Permissions related commands
     '''
     pass
 
 @register(group=Groups.MODERATOR, interaction=False, main=permission)
-async def get(ctx: Context, command: str, *, language):
+async def get(ctx: Context, command: str) -> Embed:
     '''
     etches set permissions for this command
     Params
@@ -47,10 +47,10 @@ async def get(ctx: Context, command: str, *, language):
     if users:
         users = "\n".join([f"- <@{i}>" for i in users])
         e.addField("Set User permissions", users)
-    await ctx.reply(embeds=[e])
+    return e
 
 @register(group=Groups.MODERATOR, interaction=False, main=permission)
-async def user(ctx: Context, user: UserID, *, language):
+async def user(ctx: Context, user: UserID) -> Embed:
     '''
     Description to use with help command
     Params
@@ -64,10 +64,10 @@ async def user(ctx: Context, user: UserID, *, language):
     user = user.user.id
     group = detect_group(ctx.bot, user, ctx.guild_id, roles)
     e = Embed().addField("Provided user", f"<@{user}>").addField("Detected group", group)
-    await ctx.reply(embeds=[e])
+    return e
 
 @register(group=Groups.MODERATOR, interaction=False, main=permission)
-async def command(ctx: Context, group: str, *, language):
+async def command(ctx: Context, group: str) -> Embed:
     '''
     Description to use with help command
     Params
@@ -79,4 +79,4 @@ async def command(ctx: Context, group: str, *, language):
     from MFramework.commands._utils import commands
     _commands = filter(lambda x: x.group == group, commands.values())
     e = Embed().setDescription("\n".join([f"- {i.name}" for i in _commands]))
-    await ctx.reply(embeds=[e])
+    return e
