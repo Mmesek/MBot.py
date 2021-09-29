@@ -1,4 +1,4 @@
-from MFramework import register, Context, Groups, Embed
+from MFramework import register, Context, Groups, Embed, Snowflake
 
 @register(group=Groups.ADMIN, interaction=False)
 async def edit_message(ctx: Context, messageID, *newMessage,  channel, **kwargs):
@@ -74,3 +74,30 @@ async def prunecount(ctx: Context, days=7) -> str:
     '''Shows prune count'''
     count = await ctx.bot.get_guild_prune_count(ctx.guild_id, days)
     return str(count)
+
+@register(group=Groups.MODERATOR, interaction=False)
+async def role_icon(ctx: Context, role: Snowflake, emoji: str):
+    '''
+    Allows setting icons for roles
+    Params
+    ------
+    role:
+        role to modify
+    emoji:
+        Unicode Emoji, Discord Emoji or link to picture
+    '''
+    from MFramework.utils.utils import parseMention
+    if emoji and "http" in emoji or ":" in emoji:
+        if ':' in emoji and not emoji.startswith("http"):
+            emoji_name, id = parseMention(emoji).split(":")
+            from mdiscord import CDN_URL, CDN_Endpoints
+            emoji = CDN_URL+CDN_Endpoints.Custom_Emoji.value.format(emoji_id=id)
+        import requests
+        icon = requests.get(emoji)
+        if icon.ok:
+            from binascii import b2a_base64
+            emoji = {"icon":f"data:image/png;base64,{b2a_base64(icon.content).decode()}"}
+    else:
+        emoji = {"icon": "","unicode_emoji": emoji}
+    await ctx.bot.modify_guild_role(guild_id=ctx.guild_id, role_id=role, **emoji)
+    return "Icon changed"

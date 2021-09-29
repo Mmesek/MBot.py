@@ -143,7 +143,7 @@ async def add_rss(ctx: Context, name: str, url: str, feed_language: str='en') ->
     return "RSS Source added succesfully"
 
 @register(group=Groups.NITRO, guild_only=True)
-async def nitro(ctx: Context, hex_color: str=None, name: str=None) -> str:
+async def nitro(ctx: Context, hex_color: str=None, name: str=None, emoji: str = None) -> str:
     '''
     Create self role. Only one per booster
     Params
@@ -151,7 +151,9 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None) -> str:
     hex_color:
         Value in hexadecimal notation. For example: #00aaff
     name:
-        Name of role'''
+        Name of role
+    emoji:
+        Icon for this role. Can be Emoji or a link to picture'''
     await ctx.deferred(private=True)
     reserved_colors = set()
     reserved_names = set()
@@ -196,10 +198,24 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None) -> str:
             name = "Nitro Booster"
     if '(Nitro Booster)' not in name:
         name += ' (Nitro Booster)'
+    
+    from MFramework.utils.utils import parseMention
+    if emoji and "http" in emoji or ":" in emoji:
+        if ':' in emoji and not emoji.startswith("http"):
+            emoji_name, id = parseMention(emoji).split(":")
+            from mdiscord import CDN_URL, CDN_Endpoints
+            emoji = CDN_URL+CDN_Endpoints.Custom_Emoji.value.format(emoji_id=id)
+        import requests
+        icon = requests.get(emoji)
+        if icon.ok:
+            from binascii import b2a_base64
+            emoji = {"icon":f"data:image/png;base64,{b2a_base64(icon.content).decode()}"}
+    else:
+        emoji = {"icon": "", "unicode_emoji": emoji}
 
     if c:
         try:
-            role = await ctx.bot.modify_guild_role(ctx.guild_id, c.id, name, 0, color=color, reason="Updated Role of Nitro user")
+            role = await ctx.bot.modify_guild_role(ctx.guild_id, c.id, name, 0, color=color, reason="Updated Role of Nitro user", **emoji)
             ctx.cache.roles.update(role)
             state = "updated"
         except NotFound:
@@ -208,7 +224,7 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None) -> str:
     if c and role and role.id != c.id or not c:
         if not c and total_roles >= 20:#ctx.cache.settings.get(db.types.Setting.Limit_Nitro_Roles, 20):
             return f"Sorry, limit ({total_roles}) of custom roles has been reached :("
-        role = await ctx.bot.create_guild_role(ctx.guild_id, name, 0, color, False, False, "Created Role for Nitro user "+ctx.member.user.username)
+        role = await ctx.bot.create_guild_role(ctx.guild_id, name, 0, color, False, mentionable=False, reason="Created Role for Nitro user "+ctx.member.user.username, **emoji)
         await ctx.bot.modify_guild_role_positions(ctx.guild_id, role.id, nitro_position+1)
         await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.member.user.id, role.id, "Nitro role")
         c = db.Role.fetch_or_add(s, server_id=ctx.guild_id, id=role.id)
@@ -224,6 +240,6 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None) -> str:
         await ctx.bot.execute_webhook(
             webhook_id=_id, 
             webhook_token=_token, 
-            content="{user} {state} <@&{role}> with name {name} and color {color}".format(
-                user=ctx.user.username, state=state, role=role.id, name=role.name, color=role.color), 
+            content="{user} {state} <@&{role}> with name {name} and color {color}{emoji}".format(
+                user=ctx.user.username, state=state, role=role.id, name=role.name, color=role.color, emoji=f" and icon {emoji}" if emoji else ""), 
             username="Nitro Role")
