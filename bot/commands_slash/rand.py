@@ -181,14 +181,15 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     for x, step in enumerate(steps):
         word = [letter if letter in uncovered else "-" for letter in hidden]
         steps_so_far = {}
-        for x, (_step, char) in enumerate(process.items()):
+        for _step, char in process.items():
             steps_so_far[_step] = char if wrong >= int(_step[1:]) else ' '
         e = (
             Embed(description=drawing.format(**steps_so_far))
             .setTitle(f'Word: `{"".join(word)}`')
-            .addField("Missed", " ".join(missed))
             .setFooter(text=f"Remaining lives: {steps.stop - x}")
         )
+        if missed:
+            e.addField("Missed", " ".join(missed))
         await msg.edit(embeds=[e])
         last_answer = await ctx.bot.wait_for("message_create",
                                     check = lambda x: 
