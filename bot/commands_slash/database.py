@@ -200,10 +200,10 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, emoji: str = 
         name += ' (Nitro Booster)'
     
     from MFramework.utils.utils import parseMention
-    if emoji and "http" in emoji or ":" in emoji:
+    from mdiscord import CDN_URL, CDN_Endpoints
+    if emoji and ("http" in emoji or ":" in emoji):
         if ':' in emoji and not emoji.startswith("http"):
             emoji_name, id = parseMention(emoji).split(":")
-            from mdiscord import CDN_URL, CDN_Endpoints
             emoji = CDN_URL+CDN_Endpoints.Custom_Emoji.value.format(emoji_id=id)
         import requests
         icon = requests.get(emoji)
@@ -211,7 +211,7 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, emoji: str = 
             from binascii import b2a_base64
             emoji = {"icon":f"data:image/png;base64,{b2a_base64(icon.content).decode()}"}
     else:
-        emoji = {"icon": "", "unicode_emoji": emoji}
+        emoji = {"icon": "" if emoji else None, "unicode_emoji": emoji}
 
     if c:
         try:
@@ -230,11 +230,13 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, emoji: str = 
         c = db.Role.fetch_or_add(s, server_id=ctx.guild_id, id=role.id)
         ctx.cache.roles.store(role)
         state = "created"
+    
+    emoji = (CDN_URL+CDN_Endpoints.Role_Icon.value.format(role_id=role.id, role_icon=role.icon)) if role.icon else role.unicode_emoji if role.unicode_emoji else None
 
     if not c.get_setting(db.types.Setting.Custom):
         c.add_setting(db.types.Setting.Custom, ctx.user_id)
         s.commit()
-    await ctx.reply(f"Role <@&{role.id}> {state} Successfully.\nName: {role.name}\nColor: {role.color}")
+    await ctx.reply(f"Role <@&{role.id}> {state} Successfully.\nName: {role.name}\nColor: {role.color}\nIcon: {emoji}")
     _id, _token = ctx.cache.webhooks.get("nitro_role", (None, None))
     if _id:
         await ctx.bot.execute_webhook(
