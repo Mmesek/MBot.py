@@ -43,7 +43,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     item = items.Item.fetch_or_add(s, name=name, type=_type)
     i = items.Inventory(item)
     for user in users:
-        u = models.User.fetch_or_add(s, id=user.id)
+        u = models.User.fetch_or_add(s, id=user.get('id', user.user_id))
         u.claim_items(data.guild_id, [i])
         #user.add_item(s, data.guild_id, user.id, item=i)
         #Log.claim(data.guild_id, user.id, _type)
