@@ -3,10 +3,9 @@ from typing import Tuple
 
 from MFramework import Snowflake
 from MFramework.bot import Bot
-from MFramework.database.alchemy import models, types
 from MFramework import log as _log
 
-from ..database import log
+from ..database import log, models, types
 
 def checkLast(ctx: Bot, guild: Snowflake, channel: Snowflake, user: Snowflake) -> float:
     j = ctx.cache[guild].voice[channel].pop(user)
