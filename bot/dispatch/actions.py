@@ -12,11 +12,15 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     #if not wait and not statistic:
     #    return
     #await asyncio.sleep(t)
-    await ctx.wait_for("message_reaction_add", check=lambda x: 
-        x.channel_id == data.channel_id and 
-        x.message_id == data.id and 
-        x.user_id != ctx.user_id and
-        x.emoji.name == reaction, timeout=t)
+    try:
+        await ctx.wait_for("message_reaction_add", check=lambda x: 
+            x.channel_id == data.channel_id and 
+            x.message_id == data.id and 
+            x.user_id != ctx.user_id and
+            x.emoji.name == reaction, timeout=t)
+    except TimeoutError:
+        await data.delete_reaction(reaction)
+
     if delete_own:
         await data.delete_reaction(reaction)
     
