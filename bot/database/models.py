@@ -32,14 +32,17 @@ class User(HasDictSettingsRelated, Snowflake, Base):
     
     def add_item(self, *items: Inventory, transaction: log.Transaction = None):
         '''Add `Inventory.item` to this `User` and optionally to `Transaction`'''
+        _increased_existing = False
         for item in items:
             if transaction:
                 transaction.add(self.id, item)
             for owned_item in self.items:
                 if item.item.name == owned_item.item.name:
                     owned_item.quantity += item.quantity
-                    continue
-            self.items.append(item)
+                    _increased_existing = True
+                    break
+            if not _increased_existing:
+                self.items.append(item)
 
     def remove_item(self, *items: Inventory, transaction: log.Transaction = None):
         '''Removes `Inventory.item` from this `User` and optionally adds it as outgoing to `Transaction`'''
