@@ -84,16 +84,16 @@ class User(HasDictSettingsRelated, Snowflake, Base):
         '''
         transaction = log.Transaction(server_id = server_id)
         if sent: #TODO: Multiple different items/inventories for sent/recv 
-            recipent.add_item(sent, transaction)
+            recipent.add_item(*sent, transaction=transaction)
             if remove_item and not turn_item:
-                self.remove_item(sent, transaction)
+                self.remove_item(*sent, transaction=transaction)
         if recv:
             if not turn_item:
-                self.add_item(recv, transaction)
+                self.add_item(*recv, transaction=transaction)
             else:
-                self.remove_item(recv, transaction)
+                self.remove_item(*recv, transaction=transaction)
             if remove_item and not turn_item:
-                recipent.remove_item(recv, transaction)
+                recipent.remove_item(*recv, transaction=transaction)
         return transaction
     def claim_items(self, server_id: int, items: List[Inventory]) -> log.Transaction:
         return self.transfer(server_id, None, recv=items, remove_item=False)
