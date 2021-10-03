@@ -33,7 +33,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     
     from ..database import models, Statistic
     if statistic:
-        Statistic.increment(s, server_id=data.guild_id, user_id=datetime().year, name=statistic)
+        Statistic.increment(s, server_id=data.guild_id, user_id=datetime.now().year, name=statistic)
     if all_reactions:
         users = await data.get_reactions(reaction)
     else:
@@ -62,6 +62,12 @@ async def egg_hunt(ctx: Bot, data: Message):
 @Chance(3)
 async def present_hunt(ctx: Bot, data: Message):
     await _handle_reaction(ctx, data, "🎁", "Present", wait=False, delete_own=False, store_in_cache=True, first_only=True, all_reactions=False, logger="present_hunt", statistic=types.Statistic.Spawned_Presents)
+
+@onDispatch(event="message_create")
+@Event(month=12)
+@Chance(10)
+async def snowball_hunt(ctx: Bot, data: Message):
+    await _handle_reaction(ctx, data, "❄", "Snowball", delete_own=False, first_only=True, logger="snowball_hunt", statistic=types.Statistic.Spawned_Snowballs)
 
 @onDispatch(event="message_create")
 @Event(month=10)
