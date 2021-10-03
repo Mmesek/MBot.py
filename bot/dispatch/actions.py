@@ -7,26 +7,31 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     await asyncio.sleep(random.SystemRandom().randint(0, 10))
     await data.react(reaction)
     t = random.SystemRandom().randint(15, 60)
-    if store_in_cache:
-        ctx.cache[data.guild_id].special_message.store(data, expire=t, type=name, first_only=first_only)
-    if not wait and not statistic:
-        return
-    await asyncio.sleep(t)
+    #if store_in_cache:
+    #    ctx.cache[data.guild_id].special_message.store(data, expire=t, type=name, first_only=first_only)
+    #if not wait and not statistic:
+    #    return
+    #await asyncio.sleep(t)
+    await ctx.wait_for("message_reaction_add", check=lambda x: 
+        x.channel_id == data.channel_id and 
+        x.message_id == data.id and 
+        x.user_id != ctx.user_id and
+        x.emoji.name == reaction, timeout=t)
     if delete_own:
         await data.delete_reaction(reaction)
     
-    if store_in_cache:
-        ctx.cache[data.guild_id].special_message.delete(data.id) #Not needed thanks to expire flag
+    #if store_in_cache:
+    #    ctx.cache[data.guild_id].special_message.delete(data.id) #Not needed thanks to expire flag
     
     s = ctx.db.sql.Session()
     
-    from ..database import models
+    from ..database import models, Statistic
     if statistic:
-        models.Statistic.increment(s, data.guild_id, statistic)
+        Statistic.increment(s, data.guild_id, statistic)
     if all_reactions:
         users = await data.get_reactions(reaction)
     
-        from ..database import items, Log
+        from ..database import items
         item = items.Item.fetch_or_add(s, name=name, type=_type)
         i = items.Inventory(item)
         for user in users:

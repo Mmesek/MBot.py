@@ -50,6 +50,7 @@ class Statistic(Enum):
     DM_Forwarded = 11
     Spawned_Eggs = 12
     Spawned_Presents = 13
+    Spawned_Pumpkins = 14
 
     Halloween_Turn_Count = 20
 
