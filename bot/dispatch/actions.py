@@ -1,9 +1,10 @@
 from MFramework import *
 from ..database import types
-async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _type: types.Item=None, 
+async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _type: types.Item=types.Item.Event, 
                     wait: bool=True, delete_own: bool=True, store_in_cache: bool=False, first_only=False, all_reactions: bool=True, 
                     logger: str=None, statistic: types.Statistic=None):
     import random, asyncio
+    log.debug("Spawning reaction with %s", name)
     await asyncio.sleep(random.SystemRandom().randint(0, 10))
     await data.react(reaction)
     t = random.SystemRandom().randint(15, 60)
@@ -19,6 +20,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
             x.user_id != ctx.user_id and
             x.emoji.name == reaction, timeout=t)
     except asyncio.TimeoutError:
+        log.debug("No one reacted. Removing reaction")
         return await data.delete_reaction(reaction)
 
     if delete_own:
@@ -31,19 +33,21 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     
     from ..database import models, Statistic
     if statistic:
-        Statistic.increment(s, server_id=data.guild_id, user_id=0, name=statistic)
+        Statistic.increment(s, server_id=data.guild_id, user_id=datetime().year, name=statistic)
     if all_reactions:
         users = await data.get_reactions(reaction)
+    else:
+        users = [user]
     
-        from ..database import items
-        item = items.Item.fetch_or_add(s, name=name, type=_type)
-        i = items.Inventory(item)
-        for user in users:
-            u = models.User.fetch_or_add(s, id=user.id)
-            u.claim_items(data.guild_id, [i])
-            #user.add_item(s, data.guild_id, user.id, item=i)
-            #Log.claim(data.guild_id, user.id, _type)
-        await ctx.cache[data.guild_id].logging[logger](data, users)
+    from ..database import items
+    item = items.Item.fetch_or_add(s, name=name, type=_type)
+    i = items.Inventory(item)
+    for user in users:
+        u = models.User.fetch_or_add(s, id=user.id)
+        u.claim_items(data.guild_id, [i])
+        #user.add_item(s, data.guild_id, user.id, item=i)
+        #Log.claim(data.guild_id, user.id, _type)
+    await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
 
 from MFramework.commands.decorators import Event, Chance
@@ -51,7 +55,7 @@ from MFramework.commands.decorators import Event, Chance
 @Event(month=4)
 @Chance(2.5)
 async def egg_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "🥚", "Easter Egg", types.Item.EasterEgg, logger="egg_hunt", statistic=types.Statistic.Spawned_Eggs)
+    await _handle_reaction(ctx, data, "🥚", "Easter Egg", types.Item.Event, logger="egg_hunt", statistic=types.Statistic.Spawned_Eggs)
 
 @onDispatch(event="message_create")
 @Event(month=12)
