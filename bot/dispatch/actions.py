@@ -13,13 +13,13 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     #    return
     #await asyncio.sleep(t)
     try:
-        await ctx.wait_for("message_reaction_add", check=lambda x: 
+        user = await ctx.wait_for("message_reaction_add", check=lambda x: 
             x.channel_id == data.channel_id and 
             x.message_id == data.id and 
             x.user_id != ctx.user_id and
             x.emoji.name == reaction, timeout=t)
-    except TimeoutError:
-        await data.delete_reaction(reaction)
+    except asyncio.TimeoutError:
+        return await data.delete_reaction(reaction)
 
     if delete_own:
         await data.delete_reaction(reaction)
@@ -31,7 +31,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     
     from ..database import models, Statistic
     if statistic:
-        Statistic.increment(s, data.guild_id, statistic)
+        Statistic.increment(s, server_id=data.guild_id, user_id=0, name=statistic)
     if all_reactions:
         users = await data.get_reactions(reaction)
     
