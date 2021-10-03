@@ -33,6 +33,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     
     from ..database import models, Statistic
     if statistic:
+        year = models.User.fetch_or_add(s, id=datetime.now().year)
         Statistic.increment(s, server_id=data.guild_id, user_id=datetime.now().year, name=statistic)
     if all_reactions:
         users = await data.get_reactions(reaction)
@@ -43,7 +44,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     item = items.Item.fetch_or_add(s, name=name, type=_type)
     i = items.Inventory(item)
     for user in users:
-        u = models.User.fetch_or_add(s, id=user.get('id', user.user_id))
+        u = models.User.fetch_or_add(s, id=getattr(user, 'id', user.user_id))
         u.claim_items(data.guild_id, [i])
         #user.add_item(s, data.guild_id, user.id, item=i)
         #Log.claim(data.guild_id, user.id, _type)
