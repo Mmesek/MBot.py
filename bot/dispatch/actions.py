@@ -1,33 +1,29 @@
 from MFramework import *
 from ..database import types
-async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _type: types.Item=types.Item.Event, 
-                    wait: bool=True, delete_own: bool=True, store_in_cache: bool=False, first_only=False, all_reactions: bool=True, 
+async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, 
+                    _type: types.Item=types.Item.Event, 
+                    delete_own: bool=True, first_only: bool=False, 
                     logger: str=None, statistic: types.Statistic=None):
     import random, asyncio
     log.debug("Spawning reaction with %s", name)
     await asyncio.sleep(random.SystemRandom().randint(0, 10))
     await data.react(reaction)
     t = random.SystemRandom().randint(15, 60)
-    #if store_in_cache:
-    #    ctx.cache[data.guild_id].special_message.store(data, expire=t, type=name, first_only=first_only)
-    #if not wait and not statistic:
-    #    return
-    #await asyncio.sleep(t)
-    try:
-        user = await ctx.wait_for("message_reaction_add", check=lambda x: 
-            x.channel_id == data.channel_id and 
-            x.message_id == data.id and 
-            x.user_id != ctx.user_id and
-            x.emoji.name == reaction, timeout=t)
-    except asyncio.TimeoutError:
-        log.debug("No one reacted. Removing reaction")
-        return await data.delete_reaction(reaction)
+    if first_only:
+        try:
+            user = await ctx.wait_for("message_reaction_add", check=lambda x: 
+                x.channel_id == data.channel_id and 
+                x.message_id == data.id and 
+                x.user_id != ctx.user_id and
+                x.emoji.name == reaction, timeout=t)
+        except asyncio.TimeoutError:
+            log.debug("No one reacted. Removing reaction")
+            return await data.delete_reaction(reaction)
+    else:
+        await asyncio.sleep(t)
 
     if delete_own:
         await data.delete_reaction(reaction)
-    
-    #if store_in_cache:
-    #    ctx.cache[data.guild_id].special_message.delete(data.id) #Not needed thanks to expire flag
     
     s = ctx.db.sql.Session()
     
@@ -35,7 +31,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     if statistic:
         year = models.User.fetch_or_add(s, id=datetime.now().year)
         Statistic.increment(s, server_id=data.guild_id, user_id=datetime.now().year, name=statistic)
-    if all_reactions:
+    if not first_only:
         users = await data.get_reactions(reaction)
     else:
         users = [user]
@@ -46,8 +42,6 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, _t
     for user in users:
         u = models.User.fetch_or_add(s, id=getattr(user, 'id', user.user_id))
         u.claim_items(data.guild_id, [i])
-        #user.add_item(s, data.guild_id, user.id, item=i)
-        #Log.claim(data.guild_id, user.id, _type)
     await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
 
@@ -56,13 +50,13 @@ from MFramework.commands.decorators import Event, Chance
 @Event(month=4)
 @Chance(2.5)
 async def egg_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "🥚", "Easter Egg", types.Item.Event, logger="egg_hunt", statistic=types.Statistic.Spawned_Eggs)
+    await _handle_reaction(ctx, data, "🥚", "Easter Egg", logger="egg_hunt", statistic=types.Statistic.Spawned_Eggs)
 
 @onDispatch(event="message_create")
 @Event(month=12)
 @Chance(3)
 async def present_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "🎁", "Present", wait=False, delete_own=False, store_in_cache=True, first_only=True, all_reactions=False, logger="present_hunt", statistic=types.Statistic.Spawned_Presents)
+    await _handle_reaction(ctx, data, "🎁", "Present", delete_own=False, first_only=True, logger="present_hunt", statistic=types.Statistic.Spawned_Presents)
 
 @onDispatch(event="message_create")
 @Event(month=12)
@@ -74,7 +68,7 @@ async def snowball_hunt(ctx: Bot, data: Message):
 @Event(month=10)
 @Chance(1)
 async def halloween_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "🎃", "Pumpkin", wait=False, delete_own=False, store_in_cache=True, first_only=True, all_reactions=False, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins)
+    await _handle_reaction(ctx, data, "🎃", "Pumpkin", delete_own=False, first_only=True, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins)
 
 async def responder(ctx: Bot, msg: Message, emoji: str):
     emoji = ctx.cache[msg.guild_id].custom_emojis.get(emoji.lower().strip(':'))

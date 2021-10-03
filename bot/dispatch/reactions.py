@@ -7,10 +7,6 @@ async def message_reaction_add(self: Bot, data: Message_Reaction_Add):
     if data.message_id in self.cache[data.guild_id].giveaway_messages:
         await self.delete_user_reaction(data.channel_id, data.message_id, f"{data.emoji.name}:{data.emoji.id}", data.user_id)
         #TODO: check if already in DB, otherwise add
-    
-    #if self.cache[data.guild_id].special_messages.has(data):
-    #    from MFramework.database.alchemy import models, items
-    #    models.User(data.user_id).add_item(items.Inventory(items.Item("Easter Egg").id))
 
     roles = self.cache[data.guild_id].reaction_roles
     if roles == {}:
