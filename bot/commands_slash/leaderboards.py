@@ -160,11 +160,12 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
 
 class Leaderboards(Enum):
     Easter = 4
+    Pumpkin_Hunt = 9
     Halloween = 10
-    Aoc = 11
-    Christmas = 12
+    #Aoc = 11
+    #Christmas = 12
 
-#@register(group=Groups.GLOBAL, main=leaderboard)
+@register(group=Groups.GLOBAL, main=leaderboard)
 async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: int=10, *args, language, **kwargs):
     '''
     Shows Event leaderboards
@@ -200,6 +201,7 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
 
     events = {
         4:["Easter Egg"],
+        9:["Pumpkin"],
         10:["Vampires", "Werewolves", "Zombies", "Hunters", "Huntsmen", "Enchanters"],
         11:["Top"],
         12:["Advent", "CookiesRecv", "CookiesSent", "GiftsRecv","GiftsSent", "Presents Found"]
@@ -221,7 +223,8 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
             e.addField(leaderboard[0], "\n".join(format_leaderboard(leaderboard[1], ctx.user.id)))
     
     stats = "Your Stats" if not user_id or ctx.user.id == user_id else "Stats"
-    e.addField(stats, values) if values else None
+    if values:
+        e.addField(stats, "\n".join(f"{i[0]} - {i[1][0].quantity}" for i in values))
     await ctx.reply(embeds=[e])
 
 @Event(month=12)
