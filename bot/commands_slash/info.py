@@ -103,7 +103,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
         if _stats:
             embed.addField("Statistics", "\n".join(format_values(_stats)), False)
 
-    await embed
+    return embed
 
 from typing import Callable, List, Tuple
 def format_values(iterable: List[Tuple[str, str]], check: Callable = None):
