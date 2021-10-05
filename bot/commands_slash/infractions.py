@@ -194,8 +194,8 @@ async def list_(ctx: Context, user: User=None):
         if remaining_to_auto_ban > 0:
             currently_active += ["🟡"] * remaining_to_auto_ban
         e.setFooter(tr("commands.infractions.counter", language, currently_active="-".join(currently_active), active=active, total=len(user_infractions)))
-        return await ctx.reply(embeds=[e])
-    return await ctx.reply(tr("commands.infractions.no_infractions", language))
+        return e
+    return tr("commands.infractions.no_infractions", language)
 
 
 @register(group=Groups.MODERATOR, main=infraction)
