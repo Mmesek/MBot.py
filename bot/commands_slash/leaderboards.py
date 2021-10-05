@@ -273,6 +273,8 @@ def format_leaderboard2(ranks: List[items.Inventory], user_id=None):
 
 def prepare_leaderboard(s, name: str, limit: int=10) -> List[items.Inventory]:
     item = items.Item.by_name(s, name)
+    if not item:
+        return []
     return s.query(items.Inventory).filter(items.Inventory.item_id == item.id).order_by(items.Inventory.quantity.desc()).limit(limit).all() or []
 
 def get_player_stats(s, inventories: List[items.Inventory], user_id: Snowflake) -> str:
