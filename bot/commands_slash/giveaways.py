@@ -34,7 +34,7 @@ async def create(ctx: Context, prize: str, duration: str = '1h', description: st
     hidden:
         Whether reactions should be removed
     '''
-    finish = datetime.now() + total_seconds(duration)
+    finish = datetime.now(tz=timezone.utc) + total_seconds(duration)
     msg = await ctx.bot.create_message(channel, embeds=[createGiveawayEmbed(language, finish, prize, winner_count, custom_description=description)])
     for reaction in reactions.split(','):
         await msg.react(replaceMultiple(reaction.strip(), ['<:',':>', '>'],''))
@@ -127,9 +127,11 @@ async def giveaway(ctx: Context, t: db.Task):
     s = ctx.db.sql.session()
     task = s.query(db.Task).filter(db.Task.server_id == t.server_id).filter(db.Task.type == t.type).filter(db.Task.timestamp == t.timestamp).filter(db.Task.finished == False).first()
     language = ctx.cache.language
-    if t.type is db.types.Task.Hidden_Giveaway:
-        from MFramework.utils.utils import get_all_reactions
-        users = await get_all_reactions(ctx, task.channel_id, task.message_id, '🎉')
+    if t.type is not db.types.Task.Hidden_Giveaway:
+        #from MFramework.utils.utils import get_all_reactions
+        from MFramework import Message
+        users = Message(ctx.bot, channel_id=task.channel_id, id=task.message_id).get_reactions('🎉')
+        #users = await get_all_reactions(ctx, task.channel_id, task.message_id, '🎉')
     else:
         users = [] # FIXME?
         #users = s.query(db.GiveawayParticipants).filter(db.GiveawayParticipants.server_id == t.server_id, db.GiveawayParticipants.message_id == task.message_id, db.GiveawayParticipants.Reaction == 'Rune_Fehu:817360053651767335').all()

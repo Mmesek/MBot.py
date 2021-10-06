@@ -24,7 +24,7 @@ def _appendTasksToCache(self: Bot, task: db.Task):
     cache = self.cache[task.server_id].tasks
     if task.type not in cache:
         cache[task.type] = {}
-    cache[task.type][int(task.message_id)] = asyncio.create_task(tasks.get(task.type)(self, task))
+    cache[task.type][int(task.message_id)] = asyncio.create_task(tasks.get(task.type.name.lower())(self, task))
 
 
 
