@@ -1,7 +1,12 @@
+from typing import List, Callable
+
 from MFramework import register, Groups, Event, User, UserID, Embed, Snowflake
-from mlib.localization import tr, secondsToText
 from MFramework.bot import Context
-from ..database import log, types
+from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
+
+from mlib.localization import tr, secondsToText
+
+from ..database import log, types, items
 
 @register()
 async def leaderboard(ctx: Context, *args, language, **kwargs):
@@ -9,7 +14,7 @@ async def leaderboard(ctx: Context, *args, language, **kwargs):
     pass
 
 @register(group=Groups.GLOBAL, main=leaderboard)
-async def exp(ctx: Context, user: User=None):
+async def exp(ctx: Context, user: User=None) -> Embed:
     '''Shows exp
     Params
     ------
@@ -27,12 +32,11 @@ async def exp(ctx: Context, user: User=None):
             t += tr("commands.exp.voice", language, voice=secondsToText(_t.value, language.upper()))
     if t == '':
         t = tr("commands.exp.none", language)
-    embed = Embed(
+    return Embed(
         title=f"{user.username}",
         color=ctx.cache.color,
         description=t
     )
-    await ctx.reply(embeds=[embed])
 
 from enum import Enum
 class TopLeaderboards(Enum):
@@ -41,7 +45,7 @@ class TopLeaderboards(Enum):
     Games = 'games'
 
 @register(group=Groups.GLOBAL, main=leaderboard)
-async def top(ctx: Context, limit: int=10, type: TopLeaderboards=None, count: bool=False, activity: bool=False, interval: str='1d', *args, user_id: UserID, language, **kwargs):
+async def top(ctx: Context, limit: int=10, type: TopLeaderboards=None, count: bool=False, activity: bool=False, interval: str='1d') -> Embed:
     '''Shows leaderboard
     Params
     ------
@@ -61,53 +65,80 @@ async def top(ctx: Context, limit: int=10, type: TopLeaderboards=None, count: bo
         Recent activity period to show. Digits followed by either s, m, h, d or w. For example: 1d 12h 30m 45s
     '''
     await ctx.deferred(False)
-    embed = Embed().setColor(ctx.cache.color)
-    chat = type is TopLeaderboards.Chat or type is None
-    voice = type is TopLeaderboards.Voice
-    games = type is TopLeaderboards.Games
+    
+    stats = []
+    voice = False
+
+    if type is TopLeaderboards.Chat or type is None:
+        stats.append(types.Statistic.Chat)
+    if type is TopLeaderboards.Voice or type is None:
+        if type:
+            voice = True
+        stats.append(types.Statistic.Voice)
+    if type is TopLeaderboards.Games:
+        stats.append(types.Statistic.Game)        
+
     if activity:
-        server_messages = ctx.db.influx.get_server(limit, interval, ctx.guild_id, "VoiceSession" if voice else "GamePresence" if games else "MessageActivity", "count" if not voice and not games else "sum")
-        if not chat and not voice and not games:
-            server_messages += ctx.db.influx.get_server(limit, interval, ctx.guild_id, "VoiceSession", "sum", additional="|> map(fn: (r) => ({r with _value: r._value / 60.0 / 10.0}) )")
-        results={}
-        for table in server_messages:
-            for record in table.records:
-                user = record.values.get("user")
-                if user not in results:
-                    results[user] = 0
-                results[user] += record.get_value() or 0
-        r = sorted(results, key=lambda i: results[i], reverse=True)
-        names = {}
-        def get_value(key):
-            nonlocal voice, games, language, results, count
-            if (voice or games) and not count:
-                return secondsToText(int(results[key]), language.upper())
-            elif voice and count:
-                return int(results[key] / 60 / 10)
-            else:
-                return int(results[key])
-        from MFramework.utils.utils import get_usernames
-        for result in r[:limit]:
-            names[result] = await get_usernames(ctx.bot, ctx.guild_id, result)
-        t = format_leaderboard(r[:limit], user_id, get_name=lambda x: f'`{names.get(x, "Error")}`', get_value=get_value, get_id=lambda x: x)
-        embed.setDescription('\n'.join(t) or "No activity detected. It might not be tracked in this server")
-        return await ctx.reply(embeds=[embed])
+        return activity_leaderboard(ctx, limit, interval, voice, count, stats)
+    
     session = ctx.db.sql.session()
-    r = log.Statistic.filter(session, server_id=ctx.guild_id)#.limit(limit).all() #TODO
-    if chat:
-        r = r.filter_by(name=types.Statistic.Chat)
-    elif voice:
-        r = r.filter_by(name=types.Statistic.Voice)
-    else:
-        r = r.filter_by(name=types.Statistic.Game)
-    total = r.order_by(log.Statistic.value.desc()).limit(limit).all()
-    from MFramework.utils.utils import get_usernames
-    names = {}
-    for result in total:
-        names[result.user_id] = await get_usernames(ctx.bot, ctx.guild_id, result.user_id)
-    t = format_leaderboard(total, ctx.user_id, lambda x: f'`{names.get(x.user_id, "Error")}`', lambda x: secondsToText(x.value, language) if voice and not count else x.value, lambda x: x.user_id)
-    embed.setDescription('\n'.join(t) or 'None').setColor(ctx.cache.color)
-    await ctx.reply(embeds=[embed])
+    from sqlalchemy import func
+    q = session.query(func.sum(log.Statistic.value), log.Statistic.user_id)
+    r = {}
+    for t in stats:
+        _ = (q.filter(log.Statistic.name.in_([t]))
+            .filter(log.Statistic.server_id == ctx.guild_id)
+            .group_by(log.Statistic.user_id)
+            .order_by(func.sum(log.Statistic.value).desc())
+            .limit(limit)
+            .all()
+        )
+        if (len(stats) > 1 and t is types.Statistic.Voice) and not count:
+            _ = [((i[0] // 60 // 10), i[1]) for i in _]
+        for value, user in _:
+            if user in r:
+                r[user] += value
+            else:
+                r[user] = value
+
+    value_processing = lambda x: secondsToText(x, ctx.language) if voice and not count else x
+    r = [Leaderboard_Entry(ctx, k, v, value_processing) for k, v in r.items()]
+    r.sort(key=lambda x: x.value, reverse=True)
+    r = r[:limit]
+    leaderboard = Leaderboard(ctx, ctx.user_id, r, limit)
+    return leaderboard.as_embed()
+
+def activity_leaderboard(ctx: Context, limit: int = 10, interval: str='1d', voice: bool = False, count: bool = False, stats = []) -> Embed:
+    server_messages = ctx.db.influx.get_server(limit, interval, ctx.guild_id, 
+        "VoiceSession" if voice 
+        else "GamePresence" if types.Statistic.Game in stats
+        else "MessageActivity", 
+        "count" if not voice and types.Statistic.Game not in stats
+        else "sum"
+    ) # This is not like non-activity couterpart as it doesn't mix voice and chat together
+
+    if not stats:
+        server_messages += ctx.db.influx.get_server(limit, interval, ctx.guild_id, "VoiceSession", "sum", additional="|> map(fn: (r) => ({r with _value: r._value / 60.0 / 10.0}) )")
+
+    results={}
+    for table in server_messages:
+        for record in table.records:
+            user = record.values.get("user")
+            if user not in results:
+                results[user] = 0
+            results[user] += record.get_value() or 0
+
+    value_processing = lambda x: (
+        secondsToText(x, ctx.language) 
+        if (voice or types.Statistic.Game in stats) and not count 
+        else (x // 60 // 10) if voice and count 
+        else x
+    )
+    results = set(Leaderboard_Entry(ctx, k, v, value_processing) for k, v in results.items())
+
+    leaderboard = Leaderboard(ctx, ctx.user_id, results, limit, error="No activity detected. It might not be tracked in this server")
+
+    return leaderboard.as_embed()
 
 @register(group=Groups.GLOBAL, main=leaderboard)
 async def games(ctx: Context, game: str = None, user: UserID = None, reverse=True, *args, language, **kwargs):
@@ -159,14 +190,17 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
     await ctx.reply(embeds=[embed])
 
 class Leaderboards(Enum):
-    Easter = 4
-    Pumpkin_Hunt = 9
-    Halloween = 10
+    Easter_Egg = "Easter Egg"
+    Pumpkin_Hunt = "Pumpkin"
+    #Cookies = "Cookie"
+    #Gifting = "Present"
+    #Advent = "Advent"
+    #Halloween = ""
     #Aoc = 11
     #Christmas = 12
 
 @register(group=Groups.GLOBAL, main=leaderboard)
-async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: int=10, *args, language, **kwargs):
+async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: int=10, year: int=None) -> Embed:
     '''
     Shows Event leaderboards
     Params
@@ -177,10 +211,12 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
         Shows stats of another user
     limit:
         How many scores to show
+    year:
+        Leaderboard for which year to show (Default is current year) 
     '''
-    s = ctx.db.sql.Session()
+    s = ctx.db.sql.session()
     #Eggs found
-
+    
     #Bites:
     # Vampires
     # Werewolves
@@ -189,7 +225,7 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
     # Hunters
     # Huntsmen
     # Enchanters
-
+    
     #Advent
     #Cookies:
     # Recv
@@ -199,37 +235,31 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
     # sent
     #Presents Found
 
-    events = {
-        4:["Easter Egg"],
-        9:["Pumpkin"],
-        10:["Vampires", "Werewolves", "Zombies", "Hunters", "Huntsmen", "Enchanters"],
-        11:["Top"],
-        12:["Advent", "CookiesRecv", "CookiesSent", "GiftsRecv","GiftsSent", "Presents Found"]
-    }
-    leaderboards = []
-    values = []
-    for _leaderboard in events[event.value]:
-        inventories = prepare_leaderboard(s, _leaderboard, limit)
-        leaderboards.append((_leaderboard, inventories))
+    #events = {
+    #    4:["Easter Egg"],
+    #    9:["Pumpkin"],
+    #    10:["Vampires", "Werewolves", "Zombies", "Hunters", "Huntsmen", "Enchanters"],
+    #    11:["Top"],
+    #    12:["Advent", "CookiesRecv", "CookiesSent", "GiftsRecv","GiftsSent", "Presents Found"]
+    #}    await ctx.deferred(False)
 
-        user = get_player_stats(s, inventories, ctx.user.id)
-        values.append((_leaderboard, user))
 
-    e = Embed().setColor(ctx.cache.color)
-    if len(leaderboards) == 1:
-        e.setDescription("\n".join(format_leaderboard(inventories, ctx.user.id)))
-    else:
-        for leaderboard in leaderboards:
-            e.addField(leaderboard[0], "\n".join(format_leaderboard(leaderboard[1], ctx.user.id)))
+    item = items.Item.by_name(s, event.value)
+    inventories = s.query(items.Inventory).filter(items.Inventory.item_id == item.id).order_by(items.Inventory.quantity.desc()).limit(limit).all()
+
+    if not any(x.user_id == user_id for x in inventories):
+        i = s.query(items.Inventory).filter(items.Inventory.item_id == item.id, items.Inventory.user_id == user_id).first()
+        if i:
+            inventories.append(i)
+
+    r = set(Leaderboard_Entry(ctx, x.user_id, x.quantity) for x in inventories)
     
-    stats = "Your Stats" if not user_id or ctx.user.id == user_id else "Stats"
-    if values:
-        e.addField(stats, "\n".join(f"{i[0]} - {i[1][0].quantity}" for i in values))
-    await ctx.reply(embeds=[e])
+    leaderboard = Leaderboard(ctx, user_id, r, limit)
+    return [leaderboard.as_embed(f"{event.value}'s Leaderboard")]
 
 @Event(month=12)
 @register(group=Groups.GLOBAL, interaction=False)#main=leaderboard)
-async def aoc(ctx: Context, year:int=None, *args, language, **kwargs):
+async def aoc(ctx: Context, year:int=None) -> Embed:
     '''Shows Advent of Code leaderboard'''
     import requests
     from datetime import datetime
@@ -250,40 +280,24 @@ async def aoc(ctx: Context, year:int=None, *args, language, **kwargs):
         if member["stars"] == 0:
             continue
         t.append(l)
-    e = (Embed()
-        .setFooter("", "1010436-ed148a8d")
+    return (Embed()
+        .setFooter("1010436-ed148a8d")
         .addField("Uczestników", str(len(members)))
         .setUrl("https://adventofcode.com")
         .setTitle("Advent of Code")
         .setDescription("\n".join(t))
         .setColor(ctx.cache.color)
     )
-    await ctx.reply(embeds=[e])
-
-from typing import List
-from ..database import items
-def format_leaderboard2(ranks: List[items.Inventory], user_id=None):
-    rank = []
-    for x, rank in enumerate(ranks):
-        rank_str = f"{x}. <@{rank.user_id}> - {rank.quantity}"
-        if rank.user_id == user_id:
-            rank_str = f"__{rank_str}__"
-        rank.append(rank_str)
-    return rank
 
 def prepare_leaderboard(s, name: str, limit: int=10) -> List[items.Inventory]:
     item = items.Item.by_name(s, name)
-    if not item:
-        return []
-    return s.query(items.Inventory).filter(items.Inventory.item_id == item.id).order_by(items.Inventory.quantity.desc()).limit(limit).all() or []
+    return s.query(items.Inventory).filter(items.Inventory.item_id == item.id).order_by(items.Inventory.quantity.desc()).limit(limit).all()
 
 def get_player_stats(s, inventories: List[items.Inventory], user_id: Snowflake) -> str:
     inventory = [i for i in filter(lambda x: x.user_id == user_id, inventories)]
     if inventory == []:
         inventory = s.query(items.Inventory).filter(items.Inventory.item_id == inventories[0].item_id, items.Inventory.user_id == user_id).first()
     return inventory
-
-from typing import Callable
 
 def format_leaderboard(
                     iterable: List[str], 
