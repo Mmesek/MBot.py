@@ -3,7 +3,7 @@ from ..database import types
 async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, 
                     _type: types.Item=types.Item.Event, 
                     delete_own: bool=True, first_only: bool=False, 
-                    logger: str=None, statistic: types.Statistic=None):
+                    logger: str=None, statistic: types.Statistic=None, announce_msg: bool = False):
     import random, asyncio
     log.debug("Spawning reaction with %s", name)
     await asyncio.sleep(random.SystemRandom().randint(0, 10))
@@ -39,11 +39,14 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
     from ..database import items
     item = items.Item.fetch_or_add(s, name=name, type=_type)
     i = items.Inventory(item)
-    for user in users:
-        u = models.User.fetch_or_add(s, id=getattr(user, 'id', user.user_id))
+    for _user in users:
+        u = models.User.fetch_or_add(s, id=getattr(user, 'id', _user.user_id))
         u.claim_items(data.guild_id, [i])
     await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
+    if announce_msg:
+        # TODO If it's not first-only, there should be some additional logic to get list
+        await data.reply(f"<@{user.user_id}> got {reaction}!", allowed_mentions=Allowed_Mentions())
 
 from MFramework.commands.decorators import Event, Chance
 @onDispatch(event="message_create")
@@ -68,7 +71,7 @@ async def snowball_hunt(ctx: Bot, data: Message):
 @Event(month=10)
 @Chance(1)
 async def halloween_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "🎃", "Pumpkin", delete_own=False, first_only=True, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins)
+    await _handle_reaction(ctx, data, "🎃", "Pumpkin", delete_own=False, first_only=True, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins, announce_msg=True)
 
 async def responder(ctx: Bot, msg: Message, emoji: str):
     emoji = ctx.cache[msg.guild_id].custom_emojis.get(emoji.lower().strip(':'))
