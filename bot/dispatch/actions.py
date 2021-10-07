@@ -6,6 +6,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
                     logger: str=None, statistic: types.Statistic=None, announce_msg: bool = False):
     import random, asyncio
     log.debug("Spawning reaction with %s", name)
+    await data.typing()
     await asyncio.sleep(random.SystemRandom().randint(0, 10))
     await data.react(reaction)
     t = random.SystemRandom().randint(15, 60)
