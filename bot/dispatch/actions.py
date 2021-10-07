@@ -41,7 +41,8 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
     i = items.Inventory(item)
     for _user in users:
         u = models.User.fetch_or_add(s, id=getattr(user, 'id', _user.user_id))
-        u.claim_items(data.guild_id, [i])
+        t = u.claim_items(data.guild_id, [i])
+        s.add(t)
     await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
     if announce_msg:
