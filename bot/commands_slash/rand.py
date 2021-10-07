@@ -182,6 +182,7 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     x = 0
     while secret:
     #for x, step in enumerate(steps):
+        x += 1
         word = [letter if letter in uncovered else "-" for letter in hidden]
         steps_so_far = {}
         for _step, char in process.items():
@@ -201,7 +202,6 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
                                             x.channel_id == ctx.channel_id and 
                                             (x.author.id == ctx.user_id if not multiplayer else True), 
                                     timeout = 360)
-        x += 1
         answer = last_answer.content.lower().strip()
         if answer == hidden.lower():
             # Guessed word
@@ -221,4 +221,4 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
         if not secret:
             # All letters are known
             break
-    await msg.edit(f"The word was `{hidden}`! Took `{x}` rounds to guess", embeds=[e])
+    await msg.edit(f"The word was `{hidden}`! Took `{x-1}` rounds to guess", embeds=[e])
