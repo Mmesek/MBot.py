@@ -8,6 +8,8 @@ MBot.py
 import logging
 
 log = logging.getLogger("Bot")
+from mlib import logger
+log.setLevel(logger.log_level)
 
 from . import database # noqa: F401
 
