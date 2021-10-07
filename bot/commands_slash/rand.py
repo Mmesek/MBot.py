@@ -162,7 +162,8 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     secret = set(hidden.lower())
     steps = range(lives or len(secret))
     missed = []
-    wrong = 19-steps.stop if steps.stop < 19 else 19
+    wrong = 0
+    start_at = 19-steps.stop if steps.stop < 19 else 19
     drawing = '''```
 {s7}{s8}{s9}{s10}{s11}
 {s6} {s12} {s13}
@@ -178,24 +179,29 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
         's3':'|', 's18':'/', 's19':'\\',
         's2':'|', 's1':'_'
     }
-    for x, step in enumerate(steps):
+    x = 0
+    while secret:
+    #for x, step in enumerate(steps):
         word = [letter if letter in uncovered else "-" for letter in hidden]
         steps_so_far = {}
         for _step, char in process.items():
-            steps_so_far[_step] = char if wrong >= int(_step[1:]) else ' '
+            steps_so_far[_step] = char if (wrong + start_at) >= int(_step[1:]) else ' '
         e = (
             Embed(description=drawing.format(**steps_so_far))
             .setTitle(f'Word: `{"".join(word)}`')
-            .setFooter(text=f"Remaining lives: {steps.stop - x}")
+            .setFooter(text=f"Remaining lives: {steps.stop - wrong}")
         )
         if missed:
             e.addField("Missed", " ".join(missed))
+        if wrong == steps.stop:
+            break
         await msg.edit(embeds=[e])
         last_answer = await ctx.bot.wait_for("message_create",
                                     check = lambda x: 
                                             x.channel_id == ctx.channel_id and 
                                             (x.author.id == ctx.user_id if not multiplayer else True), 
                                     timeout = 360)
+        x += 1
         answer = last_answer.content.lower().strip()
         if answer == hidden.lower():
             # Guessed word
@@ -215,4 +221,4 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
         if not secret:
             # All letters are known
             break
-    await msg.edit(f"The word was `{hidden}`! Took `{x+1}` rounds to guess", embeds=[e])
+    await msg.edit(f"The word was `{hidden}`! Took `{x}` rounds to guess", embeds=[e])
