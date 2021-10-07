@@ -9,7 +9,7 @@ from MFramework.database.alchemy.mixins import Snowflake, ServerID
 from .mixins import UserID
 
 from . import types
-from .items import Item, ItemID
+from .items import ItemID, Inventory
 
 class Transaction_Inventory(ItemID, UserID, Base):
     '''Many to One relationship mapping of users with items and transactions
@@ -48,7 +48,7 @@ class Transaction(Timestamp, ServerID, ID, Base):
     '''
     server_id: Optional[Snowflake] = Column(ForeignKey("Server.id", ondelete='SET NULL', onupdate='Cascade'), nullable=True)
     items: List[Transaction_Inventory] = relationship(Transaction_Inventory)
-    def add(self, to_user_id: Snowflake, item: Item):
+    def add(self, to_user_id: Snowflake, item: Inventory):
         '''Add incoming `Transaction_Inventory` to this transaction
 
         Params
@@ -57,8 +57,8 @@ class Transaction(Timestamp, ServerID, ID, Base):
             ID of user that receives this item
         item : `Item`
             `Item` object that is being received'''
-        self.items.append(Transaction_Inventory(user_id=to_user_id, item_id=item.item_id, quantity=item.quantity, incoming=True))
-    def remove(self, from_user_id: Snowflake, item: Item):
+        self.items.append(Transaction_Inventory(user_id=to_user_id, item_id=item.item.id, quantity=item.quantity, incoming=True))
+    def remove(self, from_user_id: Snowflake, item: Inventory):
         '''Adds outgoing `Transaction_Inventory` to this transaction
 
         Params
@@ -67,7 +67,7 @@ class Transaction(Timestamp, ServerID, ID, Base):
             ID of user that sends this item
         item : `Item`
             `Item` object that is being sent'''
-        self.items.append(Transaction_Inventory(user_id=from_user_id, item_id=item.item_id, quantity=item.quantity, incoming=False))
+        self.items.append(Transaction_Inventory(user_id=from_user_id, item_id=item.item.id, quantity=item.quantity, incoming=False))
 
 class Activity(Timestamp, UserID, ServerID, Base):
     '''Append-only table storing each activity in separate row
