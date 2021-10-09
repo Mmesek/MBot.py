@@ -245,7 +245,19 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
 
 
     item = items.Item.by_name(s, event.value)
-    inventories = s.query(items.Inventory).filter(items.Inventory.item_id == item.id).order_by(items.Inventory.quantity.desc()).limit(limit).all()
+    # //NOTE: Kinda experimental, when guild is below 1000 members we'll pass to IN current members
+    # otherwise we'll get x10 more than limit and attempt to filter them to ones within current guild
+    # Whether doing any of this makes any sense is heavly debatable but should do the job
+    inventories = s.query(items.Inventory).filter(items.Inventory.item_id == item.id)
+    og_limit = limit
+    if ctx.cache.members.size(ctx.guild_id) < 1000:
+        inventories = inventories.filter(items.Inventory.user_id.in_(list(ctx.cache.members.keys())))
+    else:
+        limit = limit * 10
+    inventories = inventories.order_by(items.Inventory.quantity.desc()).limit(limit).all()
+    if og_limit < limit:
+        inventories = list(filter(lambda x: x.user_id in ctx.cache.members, inventories))[:og_limit]
+    # NOTE//
 
     if not any(x.user_id == user_id for x in inventories):
         i = s.query(items.Inventory).filter(items.Inventory.item_id == item.id, items.Inventory.user_id == user_id).first()
