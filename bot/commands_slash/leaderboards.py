@@ -250,7 +250,7 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
     # Whether doing any of this makes any sense is heavly debatable but should do the job
     inventories = s.query(items.Inventory).filter(items.Inventory.item_id == item.id)
     og_limit = limit
-    if ctx.cache.members.size(ctx.guild_id) < 1000:
+    if len(ctx.cache.members.keys()) < 1000:
         inventories = inventories.filter(items.Inventory.user_id.in_(list(ctx.cache.members.keys())))
     else:
         limit = limit * 10
@@ -266,7 +266,7 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
 
     r = set(Leaderboard_Entry(ctx, x.user_id, x.quantity) for x in inventories)
     
-    leaderboard = Leaderboard(ctx, user_id, r, limit)
+    leaderboard = Leaderboard(ctx, user_id, r, og_limit)
     return [leaderboard.as_embed(f"{event.value}'s Leaderboard")]
 
 @Event(month=12)
