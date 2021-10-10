@@ -32,11 +32,11 @@ async def exp(ctx: Context, user: User=None) -> Embed:
             t += tr("commands.exp.voice", language, voice=secondsToText(_t.value, language.upper()))
     if t == '':
         t = tr("commands.exp.none", language)
-    return Embed(
+    return [Embed(
         title=f"{user.username}",
         color=ctx.cache.color,
-        description=t
-    )
+        description=str(t)
+    )]
 
 from enum import Enum
 class TopLeaderboards(Enum):
