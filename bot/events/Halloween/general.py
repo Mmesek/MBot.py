@@ -272,6 +272,8 @@ def inner(f, races: List[Race], main: object, should_register: bool = True):
         user = Halloween.fetch_or_add(s, server_id=ctx.guild_id, user_id=ctx.user_id)
         if user.race in races:
             return EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)(f)(ctx=ctx, session=s, this_user=user, **kwargs)
+        elif user.race is Race.Human:
+            raise Error("You want to do what?")
         raise Cant(f.__name__)
     if should_register:
         register(group=Groups.GLOBAL, main=main)(wrapped)
