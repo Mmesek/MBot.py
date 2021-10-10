@@ -155,7 +155,7 @@ class Halloween(ServerID, UserID, Base):
                 raise HalloweenException("error_protected")
         
         remaining = Halloween.get_total(s, self.server_id, t.race).get(t.race, 1)
-        if self.race in IMMUNE_TABLE and (self.race == t.race or IMMUNE_TABLE.get(self.race, None) == t.race) or remaining == 1:
+        if (self.race in IMMUNE_TABLE and (t.race in IMMUNE_TABLE or IMMUNE_TABLE.get(self.race) == t.race or self.race == t.race)) or remaining == 1:
             raise Immune("target")
         elif self.race in HUNTERS and CURE_TABLE.get(self.race, None) != t.race:
             raise HalloweenException("error_cure", currentClass=CURE_TABLE.get(self.race))
