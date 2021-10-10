@@ -151,10 +151,11 @@ class Halloween(ServerID, UserID, Base):
         else:
             t = Halloween.fetch_or_add(s, server_id=self.server_id, user_id = target_user)
         
-            if t and (t.protected > datetime.now(tz=timezone.utc)):
+            if t.protected and (t.protected > datetime.now(tz=timezone.utc)):
                 raise HalloweenException("error_protected")
-
-        if self.race in IMMUNE_TABLE and (self.race == t.race or IMMUNE_TABLE.get(self.race, None) == t.race):
+        
+        remaining = Halloween.get_total(s, self.server_id, t.race).get(t.race, 1)
+        if self.race in IMMUNE_TABLE and (self.race == t.race or IMMUNE_TABLE.get(self.race, None) == t.race) or remaining == 1:
             raise Immune("target")
         elif self.race in HUNTERS and CURE_TABLE.get(self.race, None) != t.race:
             raise HalloweenException("error_cure", currentClass=CURE_TABLE.get(self.race))
@@ -184,11 +185,11 @@ async def update_user_roles(ctx: Context, user_id: Snowflake, previous_race: Rac
         if role:
             await ctx.bot.add_guild_member_role(ctx.guild_id, user_id, role, "Halloween Minigame")
 
-async def turn(ctx: Context, s: sa.orm.Session, this_user: Halloween, target_user_id: Snowflake, to_race: Race = None) -> str:
+async def turn(ctx: Context, s: sa.orm.Session, this_user: Halloween, target_user_id: Snowflake, to_race: Race = None, action: str = None) -> str:
     '''Turns target user into race of invoking user or provided race'''
     p, r = this_user.turn_another(s, target_user_id, to_race)
     await update_user_roles(ctx, target_user_id, p, r, s=s)
-    return _t("success_{type}", ctx.language)
+    return _t(f"success_{action}", ctx.language, author=ctx.user_id, target=target_user_id, currentClass=r.name, previousClass=p.name)
 
 def get_total(total: List[Statistic]) -> Tuple[int, int]:
     '''Returns total bites and population'''
@@ -295,7 +296,7 @@ async def enlist(ctx: Context, guild: Guilds, *, session: sa.orm.Session, this_u
     ------
     guild:
         Hunter's guild you want to join'''
-    return await turn(ctx, session, this_user, ctx.user_id, guild.value)
+    return await turn(ctx, session, this_user, ctx.user_id, guild.value, action="enlist")
 
 @humans
 async def drink(ctx: Context, type: DRINKS, *, session: sa.orm.Session, this_user: Halloween) -> str:
@@ -304,7 +305,10 @@ async def drink(ctx: Context, type: DRINKS, *, session: sa.orm.Session, this_use
     ------
     type:
         Drink you want to drink'''
-    return await turn(ctx, session, this_user, ctx.user_id, type.value)
+    if type is DRINKS.Nightmare:
+        from random import SystemRandom
+        type = SystemRandom().choice([Race.Vampire, Race.Werewolf, Race.Zombie])
+    return await turn(ctx, session, this_user, ctx.user_id, type.value, action="drink")
 
 ############
 # MONSTERS #
@@ -326,7 +330,7 @@ async def bite(ctx: Context, target: User, *, session: sa.orm.Session, this_user
     ------
     target:
         Target you want to bite'''
-    return await turn(ctx, session, this_user, target.id)
+    return await turn(ctx, session, this_user, target.id, action="bite")
 
 ###########
 # HUNTERS #
@@ -348,7 +352,7 @@ async def cure(ctx: Context, target: User, *, session: sa.orm.Session, this_user
     ------
     target:
         Target you want to cure'''
-    return await turn(ctx, session, this_user, target.id)
+    return await turn(ctx, session, this_user, target.id, action="cure")
 
 @hunters
 @cooldown(hours=1, logic=HalloweenCooldown)
@@ -386,7 +390,7 @@ async def betray(ctx: Context, target: User, *, session: sa.orm.Session, this_us
     ------
     target:
         Target you want to convince'''
-    return await turn(ctx, session, this_user, target.id, this_user.race)
+    return await turn(ctx, session, this_user, target.id, this_user.race, action="betray")
 
 @register(group=Groups.GLOBAL, name="Defend or Betray")
 @hunters(should_register=False)

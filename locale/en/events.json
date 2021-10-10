@@ -123,7 +123,7 @@
         "available_enlist":"Available classes:\n- Vampire Hunter\n- Huntsman\n- Zombie Slayer",
         "available_drink":"Available drinks:\n- Bloody Red Wine (Become Vampire)\n- Moonshine} (Become Werewolf)\n- Vodka \"Braaaainzz?\" (Become Zombie)\n- Nightmare (Can drink despite being previously bitten/enlisted)",
         "outsideExpertise":"This action is outside your expertise",
-        "target_immune":"Your target is immune to that",
+        "immune_target":"Your target is immune to that",
         "target_defended":"Twój cel jest chroniony",
         "remaining_cooldown":"Remaining Cooldown: %{cooldown}",
         "ready":"Ready",
