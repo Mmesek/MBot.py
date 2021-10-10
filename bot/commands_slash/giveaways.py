@@ -1,4 +1,4 @@
-from MFramework import register, Groups, ChannelID, Snowflake, Embed
+from MFramework import register, Groups, ChannelID, Snowflake, Embed, User
 
 from datetime import datetime, timezone
 from MFramework.bot import Context, Bot
@@ -15,7 +15,7 @@ async def giveaway(ctx: Context, *, language):
     pass
 
 @register(group=Groups.MODERATOR, main=giveaway)
-async def create(ctx: Context, prize: str, duration: str = '1h', description: str=None, winner_count: int=1, reactions: str = '🎉', channel: ChannelID=None, hidden:bool=False, *, language):
+async def create(ctx: Context, prize: str, duration: str = '1h', description: str=None, winner_count: int=1, reactions: str = '🎉', channel: ChannelID=None, hidden:bool=False, author: User=None, *, language):
     '''Create new giveaway
     Params
     ------
@@ -33,13 +33,15 @@ async def create(ctx: Context, prize: str, duration: str = '1h', description: st
         Channel in which giveaway should be created
     hidden:
         Whether reactions should be removed
+    author:
+        User in whose name this giveaway is being created
     '''
     finish = datetime.now(tz=timezone.utc) + total_seconds(duration)
     msg = await ctx.bot.create_message(channel, embeds=[createGiveawayEmbed(language, finish, prize, winner_count, custom_description=description)])
     for reaction in reactions.split(','):
         await msg.react(replaceMultiple(reaction.strip(), ['<:',':>', '>'],''))
     ctx.cache.giveaway_messages.append(msg.id)
-    add_task(ctx.bot, ctx.guild_id, db.types.Task.Giveaway if not hidden else db.types.Task.Hidden_Giveaway, channel, msg.id, ctx.member.user.id, datetime.now(tz=timezone.utc), finish, prize, winner_count)
+    add_task(ctx.bot, ctx.guild_id, db.types.Task.Giveaway if not hidden else db.types.Task.Hidden_Giveaway, channel, msg.id, author.id or ctx.member.user.id, datetime.now(tz=timezone.utc), finish, prize, winner_count)
     await ctx.reply("Created", private=True)
 
 @register(group=Groups.MODERATOR, main=giveaway)
