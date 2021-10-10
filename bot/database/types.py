@@ -163,10 +163,10 @@ class ItemFlags(enum.IntFlag):
     Giftable = 1 << 8
 
 class HalloweenRaces(Enum):
-    Human = 0, Item.Race
-    Vampire = 1, Item.Race
-    Werewolf = 2, Item.Race
-    Zombie = 3, Item.Race
-    Hunter = 4, Item.Race
-    Huntsmen = 5, Item.Race
-    Enchanter = 6, Item.Race
+    Human: Item.Race = "Human"#, Item.Race
+    Vampire: Item.Race = "Vampire"#, Item.Race
+    Werewolf: Item.Race = "Werewolf"#, Item.Race
+    Zombie: Item.Race = "Zombie"#, Item.Race
+    Hunter: Item.Race = "Hunter"#, Item.Race
+    Huntsmen: Item.Race = "Huntsmen"#, Item.Race
+    Enchanter: Item.Race = "Enchanter"#, Item.Race
