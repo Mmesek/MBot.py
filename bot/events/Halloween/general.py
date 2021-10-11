@@ -24,9 +24,11 @@ class HalloweenCooldown(CacheCooldown):
     remaining_factions: int = 0
     def __init__(self, ctx: Context, cooldown: timedelta, cooldown_type: str, func_args: Dict[str, Any], target_user: Optional[Snowflake] = None) -> None:
         super().__init__(ctx=ctx, cooldown=cooldown, cooldown_type=cooldown_type)
-        session = self.ctx.db.sql.session()
+        s = func_args.get("session", None)
+        this_user = func_args.get("this_user", None)
+        self.session = s or self.ctx.db.sql.session()
         #session.query(db.Inventory).filter(db.Inventory.user_id == ctx.user_id, db.Inventory.item_id in list(Race)).first()
-        self.race = session.query(Halloween.race).filter(Halloween.server_id == ctx.guild_id, Halloween.user_id == ctx.user_id).first() or Race.Human
+        self.race = this_user or self.session.query(Halloween.race).filter(Halloween.server_id == ctx.guild_id, Halloween.user_id == ctx.user_id).first() or Race.Human
         self.get_race_counts(func_args.get("user", ctx.user).id)
     
     @property
@@ -53,15 +55,13 @@ class HalloweenCooldown(CacheCooldown):
 
     def get_race_counts(self, target_user_id: Snowflake) -> Tuple[int, int, int]:
         '''Returns count for current user faction, user's target faction and collectively remaining factions'''
-        session = self.ctx.db.sql.session()
-
-        user = Halloween.fetch_or_add(session, server_id=self.ctx.guild_id, user_id=self.ctx.user_id)
+        user = Halloween.fetch_or_add(self.session, server_id=self.ctx.guild_id, user_id=self.ctx.user_id)
         if user.race not in IMMUNE_TABLE.keys():
             return
-        total = Halloween.get_total(session, self.ctx.guild_id, user.race)
+        total = Halloween.get_total(self.session, self.ctx.guild_id, user.race)
         self.current_faction = total.get(user.race, 1)
 
-        target_user = Halloween.fetch_or_add(session, server_id=self.ctx.guild_id, user_id=target_user_id)
+        target_user = Halloween.fetch_or_add(self.session, server_id=self.ctx.guild_id, user_id=target_user_id)
         #Halloween.get_total(session, self.ctx.guild_id, target_user.race)
         self.target_faction = total.get(target_user.race, 1)
 
@@ -73,7 +73,7 @@ from MFramework.commands._utils import Error
 class HalloweenException(Error):
     _key = ""
     def __init__(self, key: str, language: str='en', *args: object, **kwargs) -> None:
-        value = _t(self._key+key, language, **kwargs)
+        value = _t(self._key+key, language, default=_t(self._key+"generic", language), **kwargs)
         super().__init__(value, *args)
 
 class Cant(HalloweenException):
@@ -266,12 +266,13 @@ async def roles(ctx: Context, delete:bool=False, update_permissions: bool=False)
 import functools
 
 def inner(f, races: List[Race], main: object, should_register: bool = True):
+    @EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)
     @functools.wraps(f)
-    def wrapped(ctx: Context, **kwargs):
-        s = ctx.db.sql.session()
-        user = Halloween.fetch_or_add(s, server_id=ctx.guild_id, user_id=ctx.user_id)
+    def wrapped(ctx: Context, s: sa.orm.Session=None, this_user: Halloween = None, **kwargs):
+        s = s or ctx.db.sql.session()
+        user = this_user or Halloween.fetch_or_add(s, server_id=ctx.guild_id, user_id=ctx.user_id)
         if user.race in races:
-            return EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)(f)(ctx=ctx, session=s, this_user=user, **kwargs)
+            return f(ctx=ctx, session=s, this_user=user, **kwargs)
         elif user.race is Race.Human:
             raise Error("You want to do what?")
         raise Cant(f.__name__)
@@ -372,7 +373,7 @@ async def defend(ctx: Context, target: User, *, session: sa.orm.Session, this_us
     if target_user.race not in HUNTERS:
         raise Failed("defend", ctx.language)
 
-    now = datetime.now()
+    now = datetime.now(tz=timezone.utc)
     if target_user.protected is None or target_user.protected < now:
         duration = SystemRandom().randint(5, 40)
         delta = now + timedelta(minutes=duration)
@@ -381,7 +382,7 @@ async def defend(ctx: Context, target: User, *, session: sa.orm.Session, this_us
         session.commit()
         return _t("success_defend", ctx.language, duration=duration)
 
-    raise HalloweenException("error_defended", ctx.language)
+    raise HalloweenException("error_protected", ctx.language)
 
 @hunters
 @cooldown(hours=4, logic=HalloweenCooldown)
@@ -396,17 +397,28 @@ async def betray(ctx: Context, target: User, *, session: sa.orm.Session, this_us
 
 @register(group=Groups.GLOBAL, name="Defend or Betray")
 @hunters(should_register=False)
-async def defend_or_betray(ctx: Context, user: User):
+async def defend_or_betray(ctx: Context, user: User, *, session: sa.orm.Session, this_user: Halloween):
     '''
     Defend fellow hunter or convince monster depending on target's class
     '''
-    # TODO: Check if target is same hunter or opposing monster
+    target_user = session.query(Halloween).filter(Halloween.server_id == ctx.guild_id, Halloween.user_id == user.id).first()
+    if target_user.race in HUNTERS:
+        return await defend(ctx, target=user, s=session, this_user=this_user)
+    elif target_user.race is CURE_TABLE.get(this_user.race):
+        return await betray(ctx, target=user, s=session, this_user=this_user)
+    await ctx.deferred(private=True)
+    raise Cant("generic", ctx.language)
 
 @register(group=Groups.GLOBAL, name="Bite or Cure")
-@hunters(should_register=False)
-@monsters(should_register=False) # NOTE: Sadly, in that case it would be better to check it manually due to using func name as is for error message
 async def bite_or_cure(ctx: Context, user: User):
     '''
     Bite or cure user depending on your class
     '''
-    # TODO: Check if invoking user is hunter or monster
+    session = ctx.db.sql.session()
+    this_user = session.query(Halloween).filter(Halloween.server_id == ctx.guild_id, Halloween.user_id == ctx.user.id).first()
+    if this_user.race in IMMUNE_TABLE:
+        return await bite(ctx, target=user, s=session, this_user=this_user)
+    elif this_user.race in HUNTERS:
+        return await cure(ctx, target=user, s=session, this_user=this_user)
+    await ctx.deferred(private=True)
+    raise Cant("generic", ctx.language)
