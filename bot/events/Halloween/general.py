@@ -445,13 +445,15 @@ async def leaderboard(ctx: Context, user_id: UserID=None, limit: int=10) -> Embe
     return Leaderboard(ctx, user_id, entries, limit).as_embed()
 
 @register(group=Groups.GLOBAL, main=halloween)
-async def history(ctx: Context, user: User, limit: int = 10) -> Embed:
+async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
     '''
     Shows turn history
     Params
     ------
     user:
-        user's history to show
+        User's history to show
+    limit:
+        How many turns to show
     '''
     s = ctx.db.sql.session()
     from MFramework import Guild_Member
