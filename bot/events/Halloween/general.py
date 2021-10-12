@@ -10,7 +10,7 @@ def _t(key: str, language: str='en', **kwargs):
 import sqlalchemy as sa
 
 from mlib.database import Base, Timestamp
-from MFramework import Context, User, Snowflake, Groups, register, EventBetween, Chance
+from MFramework import Context, User, Snowflake, Groups, Embed, register, EventBetween, Chance
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 from MFramework.database.alchemy.mixins import ServerID
 from ...database.types import Statistic, HalloweenRaces as Race
@@ -422,3 +422,24 @@ async def bite_or_cure(ctx: Context, user: User):
         return await cure(ctx, target=user, s=session, this_user=this_user)
     await ctx.deferred(private=True)
     raise Cant("generic", ctx.language)
+
+@register(group=Groups.GLOBAL, main=halloween)
+async def leaderboard(ctx: Context, user_id: UserID=None, limit: int=10) -> Embed:
+    '''
+    Shows Event leaderboard based on amount of turns
+    Params
+    ------
+    user_id:
+        Shows stats of another user
+    limit:
+        How many scores to show
+    '''
+    s = ctx.db.sql.session()
+    total_turned = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id).limit(limit).all()
+    #top_race_turns = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.race).all()
+    #turned_by_user = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race, HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id, HalloweenLog.race).all()
+    from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
+    entries = []
+    for row in total_turned:
+        entries.append(Leaderboard_Entry(ctx, row[1], row[0]))
+    return Leaderboard(ctx, user_id, entries, limit).as_embed()
