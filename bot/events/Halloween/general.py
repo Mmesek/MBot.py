@@ -443,3 +443,37 @@ async def leaderboard(ctx: Context, user_id: UserID=None, limit: int=10) -> Embe
     for row in total_turned:
         entries.append(Leaderboard_Entry(ctx, row[1], row[0]))
     return Leaderboard(ctx, user_id, entries, limit).as_embed()
+
+@register(group=Groups.GLOBAL, main=halloween)
+async def history(ctx: Context, user: User, limit: int = 10) -> Embed:
+    '''
+    Shows turn history
+    Params
+    ------
+    user:
+        user's history to show
+    '''
+    s = ctx.db.sql.session()
+    from MFramework import Guild_Member
+
+    turns = []
+    turn_history = s.query(HalloweenLog).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.target_id == user.id).order_by(HalloweenLog.timestamp.desc()).limit(limit).all()
+    for entry in turn_history[:int(limit)]:
+        _u = entry.user_id
+        _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
+        turns.append(f"[<t:{int(entry.timestamp.timestamp())}:d>] `{entry.previous}` into `{entry.race}` by `{_u}`")
+
+    targets = []
+    targets_history = s.query(HalloweenLog).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id).order_by(HalloweenLog.timestamp.desc()).limit(limit).all()
+    for entry in targets_history[:int(limit)]:
+        _u = entry.target_id
+        _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
+        targets.append(f"[<t:{int(entry.timestamp.timestamp())}:d>] `{_u}` from `{entry.previous}` into `{entry.race}`")
+
+    e = Embed().setTitle(f"{user.username}'s History")
+    if turns:
+        e.addField("Turns", "\n".join(turns))
+    if targets:
+        e.addField("Targets", "\n".join(targets))
+    e.addField("Statistics", f"Total Turns: `{len(turn_history)}`\nTotal Targets: `{len(targets_history)}`")
+    return e
