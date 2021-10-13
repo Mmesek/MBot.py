@@ -110,7 +110,7 @@ async def reroll(ctx: Context, message_id: Snowflake, amount: int=0, *, language
     )
     await ctx.reply("Giveaway rerolled Successfully")
 
-def createGiveawayEmbed(l: str, finish, prize: str, winner_count: int, finished: bool=False, winners: str='', chance: str='', custom_description: str=None) -> Embed:
+def createGiveawayEmbed(l: str, finish, prize: str, winner_count: int, finished: bool=False, winners: str='', chance: str='', custom_description: str=None, host_id: Snowflake=None) -> Embed:
     translationStrings = ['title', 'description', 'endTime']
     t = {}
     for i in translationStrings:
@@ -120,7 +120,7 @@ def createGiveawayEmbed(l: str, finish, prize: str, winner_count: int, finished:
         if i == 'description' and custom_description:
             t[i] = custom_description
         else:
-            t[i] = tr(translation, l, prize=prize, count=winner_count, winners=winners, chance=chance)
+            t[i] = tr(translation, l, prize=prize, count=winner_count, winners=winners, chance=chance, host=f"<@{host_id}>")
     return Embed().setFooter(text=t['endTime']).setTimestamp(finish.isoformat()).setTitle(t['title']).setDescription(t['description'])
 
 @scheduledTask
@@ -141,7 +141,7 @@ async def giveaway(ctx: Bot, t: db.Task):
     winnerCount = len(winners)
     winners = ', '.join(winners)
 
-    e = createGiveawayEmbed(language, task.end, task.description, winnerCount, True, winners, chance(len(users)))
+    e = createGiveawayEmbed(language, task.end, task.description, winnerCount, True, winners, chance(len(users)), host_id=task.user_id)
     await ctx.edit_message(task.channel_id, task.message_id, None, e, None, None)
     await ctx.create_message(task.channel_id, 
         tr("commands.giveaway.endMessage", language, count=winnerCount, winners=winners, prize=task.description, participants=len(users), server=task.server_id, channel=task.channel_id, message=task.message_id),

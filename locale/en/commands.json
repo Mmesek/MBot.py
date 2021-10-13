@@ -410,13 +410,13 @@
         },
         "descriptionFinished": {
             "zero": "Could not determine winner :(",
-            "one": "Winner: %{winners}",
-            "many": "Winners: %{winners}"
+            "one": "Winner: %{winners}\nHosted by: %{host}",
+            "many": "Winners: %{winners}\nHosted by: %{host}"
         },
         "endMessage": {
             "zero": "Could not determine winner for giveaway https://discordapp.com/channels/%{server}/%{channel}/%{message}",
-            "one": "Congratulations to %{winners}!\nYou won %{prize}!\n\nTotal participants: %{participants}",
-            "many": "Congratulations, %{winners}!\nYou won %{prize}!\n\nTotal participants: %{participants}"
+            "one": "Congratulations to %{winners}!\nYou won **%{prize}**!\n\nTotal participants: %{participants}",
+            "many": "Congratulations, %{winners}!\nYou won **%{prize}**!\n\nTotal participants: %{participants}"
         },
         "rerollMessage": {
             "zero": "Could not reroll winner for giveaway https://discordapp.com/channels/%{server}/%{channel}/%{message}",
