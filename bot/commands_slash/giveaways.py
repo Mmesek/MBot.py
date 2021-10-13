@@ -144,7 +144,8 @@ async def giveaway(ctx: Bot, t: db.Task):
     e = createGiveawayEmbed(language, task.end, task.description, winnerCount, True, winners, chance(len(users)))
     await ctx.edit_message(task.channel_id, task.message_id, None, e, None, None)
     await ctx.create_message(task.channel_id, 
-        tr("commands.giveaway.endMessage", language, count=winnerCount, winners=winners, prize=task.description, participants=len(users), server=task.server_id, channel=task.channel_id, message=task.message_id)
+        tr("commands.giveaway.endMessage", language, count=winnerCount, winners=winners, prize=task.description, participants=len(users), server=task.server_id, channel=task.channel_id, message=task.message_id),
+        allowed_mentions=None
     )
     task.finished = True
     s.commit()
