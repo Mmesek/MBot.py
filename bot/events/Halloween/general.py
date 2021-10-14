@@ -439,7 +439,7 @@ async def leaderboard(ctx: Context, user_id: UserID=None, limit: int=10) -> Embe
         How many scores to show
     '''
     s = ctx.db.sql.session()
-    total_turned = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id).limit(limit).all()
+    total_turned = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id).order_by(sa.func.count(HalloweenLog.user_id).desc()).limit(limit).all()
     #top_race_turns = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.race).all()
     #turned_by_user = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race, HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id, HalloweenLog.race).all()
     from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
@@ -483,3 +483,18 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
         e.addField("Targets", "\n".join(targets))
     e.addField("Statistics", f"Total Turns: `{len(turn_history)}`\nTotal Targets: `{len(targets_history)}`")
     return [e]
+
+from MFramework import onDispatch, Bot, Guild_Member_Add
+
+@onDispatch
+async def guild_member_add(self: Bot, data: Guild_Member_Add):
+    s = self.db.sql.session()
+    r = s.query(Halloween).filter(Halloween.user_id == data.user.id).first()
+    if r and ROLES.get(data.guild_id, None):
+        if type(r.race) is Race:
+            race = r.race.name
+        else:
+            race = r.race
+        role = ROLES.get(data.guild_id, {}).get(race, None)
+        if role:
+            await self.add_guild_member_role(data.guild_id, data.user.id, role, "Halloween Minigame")
