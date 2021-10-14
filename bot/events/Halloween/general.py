@@ -432,12 +432,12 @@ async def bite_or_cure(ctx: Context, user: User):
     raise Cant("generic", ctx.language)
 
 @register(group=Groups.GLOBAL, main=halloween)
-async def leaderboard(ctx: Context, user_id: User=None, limit: int=10) -> Embed:
+async def leaderboard(ctx: Context, user: User=None, limit: int=10) -> Embed:
     '''
     Shows Event leaderboard based on amount of turns
     Params
     ------
-    user_id:
+    user:
         Shows stats of another user
     limit:
         How many scores to show
@@ -446,7 +446,7 @@ async def leaderboard(ctx: Context, user_id: User=None, limit: int=10) -> Embed:
     total_turned = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id).order_by(sa.func.count(HalloweenLog.user_id).desc()).limit(limit).all()
     #top_race_turns = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.race).all()
     #turned_by_user = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race, HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id, HalloweenLog.race).all()
-    if not any(user_id == i.user_id for i in total_turned):
+    if not any(user.id == i.user_id for i in total_turned):
         _user = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user_id).group_by(HalloweenLog.user_id).first()
         if _user:
             total_turned.append(_user)
