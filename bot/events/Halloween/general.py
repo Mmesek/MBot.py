@@ -110,9 +110,9 @@ class DRINKS(Enum):
     Vodka = "Zombie"#Race.Zombie
 
 class Guilds(Enum):
-    Hunters = "Hunter"#Race.Hunter
-    Huntsmen = "Huntsmen"#Race.Huntsmen
-    Enchanters = "Enchanter"#Race.Enchanter
+    Dawnguards = "Hunter"#Race.Hunter
+    Rangers = "Huntsmen"#Race.Huntsmen
+    Inquisition = "Enchanter"#Race.Enchanter
 
 ROLES = {}
 
@@ -312,6 +312,10 @@ async def drink(ctx: Context, type: DRINKS, *, session: sa.orm.Session, this_use
     ------
     type:
         Drink you want to drink'''
+    previous = session.query(HalloweenLog).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == ctx.user_id).first()
+    if previous and type is not DRINKS.Nightmare:
+        return "Sadly, you can choose your poison only first time around as a freshblood. Nightmarish potion is your only option to drink now."
+
     if type is DRINKS.Nightmare:
         from random import SystemRandom
         type = SystemRandom().choice([Race.Vampire, Race.Werewolf, Race.Zombie])
