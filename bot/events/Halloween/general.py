@@ -177,11 +177,15 @@ async def update_user_roles(ctx: Context, user_id: Snowflake, previous_race: Rac
     '''Updates roles of user to reflect race change'''
     get_roles(ctx.guild_id, s)
     if type(previous_race) is Race or previous_race in list(i.name for i in Race):
-        p_role = ROLES.get(ctx.guild_id, {}).get(previous_race.name, None)
+        if type(previous_race) is Race:
+            previous_race = previous_race.name
+        p_role = ROLES.get(ctx.guild_id, {}).get(previous_race, None)
         if p_role:
             await ctx.bot.remove_guild_member_role(ctx.guild_id, user_id, p_role, "Halloween Minigame")
     if type(new_race) is Race or new_race in list(i.name for i in Race):
-        role = ROLES.get(ctx.guild_id, {}).get(new_race.name, None)
+        if type(new_race) is Race:
+            new_race = new_race.name
+        role = ROLES.get(ctx.guild_id, {}).get(new_race, None)
         if role:
             await ctx.bot.add_guild_member_role(ctx.guild_id, user_id, role, "Halloween Minigame")
 
