@@ -176,11 +176,11 @@ class Halloween(ServerID, UserID, Base):
 async def update_user_roles(ctx: Context, user_id: Snowflake, previous_race: Race, new_race: Race, s: sa.orm.Session):
     '''Updates roles of user to reflect race change'''
     get_roles(ctx.guild_id, s)
-    if type(previous_race) is Race:
+    if type(previous_race) is Race or previous_race in list(i.name for i in Race):
         p_role = ROLES.get(ctx.guild_id, {}).get(previous_race.name, None)
         if p_role:
             await ctx.bot.remove_guild_member_role(ctx.guild_id, user_id, p_role, "Halloween Minigame")
-    if type(new_race) is Race:
+    if type(new_race) is Race or new_race in list(i.name for i in Race):
         role = ROLES.get(ctx.guild_id, {}).get(new_race.name, None)
         if role:
             await ctx.bot.add_guild_member_role(ctx.guild_id, user_id, role, "Halloween Minigame")
@@ -189,7 +189,7 @@ async def turn(ctx: Context, s: sa.orm.Session, this_user: Halloween, target_use
     '''Turns target user into race of invoking user or provided race'''
     p, r = this_user.turn_another(s, target_user_id, to_race)
     await update_user_roles(ctx, target_user_id, p, r, s=s)
-    return _t(f"success_{action}", ctx.language, author=ctx.user_id, target=target_user_id, currentClass=r.name, previousClass=p.name)
+    return _t(f"success_{action}", ctx.language, author=ctx.user_id, target=target_user_id, currentClass=r, previousClass=p)
 
 def get_total(total: List[Statistic]) -> Tuple[int, int]:
     '''Returns total bites and population'''
@@ -253,7 +253,7 @@ async def roles(ctx: Context, delete:bool=False, update_permissions: bool=False)
 
         users = s.query(Halloween).filter(Halloween.server_id == ctx.guild_id).all()
         for user in users:
-            await ctx.bot.add_guild_member_role(ctx.guild_id, user.user_id, roles.get(user.race), "Halloween Minigame")
+            await ctx.bot.add_guild_member_role(ctx.guild_id, user.user_id, roles.get(user.race.name), "Halloween Minigame")
     else:
         for race in Race:
             role = await ctx.bot.create_guild_role(ctx.guild_id, _t(race.name.lower().replace(' ','_'), ctx.language, count=1).title(), 0, reason="Created Role for Halloween Minigame")
@@ -442,7 +442,7 @@ async def leaderboard(ctx: Context, user_id: UserID=None, limit: int=10) -> Embe
     entries = []
     for row in total_turned:
         entries.append(Leaderboard_Entry(ctx, row[1], row[0]))
-    return Leaderboard(ctx, user_id, entries, limit).as_embed()
+    return [Leaderboard(ctx, user_id, entries, limit).as_embed()]
 
 @register(group=Groups.GLOBAL, main=halloween)
 async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
@@ -478,4 +478,4 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
     if targets:
         e.addField("Targets", "\n".join(targets))
     e.addField("Statistics", f"Total Turns: `{len(turn_history)}`\nTotal Targets: `{len(targets_history)}`")
-    return e
+    return [e]
