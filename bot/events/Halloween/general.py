@@ -454,7 +454,7 @@ async def leaderboard(ctx: Context, user: User=None, limit: int=10) -> Embed:
     entries = []
     for row in total_turned:
         entries.append(Leaderboard_Entry(ctx, row[1], row[0]))
-    return [Leaderboard(ctx, user_id, entries, limit).as_embed()]
+    return [Leaderboard(ctx, user.id, entries, limit).as_embed()]
 
 @register(group=Groups.GLOBAL, main=halloween)
 async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
