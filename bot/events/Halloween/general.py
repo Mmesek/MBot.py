@@ -447,7 +447,7 @@ async def leaderboard(ctx: Context, user: User=None, limit: int=10) -> Embed:
     #top_race_turns = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.race).all()
     #turned_by_user = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race, HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id, HalloweenLog.race).all()
     if not any(user.id == i.user_id for i in total_turned):
-        _user = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user_id).group_by(HalloweenLog.user_id).first()
+        _user = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id).group_by(HalloweenLog.user_id).first()
         if _user:
             total_turned.append(_user)
     from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
