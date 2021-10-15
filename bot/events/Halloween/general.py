@@ -450,7 +450,7 @@ async def leaderboard(ctx: Context, user: User=None, limit: int=10) -> Embed:
         How many scores to show
     '''
     s = ctx.db.sql.session()
-    total_turned = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id).order_by(sa.func.count(HalloweenLog.user_id).desc()).limit(limit).all()
+    total_turned = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id != HalloweenLog.target_id).group_by(HalloweenLog.user_id).order_by(sa.func.count(HalloweenLog.user_id).desc()).limit(limit).all()
     #top_race_turns = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.race).all()
     #turned_by_user = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race, HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id, HalloweenLog.race).all()
     if not any(user.id == i.user_id for i in total_turned):
@@ -484,7 +484,7 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
         _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
         if entry.previous == entry.race:
             line = "Defended"
-        elif entry.previous is Race.Human and _u == entry.target_id:
+        elif _u == entry.target_id:
             if entry.race in IMMUNE_TABLE:
                 line = f"Drank potion and became `{entry.race}`"
             else:
