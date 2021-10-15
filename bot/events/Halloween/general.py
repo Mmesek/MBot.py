@@ -548,19 +548,19 @@ async def info(ctx: Context, user: User=None):
         User whose statistics to show
     '''
     s = ctx.db.sql.session()
-    e = Embed()
+    e = Embed().setTitle(user.username)
     cooldowns = []
     h_user = Halloween.fetch_or_add(s, server_id=ctx.guild_id, user_id=user.id)
     for cooldown in COOLDOWNS:
         r = HalloweenCooldown(ctx, cooldown.value, cooldown.name.lower(), {"session": s, "this_user": h_user})
         if r.on_cooldown:
             cooldowns.append((r._type, str(r.remaining).split('.',1)[0]))
-    if cooldowns:
-        e.addField(f"{ctx.user.username}'s Cooldowns", "\n".join(f"`{i[0].title()}`: `{i[1]}`" for i in cooldowns))
-    e.addField(f"{user.username} Currently is", h_user.race, True)
+    if user.id == ctx.user_id and cooldowns:
+        e.addField("Cooldowns", "\n".join(f"`{i[0].title()}`: `{i[1]}`" for i in cooldowns))
+    e.addField("Currently is", h_user.race, True)
     now = datetime.now(tz=timezone.utc)
     if h_user.protected and h_user.protected > now:
-        e.addField(f"{user.username} is Protected for", now - h_user.protected, True)
+        e.addField("Protected for", now - h_user.protected, True)
     return [e]
 
 from MFramework import onDispatch, Bot, Guild_Member_Add
