@@ -484,7 +484,7 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
         _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
         if entry.previous == entry.race:
             line = "Defended"
-        elif entry.previous is Race.Human:
+        elif entry.previous is Race.Human and _u == entry.target_id:
             if entry.race in IMMUNE_TABLE:
                 line = f"Drank potion and became `{entry.race}`"
             else:
@@ -500,7 +500,7 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
         _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
         if entry.previous == entry.race:
             line = "was protected from being turned"
-        elif _u == user.id:
+        elif _u == entry.user_id:
             if entry.race in IMMUNE_TABLE:
                 line = f"drank potion and became `{entry.race}`"
             else:
