@@ -534,6 +534,31 @@ async def statistics(ctx: Context) -> Embed:
     e.addField("Mostly Turned From", turns_from, True)
     return [e]
 
+@register(group=Groups.GLOBAL, main=halloween)
+async def info(ctx: Context, user: User=None):
+    '''
+    Shows user's event info
+    Params
+    ------
+    user:
+        User whose statistics to show
+    '''
+    s = ctx.db.sql.session()
+    e = Embed()
+    cooldowns = []
+    h_user = Halloween.fetch_or_add(s, server_id=ctx.guild_id, user_id=user.id)
+    for cooldown in COOLDOWNS:
+        r = HalloweenCooldown(ctx, cooldown.value, cooldown.name.lower(), {"session": s, "this_user": h_user})
+        if r.on_cooldown:
+            cooldowns.append((r._type, str(r.remaining).split('.',1)[0]))
+    if cooldowns:
+        e.addField(f"{ctx.user.username}'s Cooldowns", "\n".join(f"`{i[0].title()}`: `{i[1]}`" for i in cooldowns))
+    e.addField(f"{user.username} Currently is", h_user.race, True)
+    now = datetime.now(tz=timezone.utc)
+    if h_user.protected and h_user.protected > now:
+        e.addField(f"{user.username} is Protected for", now - h_user.protected, True)
+    return [e]
+
 from MFramework import onDispatch, Bot, Guild_Member_Add
 
 @onDispatch
