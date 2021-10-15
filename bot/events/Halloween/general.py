@@ -563,7 +563,7 @@ async def info(ctx: Context, user: User=None):
         e.addField("Protected for", h_user.protected - now, True)
     return [e]
 
-from MFramework import onDispatch, Bot, Guild_Member_Add
+from MFramework import onDispatch, Bot, Guild_Member_Add, Message
 
 @onDispatch
 async def guild_member_add(self: Bot, data: Guild_Member_Add):
@@ -577,3 +577,36 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
         role = ROLES.get(data.guild_id, {}).get(race, None)
         if role:
             await self.add_guild_member_role(data.guild_id, data.user.id, role, "Halloween Minigame")
+
+CACHED_WEBHOOKS = {}
+
+@onDispatch
+@EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)
+@Chance(3)
+async def message_create(self: Bot, data: Message):
+    zombie_role = ROLES.get(data.guild_id, {}).get("Zombie", None)
+    if zombie_role in data.member.roles:
+        if data.guild_id not in CACHED_WEBHOOKS:
+            CACHED_WEBHOOKS[data.guild_id] = {}
+        if not CACHED_WEBHOOKS.get(data.guild_id, {}):
+            webhooks = await self.get_guild_webhooks(data.guild_id)
+            for webhook in webhooks:
+                if webhook.channel_id in CACHED_WEBHOOKS[data.guild_id]:
+                    continue
+                CACHED_WEBHOOKS[data.guild_id][webhook.channel_id] = (webhook.id, webhook.token)
+        webhook = CACHED_WEBHOOKS[data.guild_id].get(data.channel_id, None)
+        if not webhook:
+            webhook = await self.create_webhook(data.channel_id, "Halloween", reason="Halloween Minigame")
+            CACHED_WEBHOOKS[data.guild_id][data.channel_id] = (webhook.id, webhook.token)
+            webhook = CACHED_WEBHOOKS[data.guild_id][data.channel_id]
+        from MFramework import Allowed_Mentions
+        try:
+            await self.execute_webhook(
+                webhook[0], webhook[1], wait=True, thread_id=getattr(data.thread, 'id', None), 
+                content=data.content.replace(f"@everyone", "`@everyone`")+" *...Braaains?*",
+                username=data.member.nick or data.author.username,
+                avatar_url=data.author.get_avatar(), allowed_mentions=Allowed_Mentions(parse=[])
+            )
+        except:
+            return
+        await data.delete(reason="Halloween Minigame: Zombified message")
