@@ -482,14 +482,32 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
     for entry in turn_history[:int(limit)]:
         _u = entry.user_id
         _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
-        turns.append(f"[<t:{int(entry.timestamp.timestamp())}:d>] `{entry.previous}` into `{entry.race}` by `{_u}`")
+        if entry.previous == entry.race:
+            line = "Defended"
+        elif entry.previous is Race.Human:
+            if entry.race in IMMUNE_TABLE:
+                line = f"Drank potion and became `{entry.race}`"
+            else:
+                line = f"Enlisted as `{entry.race}`"
+        else:
+            line = f"`{entry.previous}` into `{entry.race}`"
+        turns.append(f"[<t:{int(entry.timestamp.timestamp())}:d>] {line} by `{_u}`")
 
     targets = []
     targets_history = s.query(HalloweenLog).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id).order_by(HalloweenLog.timestamp.desc()).limit(limit).all()
     for entry in targets_history[:int(limit)]:
         _u = entry.target_id
         _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
-        targets.append(f"[<t:{int(entry.timestamp.timestamp())}:d>] `{_u}` from `{entry.previous}` into `{entry.race}`")
+        if entry.previous == entry.race:
+            line = "was protected from being turned"
+        elif _u == user.id:
+            if entry.race in IMMUNE_TABLE:
+                line = f"drank potion and became `{entry.race}`"
+            else:
+                line = f"enlisted as `{entry.race}`"
+        else:
+            line = f"from `{entry.previous}` into `{entry.race}`"
+        targets.append(f"[<t:{int(entry.timestamp.timestamp())}:d>] `{_u}` {line}")
 
     e = Embed().setTitle(f"{user.username}'s History")
     if turns:
