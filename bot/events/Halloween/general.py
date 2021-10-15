@@ -560,7 +560,7 @@ async def info(ctx: Context, user: User=None):
     e.addField("Currently is", h_user.race, True)
     now = datetime.now(tz=timezone.utc)
     if h_user.protected and h_user.protected > now:
-        e.addField("Protected for", now - h_user.protected, True)
+        e.addField("Protected for", h_user.protected - now, True)
     return [e]
 
 from MFramework import onDispatch, Bot, Guild_Member_Add
