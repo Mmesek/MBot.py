@@ -524,13 +524,13 @@ async def statistics(ctx: Context) -> Embed:
     s = ctx.db.sql.session()
     e = Embed().setTitle("Server Statistics")
     total = sorted(Halloween.get_total(s, ctx.guild_id).items(), key=lambda x: x[1], reverse=True)
-    total = "\n".join([f"`{i[0]}`: `{i[1]}`" for i in total])
+    total = "\n".join([f"`{i[0]:10}`: `{i[1]:>5}`" for i in total])
     e.addField("Members", total, True)
     turns_to = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.race).order_by(sa.func.count(HalloweenLog.race).desc()).all()
-    turns_to = "\n".join([f"`{i[1]}`: `{i[0]}`" for i in turns_to])
+    turns_to = "\n".join([f"`{i[1]:10}`: `{i[0]:>5}`" for i in turns_to])
     e.addField("Mostly Turned Into", turns_to, True)
     turns_from = s.query(sa.func.count(HalloweenLog.previous), HalloweenLog.previous).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.previous).order_by(sa.func.count(HalloweenLog.previous).desc()).all()
-    turns_from = "\n".join([f"`{i[1]}`: `{i[0]}`" for i in turns_from])
+    turns_from = "\n".join([f"`{i[1]:10}`: `{i[0]:>5}`" for i in turns_from])
     e.addField("Mostly Turned From", turns_from, True)
     return [e]
 
