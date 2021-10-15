@@ -317,8 +317,15 @@ async def drink(ctx: Context, type: DRINKS, *, session: sa.orm.Session, this_use
         return "Sadly, you can choose your poison only first time around as a freshblood. Nightmarish potion is your only option to drink now."
 
     if type is DRINKS.Nightmare:
-        from random import SystemRandom
-        type = SystemRandom().choice([Race.Vampire, Race.Werewolf, Race.Zombie])
+        total = sorted(Halloween.get_total(session, ctx.guild_id).items(), key=lambda x: x[1])
+        if total:
+            for race in total:
+                if race[0] in IMMUNE_TABLE:
+                    type = race[0]
+                    break
+        else:
+            from random import SystemRandom
+            type = SystemRandom().choice([Race.Vampire, Race.Werewolf, Race.Zombie])
     return await turn(ctx, session, this_user, ctx.user_id, type.value, action="drink")
 
 ############
