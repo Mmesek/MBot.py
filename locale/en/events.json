@@ -158,7 +158,7 @@
         "cures_huntsman":"Huntsman Cures",
         "cures_zombie_slayer":"Zombie Slayer Cures",
         "rules_title":"Rules",
-        "rules_main_monsters":"Monsters can bite any non monster that is not hunting them.\nVampire can bite Human, Huntsman and Zombie Slayer but not Vampire Hunter.",
+        "rules_main_monsters":"Monsters can bite any non monster that is not hunting them.\nVampire can bite Human, Huntsman and Enchanters but not Vampire Hunter.",
         "rules_main_hunters":"Hunters can only cure what they hunt.\nVampire Hunter can only cure Vampires",
         "rules_drinking_title":"Drinking or Enlisting",
         "rules_drinking":"You can choose your `%{drink_cmd}` only if you weren't bitten/enlisted before. Otherwise you can only drink \"%{drink_nightmare}\" beverage.",

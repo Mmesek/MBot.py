@@ -205,9 +205,29 @@ def get_total(total: List[Statistic]) -> Tuple[int, int]:
 
 @register(group=Groups.GLOBAL)
 @EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)
-async def halloween():
+async def halloween(ctx: Context) -> Embed:
     '''Halloween Event commands'''
-    pass
+    e = Embed()
+    e.setTitle("Halloween Biting Minigame")
+    e.addField("Monster Rules", _t("rules_main_monsters", language=ctx.language))
+    e.addField("Hunter Rules", _t("rules_main_hunters", language=ctx.language))
+    e.addField("\u200b","\u200b")
+    e.addField(
+        name=_t("rules_drinking_title", language=ctx.language),
+        value=(
+            '- '+_t("rules_drinking", language=ctx.language, drink_cmd="/halloween humans drink", drink_nightmare="Nightmare") +
+            '\n- '+_t("rules_enlisting", language=ctx.language, enlist_cmd="/halloween humans enlist")
+        )
+    )
+    e.addField(
+        name=_t("rules_joining_title", language=ctx.language),
+        value=_t("rules_joining", language=ctx.language, drink_cmd="/halloween humans drink", enlist_cmd="/halloween humans enlist")
+    )
+    e.addField(
+        name=_t("rules_last_protection_title", language=ctx.language),
+        value=_t("rules_last_protection", language=ctx.language)
+    )
+    return e
 
 @register(group=Groups.ADMIN, main=halloween)
 async def settings():
