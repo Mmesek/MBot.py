@@ -602,7 +602,7 @@ async def message_create(self: Bot, data: Message):
         try:
             await self.execute_webhook(
                 webhook[0], webhook[1], wait=True, thread_id=getattr(data.thread, 'id', None), 
-                content=data.content.replace(f"@everyone", "`@everyone`")+" *...Braaains?*",
+                content=data.content.replace(f"@everyone", "`@everyone`")+f" *...Br{'a'*SystemRandom().randint(1,5)}ins?*",
                 username=data.member.nick or data.author.username,
                 avatar_url=data.author.get_avatar(), allowed_mentions=Allowed_Mentions(parse=[])
             )
