@@ -479,7 +479,6 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
 
     turns = []
     turn_history = s.query(HalloweenLog).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.target_id == user.id).order_by(HalloweenLog.timestamp.desc()).limit(limit).all()
-    turn_count = s.query(sa.func.count(HalloweenLog.target_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.target_id == user.id, HalloweenLog.previous != HalloweenLog.race).all()
     for entry in turn_history[:int(limit)]:
         _u = entry.user_id
         _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
@@ -498,7 +497,6 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
 
     targets = []
     targets_history = s.query(HalloweenLog).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id).order_by(HalloweenLog.timestamp.desc()).limit(limit).all()
-    targets_count = s.query(sa.func.count(HalloweenLog.user_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id).all()
     for entry in targets_history[:int(limit)]:
         _u = entry.target_id
         _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
@@ -515,7 +513,9 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
         e.addField("Turns", "\n".join(turns))
     if targets:
         e.addField("Targets", "\n".join(targets))
-    e.addField("Statistics", f"Total Turns: `{turn_count}`\nTotal Targets: `{targets_count}`")
+    turn_count = s.query(sa.func.count(HalloweenLog.target_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.target_id == user.id, HalloweenLog.previous != HalloweenLog.race).first()
+    targets_count = s.query(sa.func.count(HalloweenLog.user_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id).first()
+    e.addField("Statistics", f"Total Turns: `{turn_count[0]}`\nTotal Targets: `{targets_count[0]}`")
     return [e]
 
 @register(group=Groups.GLOBAL, main=halloween)
