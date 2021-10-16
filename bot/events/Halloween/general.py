@@ -450,11 +450,11 @@ async def leaderboard(ctx: Context, user: User=None, limit: int=10) -> Embed:
         How many scores to show
     '''
     s = ctx.db.sql.session()
-    total_turned = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id != HalloweenLog.target_id).group_by(HalloweenLog.user_id).order_by(sa.func.count(HalloweenLog.user_id).desc()).limit(limit).all()
+    total_turned = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id != HalloweenLog.target_id, HalloweenLog.previous != HalloweenLog.race).group_by(HalloweenLog.user_id).order_by(sa.func.count(HalloweenLog.user_id).desc()).limit(limit).all()
     #top_race_turns = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.race).all()
     #turned_by_user = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race, HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id, HalloweenLog.race).all()
     if not any(user.id == i.user_id for i in total_turned):
-        _user = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id).group_by(HalloweenLog.user_id).first()
+        _user = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id, HalloweenLog.previous != HalloweenLog.race).group_by(HalloweenLog.user_id).first()
         if _user:
             total_turned.append(_user)
     from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
@@ -513,8 +513,8 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
         e.addField("Turns", "\n".join(turns))
     if targets:
         e.addField("Targets", "\n".join(targets))
-    turn_count = s.query(sa.func.count(HalloweenLog.target_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.target_id == user.id, HalloweenLog.previous != HalloweenLog.race).first()
-    targets_count = s.query(sa.func.count(HalloweenLog.user_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id).first()
+    turn_count = s.query(sa.func.count(HalloweenLog.target_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.target_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id, HalloweenLog.previous != HalloweenLog.race).first()
+    targets_count = s.query(sa.func.count(HalloweenLog.user_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id, HalloweenLog.previous != HalloweenLog.race).first()
     e.addField("Statistics", f"Total Turns: `{turn_count[0]}`\nTotal Targets: `{targets_count[0]}`")
     return [e]
 
