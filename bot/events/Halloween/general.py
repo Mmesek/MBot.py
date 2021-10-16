@@ -110,6 +110,7 @@ class DRINKS(Enum):
     Vodka = "Zombie"#Race.Zombie
 
 class Guilds(Enum):
+    Any = "Random"
     Dawnguards = "Hunter"#Race.Hunter
     Rangers = "Huntsmen"#Race.Huntsmen
     Inquisition = "Enchanter"#Race.Enchanter
@@ -303,6 +304,16 @@ async def enlist(ctx: Context, guild: Guilds, *, session: sa.orm.Session, this_u
     ------
     guild:
         Hunter's guild you want to join'''
+    if guild is Guilds.Any:
+        total = sorted(Halloween.get_total(session, ctx.guild_id).items(), key=lambda x: x[1])
+        if total:
+            for race in total:
+                if race[0] in HUNTERS:
+                    guild = race[0]
+                    break
+        else:
+            from random import SystemRandom
+            guild = SystemRandom().choice([Race.Hunter, Race.Huntsmen, Race.Enchanter])
     return await turn(ctx, session, this_user, ctx.user_id, guild.value, action="enlist")
 
 @humans
