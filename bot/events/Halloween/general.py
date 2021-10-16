@@ -454,7 +454,7 @@ async def leaderboard(ctx: Context, user: User=None, limit: int=10) -> Embed:
     #top_race_turns = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.race).all()
     #turned_by_user = s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race, HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id).group_by(HalloweenLog.user_id, HalloweenLog.race).all()
     if not any(user.id == i.user_id for i in total_turned):
-        _user = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id).group_by(HalloweenLog.user_id).first()
+        _user = s.query(sa.func.count(HalloweenLog.user_id), HalloweenLog.user_id).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id).group_by(HalloweenLog.user_id).first()
         if _user:
             total_turned.append(_user)
     from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
@@ -582,10 +582,11 @@ CACHED_WEBHOOKS = {}
 
 @onDispatch
 @EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)
-@Chance(3)
 async def message_create(self: Bot, data: Message):
     zombie_role = ROLES.get(data.guild_id, {}).get("Zombie", None)
     if zombie_role in data.member.roles:
+        if SystemRandom().random() > (3 / 100):
+            return
         if data.guild_id not in CACHED_WEBHOOKS:
             CACHED_WEBHOOKS[data.guild_id] = {}
         if not CACHED_WEBHOOKS.get(data.guild_id, {}):
