@@ -40,7 +40,7 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
     )
     msg = await ctx.send("<@&545856777623961611>", embeds=[embed], allowed_mentions=None, channel_id=ctx.channel_id)
     await ctx.reply("Docket sent!", private=True)
-    if publish and ctx.channel.type == Channel_Types.GUILD_NEWS:
+    if publish and ctx.channel.type == Channel_Types.GUILD_NEWS.value:
         await msg.publish()
 
 @register(group=Groups.MODERATOR, interaction=False)
