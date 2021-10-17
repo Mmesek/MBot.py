@@ -580,16 +580,17 @@ async def info(ctx: Context, user: User=None):
     e = Embed().setTitle(user.username)
     cooldowns = []
     h_user = Halloween.fetch_or_add(s, server_id=ctx.guild_id, user_id=user.id)
+    from mlib.localization import secondsToText as s2t
     for cooldown in COOLDOWNS:
         r = HalloweenCooldown(ctx, cooldown.value, cooldown.name.lower(), {"session": s, "this_user": h_user})
         if r.on_cooldown:
-            cooldowns.append((r._type, str(r.remaining).split('.',1)[0]))
+            cooldowns.append((r._type, s2t(int(r.remaining.total_seconds()))))
     if user.id == ctx.user_id and cooldowns:
         e.addField("Cooldowns", "\n".join(f"`{i[0].title()}`: `{i[1]}`" for i in cooldowns))
     e.addField("Currently is", h_user.race, True)
     now = datetime.now(tz=timezone.utc)
     if h_user.protected and h_user.protected > now:
-        e.addField("Protected for", h_user.protected - now, True)
+        e.addField("Protected for", s2t(int((h_user.protected - now).total_seconds())), True)
     return [e]
 
 from MFramework import onDispatch, Bot, Guild_Member_Add, Message
