@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author, Discord_Paths
+from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author, Discord_Paths, Channel_Types
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
-async def docket(ctx: Context, interaction: Interaction, docket: str, description: str='', publish: bool=False):
+async def docket(ctx: Context, interaction: Interaction, docket: str, description: str='', publish: bool=True):
     '''
     Sends new docket in an embed
     
@@ -14,11 +14,12 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
     description:
         Optional description of docket
     publish:
-        Whether message should be published to following channels or not (Works only in announcement channels)
+        Whether message should be auto published to following channels or not (Works only in announcement channels)
         Choices:
             True = True
             False = False
     '''
+    await ctx.deferred(private=True)
     if description != '':
         description = f"\n{description}\n"
     embed = Embed(
@@ -37,8 +38,9 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
             icon_url="https://cdn.discordapp.com/emojis/545912886074015745.png"
         ),
     )
-    msg = await ctx.send("<@&545856777623961611>", embeds=[embed], allowed_mentions=None)
-    if publish:
+    msg = await ctx.send("<@&545856777623961611>", embeds=[embed], allowed_mentions=None, channel_id=ctx.channel_id)
+    await ctx.reply("Docket sent!", private=True)
+    if publish and ctx.channel.type == Channel_Types.GUILD_NEWS:
         await msg.publish()
 
 @register(group=Groups.MODERATOR, interaction=False)
