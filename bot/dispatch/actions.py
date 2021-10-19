@@ -193,10 +193,16 @@ async def remove_links(self: Bot, data: Message) -> bool:
         if len(violations) > 4:
             log.debug('Kicking user %s because of amount of msgs violating link filter', data.author.id)
             cache.last_violating_user = None
-            await self.create_message(dm.id, f"You've been kicked from {self.cache[data.guild_id].name} server due to being flagged as hijacked account. Feel free to return once you get your account back and/or change password")
+            try:
+                await self.create_message(dm.id, f"You've been kicked from {self.cache[data.guild_id].guild.name} server due to being flagged as hijacked account. Feel free to return once you get your account back and/or change password")
+            except:
+                pass
             await self.remove_guild_member(data.guild_id, data.author.id, "Hijacked account")
             return True
-        await self.create_message(dm.id, f"Hey, we don't allow sending links by people without colored role. Be more active to gain colored role before attempting to do so again (Violations before being flagged as hijacked account: {len(violations)}/5)")
+        try:
+            await self.create_message(dm.id, f"Hey, we don't allow sending links by people without colored role. Be more active to gain colored role before attempting to do so again (Violations before being flagged as hijacked account: {len(violations)}/5)")
+        except:
+            pass
         return True
 
 REPLACE_NOT_APLABETIC = re.compile(r'[^a-zA-Z ]')
