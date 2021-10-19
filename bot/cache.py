@@ -26,6 +26,8 @@ class Cache(Tasks, Cache):
         self.tracked_streams = []
         self.canned = {}
         self.responses = {}
+        self.msgs_violating_link_filter = set()
+        self.last_violating_user = None
         super().__init__(bot=bot, guild=guild, rds=rds)
     
     def load_from_database(self, ctx):

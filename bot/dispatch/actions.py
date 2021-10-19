@@ -180,9 +180,23 @@ URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
 async def remove_links(self: Bot, data: Message) -> bool:
     if len(data.member.roles) > 0 and any(self.cache[data.guild_id].roles.get(i, Role()).color for i in data.member.roles):
         return False
+    cache = self.cache[data.guild_id]
+    violations = cache.msgs_violating_link_filter
+    if cache.last_violating_user != data.author.id:
+        violations = set()
+        cache.last_violating_user = data.author.id
     if URL_PATTERN.search(data.content):
         log.debug('Deleting Message "%s" because of matching URL filter', data.content)
         await data.delete(reason="URL and user doesn't have colored Roles")
+        violations.add(data.id)
+        dm = await self.create_dm(data.author.id)
+        if len(violations) > 4:
+            log.debug('Kicking user %s because of amount of msgs violating link filter', data.author.id)
+            cache.last_violating_user = None
+            await self.create_message(dm.id, f"You've been kicked from {self.cache[data.guild_id].name} server due to being flagged as hijacked account. Feel free to return once you get your account back and/or change password")
+            await self.remove_guild_member(data.guild_id, data.author.id, "Hijacked account")
+            return True
+        await self.create_message(dm.id, f"Hey, we don't allow sending links by people without colored role. Be more active to gain colored role before attempting to do so again (Violations before being flagged as hijacked account: {len(violations)}/5)")
         return True
 
 REPLACE_NOT_APLABETIC = re.compile(r'[^a-zA-Z ]')
