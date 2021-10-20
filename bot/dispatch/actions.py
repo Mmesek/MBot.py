@@ -198,6 +198,16 @@ async def remove_links(self: Bot, data: Message) -> bool:
             except:
                 pass
             await self.remove_guild_member(data.guild_id, data.author.id, "Hijacked account")
+            await self.cache[data.guild_id].logging["infraction"](
+                guild_id=data.guild_id,
+                channel_id=data.channel_id,
+                message_id=data.id,
+                moderator=self.cache[data.guild_id].bot.user,
+                user_id=data.author.id,
+                reason="Hijacked Account",
+                duration=None,
+                type=types.Infraction.Kick
+            )
             return True
         try:
             await self.create_message(dm.id, f"Hey, we don't allow sending links by people without colored role. Be more active to gain colored role before attempting to do so again (Violations before being flagged as hijacked account: {len(violations)}/5)")
