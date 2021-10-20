@@ -176,25 +176,26 @@ async def deduplicate_across_channels(self: Bot, data: Message) -> bool:
 
 import re
 URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
-@onDispatch(event="message_create", priority=10)
+@onDispatch(event="message_create", priority=4)
 async def remove_links(self: Bot, data: Message) -> bool:
     if len(data.member.roles) > 0 and any(self.cache[data.guild_id].roles.get(i, Role()).color for i in data.member.roles):
         return False
     cache = self.cache[data.guild_id]
-    violations = cache.msgs_violating_link_filter
-    if cache.last_violating_user != data.author.id:
-        violations = set()
-        cache.last_violating_user = data.author.id
     if URL_PATTERN.search(data.content):
+        violations = cache.msgs_violating_link_filter
+        VIOLATIONS_COUNT = 3
+        if cache.last_violating_user != data.author.id:
+            violations = set()
+            cache.last_violating_user = data.author.id
         log.debug('Deleting Message "%s" because of matching URL filter', data.content)
         await data.delete(reason="URL and user doesn't have colored Roles")
         violations.add(data.id)
         dm = await self.create_dm(data.author.id)
-        if len(violations) > 4:
+        if len(violations) > (VIOLATIONS_COUNT - 1):
             log.debug('Kicking user %s because of amount of msgs violating link filter', data.author.id)
             cache.last_violating_user = None
             try:
-                await self.create_message(dm.id, f"You've been kicked from {self.cache[data.guild_id].guild.name} server due to being flagged as hijacked account. Feel free to return once you get your account back and/or change password")
+                await self.create_message(dm.id, f"You've been kicked from {self.cache[data.guild_id].guild.name} server due to being flagged as hijacked account (You have sent multiple links without having colored role). Feel free to return once you get your account back and/or change password")
             except:
                 pass
             await self.remove_guild_member(data.guild_id, data.author.id, "Hijacked account")
@@ -210,7 +211,7 @@ async def remove_links(self: Bot, data: Message) -> bool:
             )
             return True
         try:
-            await self.create_message(dm.id, f"Hey, we don't allow sending links by people without colored role. Be more active to gain colored role before attempting to do so again (Violations before being flagged as hijacked account: {len(violations)}/5)")
+            await self.create_message(dm.id, f"Hey, we don't allow sending links by people without colored role. Be more active to gain colored role before attempting to do so again (Violations before being flagged as hijacked account: {len(violations)}/{VIOLATIONS_COUNT})")
         except:
             pass
         return True
