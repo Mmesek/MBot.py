@@ -29,6 +29,10 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
             except Exception as ex:
                 r = None
         await self.remove_guild_member(data.guild_id, data.user.id, "Possible Raid")
+        try:
+            await self.remove_guild_member(data.guild_id, _last, "Possible Raid")
+        except:
+            pass
         self.cache[data.guild_id].last_join = data.user.id
         return True
 
