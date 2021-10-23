@@ -641,3 +641,84 @@ async def message_create(self: Bot, data: Message):
         except:
             return
         await data.delete(reason="Halloween Minigame: Zombified message")
+
+@register(group=Groups.SYSTEM, main=halloween, interaction=False)
+async def summary(ctx: Context):
+    '''
+    Shows event summary
+    '''
+    await ctx.deferred()
+    e = Embed()
+    e.setTitle("Thanks for Participating!")
+    s = ctx.db.sql.session()
+
+    history = (
+        s.query(HalloweenLog)
+        .filter(
+            HalloweenLog.server_id == ctx.guild_id, 
+            HalloweenLog.previous != HalloweenLog.race
+        )
+        .order_by(HalloweenLog.timestamp.asc())
+        .all()
+    )
+
+    from collections import Counter
+
+    counters = Counter(list(Race))
+    races = {i:{'y':[], 't':[]} for i in list(Race)}
+
+    import pandas as pd
+
+    for entry in history:
+        counters[entry.race] += 1
+        counters[entry.previous] -= 1
+        if entry.race is Race.Human:
+            continue
+        t = pd.to_datetime(entry.timestamp).tz_convert(None)
+        races[entry.race]['y'].append(counters[entry.race])
+        races[entry.race]['t'].append(t)
+
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(figsize=(12,8))
+    ax.patch.set_facecolor('#333333')
+    plt.style.use(['dark_background'])
+
+    LINE_STYLES = {
+        Race.Human:"",
+        Race.Vampire: "dotted",
+        Race.Werewolf: "dotted",
+        Race.Zombie: "dotted",
+        Race.Hunter: "-",
+        Race.Huntsmen: "-",
+        Race.Enchanter: "-"
+    }
+
+    COLORS = {
+        Race.Human:"white",
+        Race.Vampire: "#942710",
+        Race.Werewolf: "#aa6b00",
+        Race.Zombie: "#03803c",
+        Race.Hunter: "#ad4949",
+        Race.Huntsmen: "#be923d",
+        Race.Enchanter: "#4abe5f"
+    }
+
+    for race, v in races.items():
+        if race is Race.Human:
+            continue
+        y, t = v.values()
+        df = pd.Series(y, index=t)
+        #df = df.resample(resample).count()
+        ax.plot(df, label=race.name, marker='', linestyle=LINE_STYLES.get(race), color=COLORS.get(race))
+
+    from mlib import graphing
+    graphing.set_locator(ax, "Day", 3)
+    fig.autofmt_xdate()
+
+    graphing.set_legend(ax, "Halloween 2021 Summary", "Population", "Days", "upper left", framealpha=0)
+    fig.tight_layout()
+
+    img = graphing.create_image(fig)
+    filename = f"halloween_summary-{datetime.now().year}.png"
+    e.setImage("attachment://"+filename).setColor(16744206)
+    await ctx.send(embeds=[e], file=img, filename=filename)
