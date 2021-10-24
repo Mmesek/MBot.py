@@ -652,6 +652,83 @@ async def summary(ctx: Context):
     e.setTitle("Thanks for Participating!")
     s = ctx.db.sql.session()
 
+    stats = ["Players", "Turns", "Bites", "Cures"].extend(list(Race))
+    
+    most_bites = {}
+    most_cures = {}
+
+    #NOTE: Deduplicating these queries could be nice
+    query = (
+        s.query(
+            HalloweenLog.race,
+            HalloweenLog.user_id, 
+            sa.func.count(HalloweenLog.user_id)
+        ).filter(
+            HalloweenLog.server_id == ctx.guild_id, 
+            HalloweenLog.user_id != HalloweenLog.target_id,
+            HalloweenLog.previous != HalloweenLog.race,
+            HalloweenLog.race.in_(list(IMMUNE_TABLE.keys()))
+        )
+    )
+    monsters = (
+        query.group_by(HalloweenLog.user_id, HalloweenLog.race)
+        .order_by(sa.func.count(HalloweenLog.user_id).desc(), HalloweenLog.race).all()
+    )
+
+    query = (
+        s.query(
+            HalloweenLog.previous,
+            HalloweenLog.user_id, 
+            sa.func.count(HalloweenLog.user_id)
+        ).filter(
+            HalloweenLog.server_id == ctx.guild_id, 
+            HalloweenLog.user_id != HalloweenLog.target_id,
+            HalloweenLog.previous != HalloweenLog.race,
+            HalloweenLog.previous.in_(list(IMMUNE_TABLE.keys()))
+        )
+    )
+    hunters = (
+        query.group_by(HalloweenLog.user_id, HalloweenLog.previous)
+        .order_by(sa.func.count(HalloweenLog.user_id).desc()).all()
+    )
+
+    #FIXME: This can be simplified if we can get only top per race from db
+    for monster, user, count in monsters:
+        if monster not in most_bites or count > most_bites[monster][1]:
+            most_bites[monster] = (user, count)
+
+    for hunted, user, count in hunters:
+        hunter = IMMUNE_TABLE.get(hunted)
+        if hunter not in most_cures or count > most_cures[hunter][1]:
+            most_cures[hunter] = (user, count)
+
+    most_turned = (
+        s.query(
+            HalloweenLog.target_id, 
+            sa.func.count(HalloweenLog.target_id)
+        ).filter(
+            HalloweenLog.server_id == ctx.guild_id, 
+            HalloweenLog.user_id != HalloweenLog.target_id, 
+            HalloweenLog.previous != HalloweenLog.race
+        ).group_by(HalloweenLog.target_id)
+        .order_by(sa.func.count(HalloweenLog.target_id).desc())
+        .first()
+    )
+
+    #TODO: format nicely!
+    #e.setDescription("\n".join(stats))
+    def get_username(user_id):
+        from MFramework import Guild_Member
+        return ctx.cache.members.get(int(user_id), Guild_Member(user=User(username=user_id))).user.username
+    if most_bites:
+        most_bites = "\n".join([f"**{k.name}**: `{get_username(v[0])}` ({v[1]})" for k, v in most_bites.items()])
+        e.addField("Most Bites as", most_bites, True)
+    if most_cures:
+        most_cures = "\n".join([f"**{k.name}**: `{get_username(v[0])}` ({v[1]})" for k, v in most_cures.items()])
+        e.addField("Most Cures as", most_cures, True)
+    turned_user = get_username(most_turned[0])
+    e.addField("Mostly Turned", f"`{turned_user}` ({most_turned[1]})")
+
     history = (
         s.query(HalloweenLog)
         .filter(
