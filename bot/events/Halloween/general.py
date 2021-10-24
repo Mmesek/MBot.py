@@ -651,8 +651,6 @@ async def summary(ctx: Context):
     e = Embed()
     e.setTitle("Thanks for Participating!")
     s = ctx.db.sql.session()
-
-    stats = ["Players", "Turns", "Bites", "Cures"].extend(list(Race))
     
     most_bites = {}
     most_cures = {}
@@ -714,9 +712,42 @@ async def summary(ctx: Context):
         .order_by(sa.func.count(HalloweenLog.target_id).desc())
         .first()
     )
+    #TODO: Get total bites/cures and players
+    bites = s.query(sa.func.count(HalloweenLog.race)).filter(
+        HalloweenLog.server_id == ctx.guild_id, 
+        HalloweenLog.user_id != HalloweenLog.target_id, 
+        HalloweenLog.previous != HalloweenLog.race,
+        HalloweenLog.race.in_(IMMUNE_TABLE)
+    ).first()
+    cures = s.query(sa.func.count(HalloweenLog.race)).filter(
+        HalloweenLog.server_id == ctx.guild_id, 
+        HalloweenLog.user_id != HalloweenLog.target_id, 
+        HalloweenLog.previous != HalloweenLog.race,
+        HalloweenLog.race == Race.Human
+    ).first()
+    players = s.query(sa.func.count(Halloween.server_id)).filter(
+        Halloween.server_id == ctx.guild_id
+    ).first()
+    turns = s.query(sa.func.count(HalloweenLog.server_id)).filter(
+        HalloweenLog.server_id == ctx.guild_id,
+        HalloweenLog.previous != HalloweenLog.race,
+    ).first()
+    PLURALS = {
+        Race.Human: "Humans",
+        Race.Vampire: "Vampires",
+        Race.Werewolf: "Werewolves",
+        Race.Zombie: "Zombies",
+        Race.Hunter: "Hunters",
+        Race.Huntsmen: "Huntsmen",
+        Race.Enchanter: "Enchanters"
+    }
 
+    stats = [("Players",players[0]), ("Turns", turns[0]), ("Bites", bites[0]), ("Cures", cures[0])]
+    e.addField("Total", "\n".join([f"`{i[0]:10}`: `{i[1]:>5}`" for i in stats]))
+    total = sorted(Halloween.get_total(s, ctx.guild_id).items(), key=lambda x: x[1], reverse=True)
+    total = "\n".join([f"`{PLURALS.get(i[0], i[0]):10}`: `{i[1]:>5}`" for i in total])
+    e.addField("Member Counts", total)
     #TODO: format nicely!
-    #e.setDescription("\n".join(stats))
     def get_username(user_id):
         from MFramework import Guild_Member
         return ctx.cache.members.get(int(user_id), Guild_Member(user=User(username=user_id))).user.username
