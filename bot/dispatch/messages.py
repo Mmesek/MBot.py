@@ -8,7 +8,7 @@ async def message_create(self: Bot, data: Message):
         if any(i.id == self.user_id for i in data.mentions):
             await self.trigger_typing_indicator(data.channel_id)
         from .actions import responder
-        for emoji in EMOJI.findall(data.content):
+        for emoji in set(EMOJI.findall(data.content)):
             await responder(self, data, emoji)
 
 @onDispatch
