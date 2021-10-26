@@ -149,6 +149,7 @@ class Halloween(ServerID, UserID, Base):
         if self.race is Race.Human:
             if self.user_id == target_user:
                 t = self
+                self.protected = datetime.now(tz=timezone.utc) + timedelta(hours=1)
         else:
             t = Halloween.fetch_or_add(s, server_id=self.server_id, user_id = target_user)
         
@@ -156,9 +157,9 @@ class Halloween(ServerID, UserID, Base):
                 raise HalloweenException("error_protected")
         
         remaining = Halloween.get_total(s, self.server_id, t.race).get(t.race, 1)
-        if (self.race in IMMUNE_TABLE and (t.race in IMMUNE_TABLE or IMMUNE_TABLE.get(self.race) == t.race or self.race == t.race)) or remaining == 1:
+        if not race and (self.race in IMMUNE_TABLE and (t.race in IMMUNE_TABLE or IMMUNE_TABLE.get(self.race) == t.race or self.race == t.race)) or remaining == 1:
             raise Immune("target")
-        elif self.race in HUNTERS and CURE_TABLE.get(self.race, None) != t.race:
+        elif not race and self.race in HUNTERS and CURE_TABLE.get(self.race, None) != t.race:
             raise HalloweenException("error_cure", currentClass=CURE_TABLE.get(self.race))
 
         if race:
@@ -312,7 +313,7 @@ def inner(f, races: List[Race], main: object, should_register: bool = True):
 @register(group=Groups.GLOBAL, main=halloween)
 def humans(cls=None, *, should_register: bool=True):
     '''Commands related to humans'''
-    i = functools.partial(inner, races=[Race.Human], main=humans, should_register=should_register)
+    i = functools.partial(inner, races=[Race.Human, Race.Vampire, Race.Werewolf, Race.Zombie], main=humans, should_register=should_register)
     if cls:
         return i(cls)
     return i
@@ -324,6 +325,10 @@ async def enlist(ctx: Context, guild: Guilds, *, session: sa.orm.Session, this_u
     ------
     guild:
         Hunter's guild you want to join'''
+    if this_user.race is not Race.Human:
+        total = sorted(Halloween.get_total(session, ctx.guild_id).items(), key=lambda x: x[1])
+        if guild is not Guilds.Any and total.get(guild.value) > total.get(CURE_TABLE.get(guild.value)) // 3:
+            raise Cant("enlist", ctx.language)
     if guild is Guilds.Any:
         total = sorted(Halloween.get_total(session, ctx.guild_id).items(), key=lambda x: x[1])
         if total:
@@ -343,6 +348,8 @@ async def drink(ctx: Context, type: DRINKS, *, session: sa.orm.Session, this_use
     ------
     type:
         Drink you want to drink'''
+    if this_user.race is not Race.Human:
+        raise Cant("drink", ctx.language)
     previous = session.query(HalloweenLog).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.user_id == ctx.user_id).first()
     if previous and type is not DRINKS.Nightmare:
         return "Sadly, you can choose your poison only first time around as a freshblood. Nightmarish potion is your only option to drink now."
