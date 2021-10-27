@@ -305,6 +305,11 @@ async def word(ctx: Context, search: str = None) -> Embed:
         Definition of word to show. Leave empty for random
     '''
     await ctx.deferred()
+    if not search:
+        with open('/usr/share/dict/words') as f:
+            words = [word.strip() for word in f]
+        from random import SystemRandom as random
+        search = random().choice(list(words))
     url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{search}"
     r = requests.get(url)
     r = r.json()
