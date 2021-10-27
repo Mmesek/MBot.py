@@ -294,3 +294,51 @@ async def steam(ctx: Context, game: str) -> Embed:
         t += '\n- ' + g
     embed = Embed().setDescription(t[:2024])
     return embed
+
+@register(group=Groups.GLOBAL, main=search)
+async def word(ctx: Context, search: str = None) -> Embed:
+    '''
+    Search for a word
+    Params
+    ------
+    search:
+        Definition of word to show. Leave empty for random
+    '''
+    await ctx.deferred()
+    url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{search}"
+    r = requests.get(url)
+    r = r.json()
+    if type(r) is dict:
+        embed = Embed()
+        embed.setTitle(r.get("title", "Error"))
+        embed.setDescription(r.get("message", "Not Found"))
+        return embed
+    embeds = []
+    for entry in r[:3]:
+        embed = Embed().setColor(6579043)
+
+        embed.setTitle(entry.get("word", search).title())
+        if entry.get("phonetic", None):
+            embed.setFooter(f"Phonetic: {entry.get('phonetic')}")
+        embed.addField("Origin", entry.get("origin", "-"), True)
+
+        meanings = []
+        for meaning in entry.get("meanings", [])[:3]:
+            part = meaning.get('partOfSpeech')
+            for definition in meaning.get("definitions", {}):
+                result = f"- *({part})* {definition['definition']}"
+                if definition.get("example", None):
+                    result += "\n**Example**: " + definition['example']
+                if definition.get("synonyms", None):
+                    result += "\n**Synonyms**: " + ", ".join(definition["synonyms"][:5])
+                    if len(definition["synonyms"]) > 5:
+                        result += "..."
+                if definition.get("antonyms", None):
+                    result += "\n**Antonyms**: " + ", ".join(definition["antonyms"][:5])
+                    if len(definition["antonyms"]) > 5:
+                        result += "..."
+                meanings.append(result)
+        embed.setDescription("\n\n".join(meanings))
+
+        embeds.append(embed)
+    return embeds
