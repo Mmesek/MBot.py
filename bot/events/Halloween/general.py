@@ -66,7 +66,7 @@ class HalloweenCooldown(CacheCooldown):
             top_hunter = top[1]
             top_ratio = 1 / (top_hunted / top_hunter)
             current_faction = total.get(user.race, 1)
-            currently_hunted = total.get(HUNTERS[user.race], 1)
+            currently_hunted = total.get(CURE_TABLE[user.race], 1)
             current_ratio = 1 / (currently_hunted / current_faction)
             self.multipler = 1 - (top_ratio - current_ratio)
             return
