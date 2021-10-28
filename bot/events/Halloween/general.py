@@ -180,7 +180,7 @@ class Halloween(ServerID, UserID, Base):
                 HalloweenLog.previous != HalloweenLog.race
             ).first()
 
-            if turn_count and SystemRandom().randint(0, 1000) >= ((1000 - turn_count[0]) if turn_count[0] < 1000 else 1):
+            if turn_count and SystemRandom().randint(0, 1000) <= (turn_count[0] if turn_count[0] < 1000 else 999):
                 raise HalloweenException("error_self_defend")
 
         remaining = Halloween.get_total(s, self.server_id, t.race).get(t.race, 1)
