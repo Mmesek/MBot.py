@@ -61,7 +61,10 @@ class HalloweenCooldown(CacheCooldown):
         if user.race not in IMMUNE_TABLE.keys():
             if user.race is Race.Human:
                 return
-            top = sorted(total.items(), key=lambda x: x[1])[-1]
+            try:
+                top = sorted(filter(lambda x: x[0] in HUNTERS, total.items()), key=lambda x: x[1])[-1]
+            except:
+                return
             top_hunted = total.get(top[0], 1)
             top_hunter = top[1]
             top_ratio = 1 / (top_hunted / top_hunter)
