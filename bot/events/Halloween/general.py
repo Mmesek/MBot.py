@@ -343,7 +343,7 @@ async def enlist(ctx: Context, guild: Guilds, *, session: sa.orm.Session, this_u
     guild:
         Hunter's guild you want to join'''
     if this_user.race is not Race.Human:
-        total = sorted(Halloween.get_total(session, ctx.guild_id).items(), key=lambda x: x[1])
+        total = Halloween.get_total(session, ctx.guild_id)
         if guild is not Guilds.Any and total.get(guild.value) > total.get(CURE_TABLE.get(guild.value)) // 3:
             raise Cant("enlist", ctx.language)
     if guild is Guilds.Any:
