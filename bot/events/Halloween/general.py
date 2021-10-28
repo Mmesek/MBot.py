@@ -149,7 +149,10 @@ class Halloween(ServerID, UserID, Base):
         if self.race is Race.Human:
             if self.user_id == target_user:
                 t = self
-                self.protected = datetime.now(tz=timezone.utc) + timedelta(hours=1)
+                if race in HUNTERS:
+                    self.protected = datetime.now(tz=timezone.utc) + timedelta(hours=1)
+                else:
+                    self.protected = datetime.now(tz=timezone.utc) + timedelta(minutes=30)
         else:
             t = Halloween.fetch_or_add(s, server_id=self.server_id, user_id = target_user)
         
