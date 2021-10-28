@@ -175,7 +175,7 @@ class Halloween(ServerID, UserID, Base):
 
             turn_count = s.query(sa.func.count(HalloweenLog.target_id)).filter(
                 HalloweenLog.server_id == self.server_id, 
-                HalloweenLog.target_id == target_user.id, 
+                HalloweenLog.target_id == target_user, 
                 HalloweenLog.user_id != HalloweenLog.target_id, 
                 HalloweenLog.previous != HalloweenLog.race
             ).first()
