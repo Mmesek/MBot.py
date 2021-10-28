@@ -626,7 +626,7 @@ async def info(ctx: Context, user: User=None):
     if h_user.protected and h_user.protected > now:
         e.addField("Protected for", s2t(int((h_user.protected - now).total_seconds())), True)
     turn_count = s.query(sa.func.count(HalloweenLog.target_id)).filter(HalloweenLog.server_id == ctx.guild_id, HalloweenLog.target_id == user.id, HalloweenLog.user_id != HalloweenLog.target_id, HalloweenLog.previous != HalloweenLog.race).first()
-    e.setFooter(f"Chance for self-defence: {turn_count/10}%")
+    e.setFooter(f"Chance for self-defence: {turn_count[0]/10}%")
     return [e]
 
 from MFramework import onDispatch, Bot, Guild_Member_Add, Message
