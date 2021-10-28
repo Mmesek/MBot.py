@@ -118,6 +118,7 @@
         "error_cure":"Provided user is not %{currentClass}",
         "error_defend":"You can't defend yourself in that case",
         "error_protected":"Provided user is currently protected",
+        "error_self_defend":"Your target managed to dodge and self defend!",
         "error_betray":"Couldn't convince them to betray their kind.",
         "error_generic":"User is not specified",
         "available_enlist":"Available classes:\n- Vampire Hunter\n- Huntsman\n- Zombie Slayer",

@@ -169,10 +169,20 @@ class Halloween(ServerID, UserID, Base):
                     self.protected = datetime.now(tz=timezone.utc) + timedelta(minutes=30)
         else:
             t = Halloween.fetch_or_add(s, server_id=self.server_id, user_id = target_user)
-        
+
             if t.protected and (t.protected > datetime.now(tz=timezone.utc)):
                 raise HalloweenException("error_protected")
-        
+
+            turn_count = s.query(sa.func.count(HalloweenLog.target_id)).filter(
+                HalloweenLog.server_id == self.server_id, 
+                HalloweenLog.target_id == target_user.id, 
+                HalloweenLog.user_id != HalloweenLog.target_id, 
+                HalloweenLog.previous != HalloweenLog.race
+            ).first()
+
+            if turn_count and SystemRandom().randint(0, 1000) >= ((1000 - turn_count[0]) if turn_count[0] < 1000 else 1):
+                raise HalloweenException("error_self_defend")
+
         remaining = Halloween.get_total(s, self.server_id, t.race).get(t.race, 1)
         if not race and (self.race in IMMUNE_TABLE and (t.race in IMMUNE_TABLE or IMMUNE_TABLE.get(self.race) == t.race or self.race == t.race)) or remaining == 1:
             raise Immune("target")
