@@ -22,6 +22,7 @@ class HalloweenCooldown(CacheCooldown):
     current_faction: int = 0
     target_faction: int = 0
     remaining_factions: int = 0
+    multipler: float = 1.0
     def __init__(self, ctx: Context, cooldown: timedelta, cooldown_type: str, func_args: Dict[str, Any], target_user: Optional[Snowflake] = None) -> None:
         super().__init__(ctx=ctx, cooldown=cooldown, cooldown_type=cooldown_type)
         s = func_args.get("session", None)
@@ -33,7 +34,7 @@ class HalloweenCooldown(CacheCooldown):
     
     @property
     def cooldown(self) -> timedelta:
-        return self._cooldown + self.cooldown_var
+        return (self._cooldown + self.cooldown_var) * self.multipler
 
     @property
     def is_top_faction(self) -> bool:
@@ -56,9 +57,19 @@ class HalloweenCooldown(CacheCooldown):
     def get_race_counts(self, target_user_id: Snowflake) -> Tuple[int, int, int]:
         '''Returns count for current user faction, user's target faction and collectively remaining factions'''
         user = Halloween.fetch_or_add(self.session, server_id=self.ctx.guild_id, user_id=self.ctx.user_id)
-        if user.race not in IMMUNE_TABLE.keys():
-            return
         total = Halloween.get_total(self.session, self.ctx.guild_id, user.race)
+        if user.race not in IMMUNE_TABLE.keys():
+            if user.race is Race.Human:
+                return
+            top = sorted(total.items(), key=lambda x: x[1])[-1]
+            top_hunted = total.get(top[0], 1)
+            top_hunter = top[1]
+            top_ratio = 1 / (top_hunted / top_hunter)
+            current_faction = total.get(user.race, 1)
+            currently_hunted = total.get(HUNTERS[user.race], 1)
+            current_ratio = 1 / (currently_hunted / current_faction)
+            self.multipler = 1 - (top_ratio - current_ratio)
+            return
         self.current_faction = total.get(user.race, 1)
 
         target_user = Halloween.fetch_or_add(self.session, server_id=self.ctx.guild_id, user_id=target_user_id)
