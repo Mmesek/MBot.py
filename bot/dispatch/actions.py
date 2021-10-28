@@ -75,6 +75,13 @@ async def snowball_hunt(ctx: Bot, data: Message):
 async def halloween_hunt(ctx: Bot, data: Message):
     await _handle_reaction(ctx, data, "🎃", "Pumpkin", delete_own=False, first_only=True, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins, announce_msg=True)
 
+@onDispatch(event="message_create")
+@Event(month=11, day=5)
+@Chance(5)
+async def moka_hunt(ctx: Bot, data: Message):
+    if data.guild_id == 289739584546275339:
+        await _handle_reaction(ctx, data, "mokahide:841299054058405968", "Moka", delete_own=False, first_only=True, logger="moka_hunt", statistic=types.Statistic.Spawned_Moka, announce_msg=True)
+
 async def responder(ctx: Bot, msg: Message, emoji: str):
     emoji = ctx.cache[msg.guild_id].custom_emojis.get(emoji.lower().strip(':'))
     if type(emoji) is str:
