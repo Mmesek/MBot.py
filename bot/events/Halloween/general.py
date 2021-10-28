@@ -460,7 +460,7 @@ async def defend(ctx: Context, target: User, *, session: sa.orm.Session, this_us
         target_user.protected = delta
         session.add(HalloweenLog(server_id=ctx.guild_id, target_id=target.id, previous=target_user.race, race=target_user.race, user_id=this_user.user_id))
         session.commit()
-        return _t("success_defend", ctx.language, duration=duration)
+        return _t("success_defend", ctx.language, duration=duration, target=target.id)
 
     raise HalloweenException("error_protected", ctx.language)
 
