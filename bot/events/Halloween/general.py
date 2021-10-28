@@ -65,7 +65,7 @@ class HalloweenCooldown(CacheCooldown):
                 top = sorted(filter(lambda x: x[0] in HUNTERS, total.items()), key=lambda x: x[1])[-1]
             except:
                 return
-            top_hunted = total.get(top[0], 1)
+            top_hunted = total.get(CURE_TABLE[top[0]], 1)
             top_hunter = top[1]
             top_ratio = 1 / (top_hunted / top_hunter)
             current_faction = total.get(user.race, 1)
