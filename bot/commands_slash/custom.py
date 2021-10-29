@@ -189,3 +189,24 @@ async def when(ctx: Context, arg:str=None) -> str:
     if delta.total_seconds() < 0:
         return "Released!"
     return f"Remaining `{delta}` until (according to Steam) <t:{timestamp}:D> which is <t:{timestamp}:R>"
+
+@register(group=Groups.GLOBAL, guild=289739584546275339)
+async def ayo(ctx: Context, captions: str="Farewell, we will tell people you went to Harran for Olympics"):
+    '''
+    Shows what happened with Ayo
+    Params
+    ------
+    captions:
+        text to place on image
+    '''
+    from PIL import Image, ImageDraw, ImageFont
+    img = Image.open('data/Hakon_Betrayal.png')
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("data/Roboto-Regular.ttf", size=65)
+    from textwrap import wrap
+    captions = wrap(captions, 38)
+    y = 470
+    draw.multiline_text((10,y), "\n".join(captions), fill=(255,255,255), font=font, align='center', stroke_fill=(0,0,0), stroke_width=4)
+    from mlib.colors import buffered_image
+    img_str = buffered_image(img)
+    await ctx.reply(file=img_str, filename="WhatReallyHappened.png")
