@@ -3,7 +3,8 @@ from ..database import types
 async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, 
                     _type: types.Item=types.Item.Event, 
                     delete_own: bool=True, first_only: bool=False, 
-                    logger: str=None, statistic: types.Statistic=None, announce_msg: bool = False):
+                    logger: str=None, statistic: types.Statistic=None, announce_msg: bool = False,
+                    quantity: int = 1):
     import random, asyncio
     log.debug("Spawning reaction with %s", name)
     await data.typing()
@@ -39,7 +40,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
     
     from ..database import items
     item = items.Item.fetch_or_add(s, name=name, type=_type)
-    i = items.Inventory(item)
+    i = items.Inventory(item, quantity)
     for _user in users:
         u = models.User.fetch_or_add(s, id=getattr(user, 'id', _user.user_id))
         t = u.claim_items(data.guild_id, [i])
@@ -77,10 +78,14 @@ async def halloween_hunt(ctx: Bot, data: Message):
 
 @onDispatch(event="message_create")
 @Event(month=11, day=5)
-@Chance(5)
+@Chance(10)
 async def moka_hunt(ctx: Bot, data: Message):
     if data.guild_id == 289739584546275339:
-        await _handle_reaction(ctx, data, "mokahide:841299054058405968", "Moka", delete_own=False, first_only=True, logger="moka_hunt", statistic=types.Statistic.Spawned_Moka, announce_msg=True)
+        from random import SystemRandom as random
+        if random.randint(1,10) <= 3:
+            await _handle_reaction(ctx, data, "mokahide:841299054058405968", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", statistic=types.Statistic.Spawned_Moka, announce_msg=True, quantity=10)
+        else:
+            await _handle_reaction(ctx, data, "", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", statistic=types.Statistic.Spawned_MokaTreats, announce_msg=True)
 
 async def responder(ctx: Bot, msg: Message, emoji: str):
     emoji = ctx.cache[msg.guild_id].custom_emojis.get(emoji.lower().strip(':'))
