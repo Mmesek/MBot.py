@@ -199,6 +199,7 @@ async def ayo(ctx: Context, captions: str="Farewell, we will tell people you wen
     captions:
         text to place on image
     '''
+    await ctx.deferred()
     from PIL import Image, ImageDraw, ImageFont
     img = Image.open('data/Hakon_Betrayal.png')
     draw = ImageDraw.Draw(img)
