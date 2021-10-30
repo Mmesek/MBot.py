@@ -52,8 +52,8 @@ class User(HasDictSettingsRelated, Snowflake, Base):
             for owned_item in self.items:
                 if item.item.name == owned_item.item.name:
                     owned_item.quantity -= item.quantity
-                    if owned_item.quantity == 0:
-                        self.items.remove(item) # No idea if it'll work
+                    #if owned_item.quantity == 0:
+                    #    self.items.remove(item) # No idea if it'll work
                         #pass # TODO: Remove from mapping/association or something
                     continue
 
