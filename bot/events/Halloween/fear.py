@@ -12,7 +12,7 @@ from MFramework import register, Context, User, Groups, Embed
 from MFramework.commands.cooldowns import cooldown
 from MFramework.database.alchemy.mixins import ServerID
 
-from .general import HalloweenCooldown, halloween, FearLog
+from .general import HalloweenCooldown, halloween
 from ...database import items, types, models
 from ...database.mixins import UserID
 
@@ -22,6 +22,8 @@ class Monsters(Enum):
     Skeleton = 200
     Mummy = 800
     Shoggoth = 3200
+
+monsterPower = {i.name: i.value for i in Monsters}
 
 class FearLog(ServerID, UserID, Timestamp, Base):
     timestamp: datetime = sa.Column(sa.TIMESTAMP(timezone=True), primary_key=True, server_default=sa.func.now())
@@ -85,13 +87,14 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
             e.addField("Current Fear", f"{owned_fear.quantity}", True)
         carved_pumpkins = next(filter(lambda x: x.item.name == 'Jack-o-Latern', u.items), None)
         if carved_pumpkins:
-            e.addField("Currently Carved Pumpkins", f"{carved_pumpkins.quantity}", True)
-        summoned_entites = [i for i in u.items if i.item.name in Monsters]
+            e.addField("Carved Pumpkins", f"{carved_pumpkins.quantity}", True)
+        summoned_entites = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
         entities = []
         for entity in summoned_entites:
             entities.append(f"{entity.item.name} - {entity.quantity}")
         if entities:
             e.addField("Current Army", "\n".join(entities), True)
+        return e
 
     if owned_fear.quantity < monster.value*quantity:
         return "You don't have enough fear to summon that entity!"
@@ -122,14 +125,14 @@ async def scare(ctx: Context, target: User):
     
     u = models.User.fetch_or_add(s, id=ctx.user_id)
     user_fear = next(filter(lambda x: x.item_id == fear_item.id, u.items), 0)
-    user_monsters = [i for i in u.items if i.item.name in Monsters]
-    user_power = sum([Monsters(i.item.name).value*i.quantity for i in user_monsters])
+    user_monsters = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
+    user_power = sum([monsterPower.get(i.item.name)*i.quantity for i in user_monsters])
     
     t = models.User.fetch_or_add(s, id=target.id)
     target_fear = next(filter(lambda x: x.item_id == fear_item.id, t.items), 0)
-    target_monsters = [i for i in t.items if i.item.name in Monsters]
-    target_power = sum([Monsters(i.item.name).value*i.quantity for i in target_monsters])
-    carved_pumpkins = next(filter(lambda x: x.item.name == 'Jack-o-Latern', t.items))
+    target_monsters = [i for i in t.items if i.item.name in list([j.name for j in Monsters])]
+    target_power = sum([monsterPower.get(i.item.name)*i.quantity for i in target_monsters])
+    carved_pumpkins = next(filter(lambda x: x.item.name == 'Jack-o-Latern', t.items), 0)
     target_power += carved_pumpkins
 
     def calculate_fear(_fear):
@@ -140,7 +143,7 @@ async def scare(ctx: Context, target: User):
         d = random().randint(2,10)
         if 50 < _fear // d:
             return _fear // d
-        return 50#points
+        return random().randint(10,50)#points
     
     def award_points(winner, loser, _fear):
         reward_points = calculate_fear(_fear)
