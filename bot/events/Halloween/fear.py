@@ -163,12 +163,12 @@ async def scare(ctx: Context, target: User):
         return transaction, reward.quantity
 
     if user_power > target_power:
-        transaction, reward = award_points(u, t, target_fear)
+        transaction, reward = award_points(u, t, target_fear.quantity)
         result = f"<@{ctx.user_id}>'s Army, Sucessfully scared <@{target.id}> and gained {reward} of Fear!"
     elif user_power == target_power:
         return "Draw! Both Armies tried to scare each other but failed!"
     else:
-        transaction, reward = award_points(t, u, user_fear)
+        transaction, reward = award_points(t, u, user_fear.quantity)
         result = f"<@{ctx.user_id}> got scared by <@{target.id}>'s army and lost {reward} of Fear!"
     
     s.add(transaction)
