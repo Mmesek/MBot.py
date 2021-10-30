@@ -192,10 +192,12 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
 class Leaderboards(Enum):
     Easter_Egg = "Easter Egg"
     Pumpkin_Hunt = "Pumpkin"
+    #Halloween = "Halloween"
+    Fear = "Fear"
+    Candies = "Halloween Treats"
     #Cookies = "Cookie"
     #Gifting = "Present"
     #Advent = "Advent"
-    #Halloween = ""
     #Aoc = 11
     #Christmas = 12
 
@@ -248,7 +250,7 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
     # //NOTE: Kinda experimental, when guild is below 1000 members we'll pass to IN current members
     # otherwise we'll get x10 more than limit and attempt to filter them to ones within current guild
     # Whether doing any of this makes any sense is heavly debatable but should do the job
-    inventories = s.query(items.Inventory).filter(items.Inventory.item_id == item.id)
+    inventories = s.query(items.Inventory).filter(items.Inventory.item_id == item.id, items.Inventory.quantity > 0)
     og_limit = limit
     if len(ctx.cache.members.keys()) < 1000:
         inventories = inventories.filter(items.Inventory.user_id.in_(list(ctx.cache.members.keys())))

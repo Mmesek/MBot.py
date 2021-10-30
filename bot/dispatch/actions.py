@@ -4,7 +4,8 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
                     _type: types.Item=types.Item.Event, 
                     delete_own: bool=True, first_only: bool=False, 
                     logger: str=None, statistic: types.Statistic=None, announce_msg: bool = False,
-                    quantity: int = 1):
+                    quantity: int = 1,
+                    require: str = None, require_quantity: int = 1):
     import random, asyncio
     log.debug("Spawning reaction with %s", name)
     await data.typing()
@@ -39,17 +40,50 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
         users = [user]
     
     from ..database import items
+    if require:
+        required_item = items.Item.fetch_or_add(s, name=require)
+        required_inv = items.Inventory(required_item, quantity=require_quantity)
+
     item = items.Item.fetch_or_add(s, name=name, type=_type)
     i = items.Inventory(item, quantity)
+    claimed_by = []
+    not_enough = []
     for _user in users:
-        u = models.User.fetch_or_add(s, id=getattr(user, 'id', _user.user_id))
+        uid = getattr(_user, 'id', None) or getattr(_user, 'user_id')
+        u = models.User.fetch_or_add(s, id=uid)
+        has = False
+        if require:
+            has = next(filter(lambda x: x.item_id == required_item.id and x.quantity >= required_inv.quantity, u.items), None)
+        else:
+            has = True
+        if not has:
+            not_enough.append(u.id)
+            continue
         t = u.claim_items(data.guild_id, [i])
+        if require:
+            u.remove_item(required_inv, transaction=t)
         s.add(t)
+        claimed_by.append(u.id)
+    if not claimed_by and not_enough:
+        users = ", ".join([f"<@{i}>" for i in not_enough])
+        await data.reply(f"{users} didn't have enough candies ({require_quantity}) and ran away scared!")
+        return
     await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
     if announce_msg:
         # TODO If it's not first-only, there should be some additional logic to get list
-        await data.reply(f"<@{user.user_id}> got {reaction}!", allowed_mentions=Allowed_Mentions())
+        users = ", ".join([f"<@{i}>" for i in claimed_by])
+        result= f"{users} got {reaction} {item.name}"
+        if quantity > 1:
+            result += f" x {quantity}"
+        if require:
+            result += f" for {required_item.emoji} {required_item.name}"
+            if require_quantity > 1:
+                result += f" x {require_quantity}" 
+        result += "!"
+        #if require and not_enough:
+        #    result+=" Rest didn't have enough and ran away scared!"
+        await data.reply(result, allowed_mentions=Allowed_Mentions())
 
 from MFramework.commands.decorators import Event, Chance
 @onDispatch(event="message_create")
@@ -75,6 +109,25 @@ async def snowball_hunt(ctx: Bot, data: Message):
 @Chance(1)
 async def halloween_hunt(ctx: Bot, data: Message):
     await _handle_reaction(ctx, data, "🎃", "Pumpkin", delete_own=False, first_only=True, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins, announce_msg=True)
+
+@onDispatch(event="message_create")
+@Event(month=10)
+@Chance(7.5)
+async def treat_hunt(ctx: Bot, data: Message):
+    import random
+    q = random.SystemRandom().randint(1,5)
+    emoji = random.SystemRandom().choice(["🍬", "🧁", "🍭", "🍫", "🍪"])
+    await _handle_reaction(ctx, data, emoji, "Halloween Treats", delete_own=False, first_only=False, logger="halloween_hunt", announce_msg=True, quantity=q)
+
+@onDispatch(event="message_create")
+@Event(month=10)
+@Chance(2.5)
+async def fear_hunt(ctx: Bot, data: Message):
+    import random
+    q = random.SystemRandom().randint(10, 32)
+    rq = random.SystemRandom().randint(1,5)
+    emoji = random.SystemRandom().choice(["💀", "🕷", "🕸", "🦇", "🦴", "☠", "🕯", "👻"])
+    await _handle_reaction(ctx, data, emoji, "Fear", _type=types.Item.Currency, delete_own=False, first_only=True, logger="halloween_hunt", announce_msg=True, quantity=q, require="Halloween Treats", require_quantity=rq)
 
 @onDispatch(event="message_create")
 @Event(month=11, day=5)
