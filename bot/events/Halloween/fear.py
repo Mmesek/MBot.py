@@ -77,6 +77,10 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
     u = models.User.fetch_or_add(s, id=ctx.user_id)
     fear_item = items.Item.fetch_or_add(s, name="Fear")
     owned_fear = next(filter(lambda x: x.item_id == fear_item.id, u.items), None)
+    if owned_fear:
+        fear_amount = owned_fear.quantity
+    else:
+        fear_amount = 0
     if not monster:
         monsters = []
         for monster in Monsters:
@@ -96,7 +100,7 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
             e.addField("Current Army", "\n".join(entities), True)
         return e
 
-    if owned_fear.quantity < monster.value*quantity:
+    if fear_amount < monster.value*quantity:
         return "You don't have enough fear to summon that entity!"
     fear_prc = items.Inventory(fear_item, monster.value*quantity)
     item = items.Item.fetch_or_add(s, name=monster.name, type=types.Item.Entity)
