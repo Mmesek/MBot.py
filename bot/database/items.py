@@ -22,7 +22,7 @@ class Event(Default, Base):
         self.start = start
         self.end = end
 
-
+check_type = type
 class Item(Default, Cooldown, Base):
     type: types.Item = Column(Enum(types.Item), nullable=False)
     description: str = Column(UnicodeText)
@@ -37,9 +37,9 @@ class Item(Default, Cooldown, Base):
     
     icon: str = Column(String, nullable=True)
     emoji: str = Column(String, nullable=True)
-    def __init__(self, name: str, _type: types.Item) -> None:
+    def __init__(self, name: str, type: types.Item) -> None:
         super().__init__(name)
-        self.type = _type if type(_type) is not str else types.Item.get(_type)
+        self.type = type if check_type(type) is not str else types.Item.get(type)
 
 
 class Inventory(ItemID, UserID, Base):
