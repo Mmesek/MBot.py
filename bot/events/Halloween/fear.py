@@ -152,13 +152,13 @@ async def scare(ctx: Context, target: User):
             return _fear // d
         return random().randint(10,50)#points
     
-    def award_points(winner, loser, _fear):
+    def award_points(winner: models.User, loser: models.User, _fear):
         reward_points = calculate_fear(_fear)
         reward = items.Inventory(fear_item, reward_points)
 
         transaction = winner.claim_items(ctx.guild_id, [reward])
         if _fear > reward_points:
-            loser.remove_item(reward, transaction=t)
+            loser.remove_item(reward, transaction=transaction)
 
         return transaction, reward.quantity
 
