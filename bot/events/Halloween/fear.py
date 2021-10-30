@@ -127,6 +127,8 @@ async def scare(ctx: Context, target: User):
     user_fear = next(filter(lambda x: x.item_id == fear_item.id, u.items), 0)
     user_monsters = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
     user_power = sum([monsterPower.get(i.item.name)*i.quantity for i in user_monsters])
+    if user_power == 0:
+        return "You don't have any army to send!"
     
     t = models.User.fetch_or_add(s, id=target.id)
     target_fear = next(filter(lambda x: x.item_id == fear_item.id, t.items), 0)
