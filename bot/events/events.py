@@ -1,5 +1,5 @@
 from MFramework import Context, User, Groups, register
-from .Halloween import general # noqa: F401
+from .Halloween import general, fear # noqa: F401
 @register(group=Groups.GLOBAL)
 async def event(ctx: Context, *, language):
     '''Event related commands'''
