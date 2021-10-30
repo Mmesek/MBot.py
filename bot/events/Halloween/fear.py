@@ -114,6 +114,8 @@ async def scare(ctx: Context, target: User):
     user:
         User you want to scare
     '''
+    if target.id == ctx.user_id:
+        return "You can't send your army on your own self!"
     s = ctx.db.sql.session()
 
     fear_item = items.Item.fetch_or_add(s, name="Fear")
