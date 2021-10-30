@@ -134,8 +134,9 @@ async def scare(ctx: Context, target: User):
     target_fear = next(filter(lambda x: x.item_id == fear_item.id, t.items), 0)
     target_monsters = [i for i in t.items if i.item.name in list([j.name for j in Monsters])]
     target_power = sum([monsterPower.get(i.item.name)*i.quantity for i in target_monsters])
-    carved_pumpkins = next(filter(lambda x: x.item.name == 'Jack-o-Latern', t.items), 0)
-    target_power += carved_pumpkins
+    carved_pumpkins = next(filter(lambda x: x.item.name == 'Jack-o-Latern', t.items), None)
+    if carved_pumpkins:
+        target_power += carved_pumpkins.quantity
 
     def calculate_fear(_fear):
         #power_difference = user_power - target_power
