@@ -70,7 +70,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
         return
     await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
-    if announce_msg:
+    if announce_msg and claimed_by:
         # TODO If it's not first-only, there should be some additional logic to get list
         users = ", ".join([f"<@{i}>" for i in claimed_by])
         result= f"{users} got {reaction} {item.name}"
