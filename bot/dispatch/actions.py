@@ -51,8 +51,8 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
         u = models.User.fetch_or_add(s, id=uid)
         has = False
         if require:
-            has = next(filter(lambda x: x.item_id == required_item.id and x.quantity >= required_inv.quantity, u.items), None)
             required_inv = items.Inventory(required_item, quantity=require_quantity)
+            has = next(filter(lambda x: x.item_id == required_item.id and x.quantity >= required_inv.quantity, u.items), None)
         else:
             has = True
         if not has:
