@@ -42,10 +42,8 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
     from ..database import items
     if require:
         required_item = items.Item.fetch_or_add(s, name=require)
-        required_inv = items.Inventory(required_item, quantity=require_quantity)
 
     item = items.Item.fetch_or_add(s, name=name, type=_type)
-    i = items.Inventory(item, quantity)
     claimed_by = []
     not_enough = []
     for _user in users:
@@ -54,11 +52,13 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
         has = False
         if require:
             has = next(filter(lambda x: x.item_id == required_item.id and x.quantity >= required_inv.quantity, u.items), None)
+            required_inv = items.Inventory(required_item, quantity=require_quantity)
         else:
             has = True
         if not has:
             not_enough.append(u.id)
             continue
+        i = items.Inventory(item, quantity)
         t = u.claim_items(data.guild_id, [i])
         if require:
             u.remove_item(required_inv, transaction=t)
