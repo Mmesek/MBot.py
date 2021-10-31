@@ -85,7 +85,7 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
         monsters = []
         for monster in Monsters:
             monsters.append(f"{monster.name} - {monster.value}")
-        e = Embed()
+        e = Embed().setTitle("Summoning Cost in Fear")
         e.setDescription("\n".join(monsters))
         if owned_fear:
             e.addField("Current Fear", f"{owned_fear.quantity}", True)
@@ -129,6 +129,8 @@ async def scare(ctx: Context, target: User):
     
     u = models.User.fetch_or_add(s, id=ctx.user_id)
     user_fear = next(filter(lambda x: x.item_id == fear_item.id, u.items), 0)
+    if user_fear:
+        user_fear = user_fear.quantity
     user_monsters = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
     user_power = sum([monsterPower.get(i.item.name)*i.quantity for i in user_monsters])
     if user_power == 0:
@@ -136,13 +138,15 @@ async def scare(ctx: Context, target: User):
     
     t = models.User.fetch_or_add(s, id=target.id)
     target_fear = next(filter(lambda x: x.item_id == fear_item.id, t.items), 0)
+    if target_fear:
+        target_fear = target_fear.quantity
     target_monsters = [i for i in t.items if i.item.name in list([j.name for j in Monsters])]
     target_power = sum([monsterPower.get(i.item.name)*i.quantity for i in target_monsters])
     carved_pumpkins = next(filter(lambda x: x.item.name == 'Jack-o-Latern', t.items), None)
     if carved_pumpkins:
         target_power += carved_pumpkins.quantity
 
-    def calculate_fear(_fear):
+    def calculate_fear(_fear: int):
         #power_difference = user_power - target_power
         #points = 50 * (power_difference // 100)
         #if points > _fear:
@@ -152,7 +156,7 @@ async def scare(ctx: Context, target: User):
             return _fear // d
         return random().randint(10,50)#points
     
-    def award_points(winner: models.User, loser: models.User, _fear):
+    def award_points(winner: models.User, loser: models.User, _fear: int):
         reward_points = calculate_fear(_fear)
         reward = items.Inventory(fear_item, reward_points)
 
@@ -163,12 +167,12 @@ async def scare(ctx: Context, target: User):
         return transaction, reward.quantity
 
     if user_power > target_power:
-        transaction, reward = award_points(u, t, target_fear.quantity)
+        transaction, reward = award_points(u, t, target_fear)
         result = f"<@{ctx.user_id}>'s Army, Sucessfully scared <@{target.id}> and gained {reward} of Fear!"
     elif user_power == target_power:
         return "Draw! Both Armies tried to scare each other but failed!"
     else:
-        transaction, reward = award_points(t, u, user_fear.quantity)
+        transaction, reward = award_points(t, u, user_fear)
         result = f"<@{ctx.user_id}> got scared by <@{target.id}>'s army and lost {reward} of Fear!"
     
     s.add(transaction)
