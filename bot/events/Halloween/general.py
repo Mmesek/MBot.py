@@ -255,6 +255,10 @@ async def halloween(ctx: Context) -> Embed:
         name=_t("rules_last_protection_title", language=ctx.language),
         value=_t("rules_last_protection", language=ctx.language)
     )
+    e.addField(
+        name="Attributions",
+        value="Minigame (Biting & Fear) was inspired by event in (now inactive) web browser game called Nightwood that appeared between 2010 and 2014"+
+        "\nRole icons were contributed by Johnpaul Leon#0725")
     return e
 
 @register(group=Groups.ADMIN, main=halloween)
