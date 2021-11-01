@@ -198,7 +198,7 @@ async def scout(ctx: Context, target: User) -> Embed:
     '''
     e = Embed().setTitle(f"{target.username}'s Army")
     s = ctx.db.sql.session()
-    u = models.User.fetch_or_add(s, id=ctx.user_id)
+    u = models.User.fetch_or_add(s, id=target.id)
     summoned_entites = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
     entities = [f"{entity.item.name} - {entity.quantity}" for entity in summoned_entites]
     if entities:
