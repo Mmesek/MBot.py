@@ -185,3 +185,22 @@ async def scare(ctx: Context, target: User):
     s.add(FearLog(server_id=ctx.guild_id, target_id=target.id, user_power=user_power, target_power=target_power, user_id=ctx.user_id, reward=reward))
     s.commit()
     return result
+
+@register(group=Groups.GLOBAL, main=fear)
+@cooldown(minutes=10, logic=HalloweenCooldown)
+async def scout(ctx: Context, target: User) -> Embed:
+    '''
+    Take a pick at someone elses army!
+    Params
+    ------
+    target:
+        User you want to scout
+    '''
+    e = Embed().setTitle(f"{target.username}'s Army")
+    s = ctx.db.sql.session()
+    u = models.User.fetch_or_add(s, id=ctx.user_id)
+    summoned_entites = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
+    entities = [f"{entity.item.name} - {entity.quantity}" for entity in summoned_entites]
+    if entities:
+        e.setDescription("\n".join(entities))
+    return e
