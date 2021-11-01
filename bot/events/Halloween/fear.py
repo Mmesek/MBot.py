@@ -152,7 +152,7 @@ async def scare(ctx: Context, target: User):
         #if points > _fear:
         from random import SystemRandom as random
         d = random().randint(2,5)
-        fear_recv = _fear // d
+        fear_recv = (_fear or 50) // d
         if total_fear > fear_recv:
             return fear_recv
         return random().randint(1,fear_recv) # Return less than calculated fear if user doesn't have enough fear 
@@ -168,7 +168,7 @@ async def scare(ctx: Context, target: User):
         return transaction, reward.quantity
     
     def diff(a, b) -> int:
-        return int(b // (a / b))
+        return int(b // (a / (b or 1)))
 
     if user_power > target_power:
         _fear = diff(user_power, target_power)
