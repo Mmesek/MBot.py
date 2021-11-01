@@ -57,6 +57,8 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
             has = True
         if not has:
             not_enough.append(u.id)
+            if require and next(filter(lambda x: x.item_id == item.id and x.quantity >= quantity, u.items), False):
+                u.remove_item(required_inv)
             continue
         i = items.Inventory(item, quantity)
         t = u.claim_items(data.guild_id, [i])
@@ -66,7 +68,11 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
         claimed_by.append(u.id)
     if not claimed_by and not_enough:
         users = ", ".join([f"<@{i}>" for i in not_enough])
-        await data.reply(f"{users} didn't have enough candies ({require_quantity}) and ran away scared!")
+        result = f"{users} didn't have enough candies ({require_quantity}) and ran away scared"
+        if quantity:
+            result += f" losing {quantity} fear"
+        result += "!"
+        await data.reply(result)
         return
     await ctx.cache[data.guild_id].logging[logger](data, users)
     s.commit()
