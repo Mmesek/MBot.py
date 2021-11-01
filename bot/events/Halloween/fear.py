@@ -146,33 +146,39 @@ async def scare(ctx: Context, target: User):
     if carved_pumpkins:
         target_power += carved_pumpkins.quantity
 
-    def calculate_fear(_fear: int):
+    def calculate_fear(_fear: int, total_fear: int) -> int:
         #power_difference = user_power - target_power
         #points = 50 * (power_difference // 100)
         #if points > _fear:
         from random import SystemRandom as random
-        d = random().randint(2,10)
-        if 50 < _fear // d:
-            return _fear // d
-        return random().randint(10,50)#points
+        d = random().randint(2,5)
+        fear_recv = _fear // d
+        if total_fear > fear_recv:
+            return fear_recv
+        return random().randint(1,fear_recv) # Return less than calculated fear if user doesn't have enough fear 
     
-    def award_points(winner: models.User, loser: models.User, _fear: int):
-        reward_points = calculate_fear(_fear)
+    def award_points(winner: models.User, loser: models.User, loser_fear: int, _fear: int):
+        reward_points = calculate_fear(_fear, loser_fear)
         reward = items.Inventory(fear_item, reward_points)
 
         transaction = winner.claim_items(ctx.guild_id, [reward])
-        if _fear > reward_points:
+        if loser_fear > reward_points:
             loser.remove_item(reward, transaction=transaction)
 
         return transaction, reward.quantity
+    
+    def diff(a, b) -> int:
+        return int(b // (a / b))
 
     if user_power > target_power:
-        transaction, reward = award_points(u, t, target_fear)
+        _fear = diff(user_power, target_power)
+        transaction, reward = award_points(u, t, target_fear, _fear)
         result = f"<@{ctx.user_id}>'s Army, Sucessfully scared <@{target.id}> and gained {reward} of Fear!"
     elif user_power == target_power:
         return "Draw! Both Armies tried to scare each other but failed!"
     else:
-        transaction, reward = award_points(t, u, user_fear)
+        _fear = diff(target_power, user_power)
+        transaction, reward = award_points(t, u, user_fear, _fear)
         result = f"<@{ctx.user_id}> got scared by <@{target.id}>'s army and lost {reward} of Fear!"
     
     s.add(transaction)
