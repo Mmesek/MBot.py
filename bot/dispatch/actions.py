@@ -85,7 +85,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
         #    result+=" Rest didn't have enough and ran away scared!"
         await data.reply(result, allowed_mentions=Allowed_Mentions())
 
-from MFramework.commands.decorators import Event, Chance
+from MFramework.commands.decorators import Event, Chance, EventBetween
 @onDispatch(event="message_create")
 @Event(month=4)
 @Chance(2.5)
@@ -111,8 +111,8 @@ async def halloween_hunt(ctx: Bot, data: Message):
     await _handle_reaction(ctx, data, "🎃", "Pumpkin", delete_own=False, first_only=True, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins, announce_msg=True)
 
 @onDispatch(event="message_create")
-@Event(month=10)
-@Chance(7.5)
+@EventBetween(after_month=10, after_day=26, before_month=11, before_day=4)
+@Chance(2)
 async def treat_hunt(ctx: Bot, data: Message):
     import random
     q = random.SystemRandom().randint(1,5)
@@ -120,8 +120,8 @@ async def treat_hunt(ctx: Bot, data: Message):
     await _handle_reaction(ctx, data, emoji, "Halloween Treats", delete_own=False, first_only=False, logger="halloween_hunt", announce_msg=True, quantity=q)
 
 @onDispatch(event="message_create")
-@Event(month=10)
-@Chance(2.5)
+@EventBetween(after_month=10, after_day=28, before_month=11, before_day=4)
+@Chance(4)
 async def fear_hunt(ctx: Bot, data: Message):
     import random
     q = random.SystemRandom().randint(10, 32)
