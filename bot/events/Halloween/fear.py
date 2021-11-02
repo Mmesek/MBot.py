@@ -25,6 +25,8 @@ class Monsters(Enum):
 
 monsterPower = {i.name: i.value for i in Monsters}
 
+MONSTER_NAMES = list([j.name for j in Monsters])
+
 class FearLog(ServerID, UserID, Timestamp, Base):
     timestamp: datetime = sa.Column(sa.TIMESTAMP(timezone=True), primary_key=True, server_default=sa.func.now())
     target_id: User = sa.Column(sa.ForeignKey("User.id", ondelete='Cascade', onupdate='Cascade'), primary_key=False, nullable=False)
@@ -77,14 +79,27 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
     u = models.User.fetch_or_add(s, id=ctx.user_id)
     fear_item = items.Item.fetch_or_add(s, name="Fear")
     owned_fear = next(filter(lambda x: x.item_id == fear_item.id, u.items), None)
+    monster_ids = {i.id: i.name for i in s.query(items.Item).filter(items.Item.name.in_(MONSTER_NAMES)).all()}
+    avg_army_size = s.query(sa.func.avg(items.Inventory.quantity), items.Inventory.item_id).filter(
+        items.Inventory.item_id.in_(list(monster_ids.keys()))
+    ).group_by(items.Inventory.item_id).all()
+    avg_army = {monster_ids.get(i[1], None): i[0] for i in avg_army_size}
     if owned_fear:
         fear_amount = owned_fear.quantity
     else:
         fear_amount = 0
     if not monster:
         monsters = []
+        summoned_entites = {i.item.name: i.quantity for i in u.items if i.item.name in MONSTER_NAMES}
         for monster in Monsters:
-            monsters.append(f"{monster.name} - {monster.value}")
+            avg = avg_army.get(monster.name, 1)
+            value = monster.value
+            owned = summoned_entites.get(monster.name, 0)
+            if avg < owned:
+                multipler = (owned - avg)
+                if multipler > 1:
+                    value *= multipler
+            monsters.append(f"{monster.name} - {int(value)}")
         e = Embed().setTitle("Summoning Cost in Fear")
         e.setDescription("\n".join(monsters))
         if owned_fear:
@@ -92,10 +107,9 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
         carved_pumpkins = next(filter(lambda x: x.item.name == 'Jack-o-Latern', u.items), None)
         if carved_pumpkins:
             e.addField("Carved Pumpkins", f"{carved_pumpkins.quantity}", True)
-        summoned_entites = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
         entities = []
-        for entity in summoned_entites:
-            entities.append(f"{entity.item.name} - {entity.quantity}")
+        for entity, _quantity in summoned_entites.items():
+            entities.append(f"{entity} - {_quantity}")
         if entities:
             e.addField("Current Army", "\n".join(entities), True)
         return e
