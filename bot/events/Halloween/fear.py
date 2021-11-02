@@ -90,8 +90,8 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
         avg = avg_army.get(monster.name, 1)
         value = monster.value
         owned = summoned_entites.get(monster.name, 0)
-        if avg < owned:
-            multipler = (owned - avg)
+        if int(avg) < owned:
+            multipler = (owned - int(avg))
             if multipler > 1:
                 value *= multipler
         return int(value)
@@ -191,7 +191,10 @@ async def scare(ctx: Context, target: User):
         return int(b // (a / (b or 1)))
 
     if user_power > target_power:
-        _fear = diff(user_power, target_power)
+        if target_fear > 0:
+            _fear = diff(user_power, target_power)
+        else:
+            _fear = target_fear // 2
         transaction, reward = award_points(u, t, target_fear, _fear)
         result = f"<@{ctx.user_id}>'s Army, Sucessfully scared <@{target.id}> and gained {reward} of Fear!"
     elif user_power == target_power:
