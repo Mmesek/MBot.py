@@ -103,7 +103,8 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
     if not monster:
         monsters = []
         for monster in Monsters:
-            monsters.append(f"{monster.name} - {adjust_price(monster)}")
+            value = monster.value # adjust_price(monster)
+            monsters.append(f"{monster.name} - {value}")
         e = Embed().setTitle("Summoning Cost in Fear")
         e.setDescription("\n".join(monsters))
         if owned_fear:
@@ -118,7 +119,7 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
             e.addField("Current Army", "\n".join(entities), True)
         return e
     
-    adjusted = adjust_price(monster)
+    adjusted = monster.value # adjust_price(monster)
 
     if fear_amount < adjusted*quantity:
         return "You don't have enough fear to summon that entity!"
