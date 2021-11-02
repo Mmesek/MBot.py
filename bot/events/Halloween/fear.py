@@ -84,22 +84,26 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
         items.Inventory.item_id.in_(list(monster_ids.keys()))
     ).group_by(items.Inventory.item_id).all()
     avg_army = {monster_ids.get(i[1], None): i[0] for i in avg_army_size}
+
+    summoned_entites = {i.item.name: i.quantity for i in u.items if i.item.name in MONSTER_NAMES}
+    def adjust_price(monster: Monsters) -> int:
+        avg = avg_army.get(monster.name, 1)
+        value = monster.value
+        owned = summoned_entites.get(monster.name, 0)
+        if avg < owned:
+            multipler = (owned - avg)
+            if multipler > 1:
+                value *= multipler
+        return int(value)
+
     if owned_fear:
         fear_amount = owned_fear.quantity
     else:
         fear_amount = 0
     if not monster:
         monsters = []
-        summoned_entites = {i.item.name: i.quantity for i in u.items if i.item.name in MONSTER_NAMES}
         for monster in Monsters:
-            avg = avg_army.get(monster.name, 1)
-            value = monster.value
-            owned = summoned_entites.get(monster.name, 0)
-            if avg < owned:
-                multipler = (owned - avg)
-                if multipler > 1:
-                    value *= multipler
-            monsters.append(f"{monster.name} - {int(value)}")
+            monsters.append(f"{monster.name} - {adjust_price(monster)}")
         e = Embed().setTitle("Summoning Cost in Fear")
         e.setDescription("\n".join(monsters))
         if owned_fear:
@@ -113,10 +117,12 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
         if entities:
             e.addField("Current Army", "\n".join(entities), True)
         return e
+    
+    adjusted = adjust_price(monster)
 
-    if fear_amount < monster.value*quantity:
+    if fear_amount < adjusted*quantity:
         return "You don't have enough fear to summon that entity!"
-    fear_prc = items.Inventory(fear_item, monster.value*quantity)
+    fear_prc = items.Inventory(fear_item, adjusted*quantity)
     item = items.Item.fetch_or_add(s, name=monster.name, type=types.Item.Entity)
     result_inv = items.Inventory(item, quantity)
     t = u.claim_items(ctx.guild_id, [result_inv])
