@@ -12,6 +12,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
     await asyncio.sleep(random.SystemRandom().randint(0, 10))
     await data.react(reaction)
     t = random.SystemRandom().randint(15, 60)
+
     if first_only:
         try:
             user = await ctx.wait_for("message_reaction_add", check=lambda x: 
@@ -27,7 +28,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
 
     if delete_own:
         await data.delete_reaction(reaction)
-    
+
     s = ctx.db.sql.Session()
     
     from ..database import models, Statistic
@@ -141,10 +142,11 @@ async def fear_hunt(ctx: Bot, data: Message):
 async def moka_hunt(ctx: Bot, data: Message):
     if data.guild_id == 289739584546275339:
         from random import SystemRandom as random
-        if random.randint(1,10) <= 3:
-            await _handle_reaction(ctx, data, "mokahide:841299054058405968", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", statistic=types.Statistic.Spawned_Moka, announce_msg=True, quantity=10)
+        if random.randint(1,10) <= 1:
+            await _handle_reaction(ctx, data, "mokaFoil:905061222846697503", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True, quantity=10)
         else:
-            await _handle_reaction(ctx, data, "", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", statistic=types.Statistic.Spawned_MokaTreats, announce_msg=True)
+            emoji = random().choice(['🐟', '🐔'])
+            await _handle_reaction(ctx, data, emoji, "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True)
 
 async def responder(ctx: Bot, msg: Message, emoji: str):
     emoji = ctx.cache[msg.guild_id].custom_emojis.get(emoji.lower().strip(':'))

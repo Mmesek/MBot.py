@@ -195,6 +195,7 @@ class Leaderboards(Enum):
     #Halloween = "Halloween"
     Fear = "Fear"
     Candies = "Halloween Treats"
+    Moka = "Moka Treats"
     #Cookies = "Cookie"
     #Gifting = "Present"
     #Advent = "Advent"
