@@ -172,7 +172,7 @@ async def scare(ctx: Context, target: User):
         #points = 50 * (power_difference // 100)
         #if points > _fear:
         from random import SystemRandom as random
-        d = random().randint(2,10)
+        d = random().randint(2,5)
         fear_recv = (_fear or 50) // d
         if total_fear > fear_recv:
             return fear_recv
@@ -195,7 +195,7 @@ async def scare(ctx: Context, target: User):
         if target_fear > 0:
             _fear = diff(user_power, target_power)
         else:
-            _fear = target_fear // 2
+            _fear = target_fear // 1.2
         transaction, reward = award_points(u, t, target_fear, _fear)
         result = f"<@{ctx.user_id}>'s Army, Sucessfully scared <@{target.id}> and gained {reward} of Fear!"
     elif user_power == target_power:
