@@ -151,7 +151,7 @@ async def scare(ctx: Context, target: User):
         #points = 50 * (power_difference // 100)
         #if points > _fear:
         from random import SystemRandom as random
-        d = random().randint(2,5)
+        d = random().randint(2,10)
         fear_recv = (_fear or 50) // d
         if total_fear > fear_recv:
             return fear_recv
