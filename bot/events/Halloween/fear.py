@@ -12,7 +12,7 @@ from MFramework import register, Context, User, Groups, Embed
 from MFramework.commands.cooldowns import cooldown
 from MFramework.database.alchemy.mixins import ServerID
 
-from .general import HalloweenCooldown, halloween
+from .general import HalloweenCooldown, halloween, inner, Race
 from ...database import items, types, models
 from ...database.mixins import UserID
 
@@ -34,28 +34,20 @@ class FearLog(ServerID, UserID, Timestamp, Base):
     target_power: int = sa.Column(sa.Integer)
     reward: int = sa.Column(sa.Integer)
 
-import functools
-
-def inner(f, *, main: object=None):
-    @functools.wraps(f)
-    def wrapped(ctx: Context, s: sa.orm.Session=None, **kwargs):
-        s = s or ctx.db.sql.session()
-        return f(ctx=ctx, session=s, **kwargs)
-    register(group=Groups.GLOBAL, main=main)(wrapped)
-    return wrapped
 
 @register(group=Groups.GLOBAL, main=halloween)
-async def fear(cls=None):
+def fear(cls=None, *, should_register: bool=True):
     '''
     Base command related to fear system
     '''
-    i = functools.partial(inner, main=fear)
+    import functools
+    i = functools.partial(inner, races=list(Race), main=fear, should_register=should_register)
     if cls:
         return i(cls)
     return i
 
 @fear
-async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session) -> str:
+async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session, **kwargs) -> str:
     '''
     Carve owned pumpkins into Jack-o-Laterns!
     Params
@@ -77,7 +69,7 @@ async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session) -> st
     return f"Successfully Carved {quantity} Jack-o-Laterns!"
 
 @fear
-async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, session: sa.orm.Session):
+async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, session: sa.orm.Session, **kwargs):
     '''
     Summon an entity to fight for you in your army
     Params
@@ -145,7 +137,7 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, sessi
 
 @fear
 @cooldown(hours=1, logic=HalloweenCooldown)
-async def scare(ctx: Context, target: User, *, session: sa.orm.Session):
+async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs):
     '''
     Scare user using your army!
     Params
@@ -222,7 +214,7 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session):
 
 @fear
 @cooldown(minutes=10, logic=HalloweenCooldown)
-async def scout(ctx: Context, target: User, *, session: sa.orm.Session) -> Embed:
+async def scout(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs) -> Embed:
     '''
     Take a pick at someone elses army!
     Params
