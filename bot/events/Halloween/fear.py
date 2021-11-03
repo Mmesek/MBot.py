@@ -35,13 +35,24 @@ class FearLog(ServerID, UserID, Timestamp, Base):
     reward: int = sa.Column(sa.Integer)
 
 @register(group=Groups.GLOBAL, main=halloween)
-async def fear(ctx: Context):
+async def fear(cls=None):
     '''
     Base command related to fear system
     '''
-    pass
+    import functools
 
-@register(group=Groups.GLOBAL, main=fear)
+    def inner(f):
+        @functools.wraps(f)
+        def wrapped(ctx: Context, s: sa.orm.Session=None, **kwargs):
+            s = s or ctx.db.sql.session()
+            return f(ctx=ctx, session=s, **kwargs)
+        register(group=Groups.GLOBAL, main=fear)(wrapped)
+        return wrapped
+    if cls:
+        return inner(cls)
+    return inner
+
+@fear
 async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session) -> str:
     '''
     Carve owned pumpkins into Jack-o-Laterns!
@@ -63,7 +74,7 @@ async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session) -> st
     session.commit()
     return f"Successfully Carved {quantity} Jack-o-Laterns!"
 
-@register(group=Groups.GLOBAL, main=fear)
+@fear
 async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, session: sa.orm.Session):
     '''
     Summon an entity to fight for you in your army
@@ -130,7 +141,7 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, sessi
     amount = f" x {quantity}" if quantity else ""
     return f"Successfully summoned {monster.name}{amount}"
 
-@register(group=Groups.GLOBAL, main=fear)
+@fear
 @cooldown(hours=1, logic=HalloweenCooldown)
 async def scare(ctx: Context, target: User, *, session: sa.orm.Session):
     '''
@@ -207,7 +218,7 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session):
     session.commit()
     return result
 
-@register(group=Groups.GLOBAL, main=fear)
+@fear
 @cooldown(minutes=10, logic=HalloweenCooldown)
 async def scout(ctx: Context, target: User, *, session: sa.orm.Session) -> Embed:
     '''
