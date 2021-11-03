@@ -169,11 +169,11 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
     if carved_pumpkins:
         target_power += carved_pumpkins.quantity
 
+    from random import SystemRandom as random
     def calculate_fear(fear_recv: int, total_fear: int) -> int:
         #power_difference = user_power - target_power
         #points = 50 * (power_difference // 100)
         #if points > _fear:
-        from random import SystemRandom as random
         #d = random().randint(2,5)
         #fear_recv = (_fear or 50) // d
         fear_rand = random().randint(10, 50)
@@ -201,7 +201,7 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
     
     def diff(a, b) -> int:
         return int(b // (a / (b or 1)))
-
+    
     if user_power > target_power:
         if target_fear > 0:
             _fear = diff(user_power, target_power)
@@ -211,6 +211,10 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
         result = f"<@{ctx.user_id}>'s Army, Sucessfully scared <@{target.id}> and gained {reward} of Fear!"
     elif user_power == target_power:
         return "Draw! Both Armies tried to scare each other but failed!"
+    elif random().randint(0, max(user_power, target_power)) < min(user_power, target_power):
+        _fear = target_fear // 4
+        transaction, reward = award_points(u, t, target_fear, _fear)
+        result = f"<@{ctx.user_id}>'s Army managed to scare <@{target.id}> and gain {reward} of Fear!"
     else:
         _fear = diff(target_power, user_power)
         transaction, reward = award_points(t, u, user_fear, _fear)
