@@ -34,23 +34,25 @@ class FearLog(ServerID, UserID, Timestamp, Base):
     target_power: int = sa.Column(sa.Integer)
     reward: int = sa.Column(sa.Integer)
 
+import functools
+
+def inner(f, *, main: object=None):
+    @functools.wraps(f)
+    def wrapped(ctx: Context, s: sa.orm.Session=None, **kwargs):
+        s = s or ctx.db.sql.session()
+        return f(ctx=ctx, session=s, **kwargs)
+    register(group=Groups.GLOBAL, main=main)(wrapped)
+    return wrapped
+
 @register(group=Groups.GLOBAL, main=halloween)
 async def fear(cls=None):
     '''
     Base command related to fear system
     '''
-    import functools
-
-    def inner(f):
-        @functools.wraps(f)
-        def wrapped(ctx: Context, s: sa.orm.Session=None, **kwargs):
-            s = s or ctx.db.sql.session()
-            return f(ctx=ctx, session=s, **kwargs)
-        register(group=Groups.GLOBAL, main=fear)(wrapped)
-        return wrapped
+    i = functools.partial(inner, main=fear)
     if cls:
-        return inner(cls)
-    return inner
+        return i(cls)
+    return i
 
 @fear
 async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session) -> str:
