@@ -169,16 +169,25 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
     if carved_pumpkins:
         target_power += carved_pumpkins.quantity
 
-    def calculate_fear(_fear: int, total_fear: int) -> int:
+    def calculate_fear(fear_recv: int, total_fear: int) -> int:
         #power_difference = user_power - target_power
         #points = 50 * (power_difference // 100)
         #if points > _fear:
         from random import SystemRandom as random
-        d = random().randint(2,5)
-        fear_recv = (_fear or 50) // d
+        #d = random().randint(2,5)
+        #fear_recv = (_fear or 50) // d
+        fear_rand = random().randint(10, 50)
+        if not fear_recv:
+            # There is no fear, give some
+            fear_recv = fear_rand
+        if total_fear // 2 <= fear_recv:
+            # Limit max fear lost to half of what user currently has
+            fear_recv = total_fear // 2
         if total_fear > fear_recv:
+            # User has enough fear, let's go
             return fear_recv
-        return random().randint(1,fear_recv) # Return less than calculated fear if user doesn't have enough fear 
+        # Return less than calculated fear if user doesn't have enough fear 
+        return random().randint(1, (total_fear or fear_rand))
     
     def award_points(winner: models.User, loser: models.User, loser_fear: int, _fear: int):
         reward_points = calculate_fear(_fear, loser_fear)
