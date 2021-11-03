@@ -23,7 +23,7 @@ class Monsters(Enum):
     Mummy = 800
     Shoggoth = 3200
 
-monsterPower = {i.name: i.value for i in Monsters}
+monsterPower = {i.name: int(i.value*(1+(x/10))) for x, i in enumerate(Monsters)}
 
 MONSTER_NAMES = list([j.name for j in Monsters])
 
