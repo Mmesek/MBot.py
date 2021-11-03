@@ -42,7 +42,7 @@ async def fear(ctx: Context):
     pass
 
 @register(group=Groups.GLOBAL, main=fear)
-async def carve(ctx: Context, quantity: int=1) -> str:
+async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session) -> str:
     '''
     Carve owned pumpkins into Jack-o-Laterns!
     Params
@@ -50,22 +50,21 @@ async def carve(ctx: Context, quantity: int=1) -> str:
     quantity:
         Quantity of pumpkins you want to carve
     '''
-    s = ctx.db.sql.session()
-    u = models.User.fetch_or_add(s, id=ctx.user_id)
-    item = items.Item.fetch_or_add(s, name="Pumpkin")
+    u = models.User.fetch_or_add(session, id=ctx.user_id)
+    item = items.Item.fetch_or_add(session, name="Pumpkin")
     pumpkins = next(filter(lambda x: x.item_id == item.id and x.quantity >= quantity, u.items), None)
     if not pumpkins:
         return "You don't have enough pumpkins!"
     pumpkin_inv = items.Inventory(item, quantity)
-    result_item = items.Item.fetch_or_add(s, name="Jack-o-Latern", type=types.Item.Miscellaneous)
+    result_item = items.Item.fetch_or_add(session, name="Jack-o-Latern", type=types.Item.Miscellaneous)
     result_inv = items.Inventory(result_item, quantity)
     t = u.claim_items(ctx.guild_id, [result_inv])
     u.remove_item(pumpkin_inv, transaction=t)
-    s.commit()
+    session.commit()
     return f"Successfully Carved {quantity} Jack-o-Laterns!"
 
 @register(group=Groups.GLOBAL, main=fear)
-async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
+async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, session: sa.orm.Session):
     '''
     Summon an entity to fight for you in your army
     Params
@@ -75,12 +74,11 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
     quantity:
         Amount of entities you want to summon at once
     '''
-    s = ctx.db.sql.session()
-    u = models.User.fetch_or_add(s, id=ctx.user_id)
-    fear_item = items.Item.fetch_or_add(s, name="Fear")
+    u = models.User.fetch_or_add(session, id=ctx.user_id)
+    fear_item = items.Item.fetch_or_add(session, name="Fear")
     owned_fear = next(filter(lambda x: x.item_id == fear_item.id, u.items), None)
-    monster_ids = {i.id: i.name for i in s.query(items.Item).filter(items.Item.name.in_(MONSTER_NAMES)).all()}
-    avg_army_size = s.query(sa.func.avg(items.Inventory.quantity), items.Inventory.item_id).filter(
+    monster_ids = {i.id: i.name for i in session.query(items.Item).filter(items.Item.name.in_(MONSTER_NAMES)).all()}
+    avg_army_size = session.query(sa.func.avg(items.Inventory.quantity), items.Inventory.item_id).filter(
         items.Inventory.item_id.in_(list(monster_ids.keys()))
     ).group_by(items.Inventory.item_id).all()
     avg_army = {monster_ids.get(i[1], None): i[0] for i in avg_army_size}
@@ -124,17 +122,17 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1):
     if fear_amount < adjusted*quantity:
         return "You don't have enough fear to summon that entity!"
     fear_prc = items.Inventory(fear_item, adjusted*quantity)
-    item = items.Item.fetch_or_add(s, name=monster.name, type=types.Item.Entity)
+    item = items.Item.fetch_or_add(session, name=monster.name, type=types.Item.Entity)
     result_inv = items.Inventory(item, quantity)
     t = u.claim_items(ctx.guild_id, [result_inv])
     u.remove_item(fear_prc, transaction=t)
-    s.commit()
+    session.commit()
     amount = f" x {quantity}" if quantity else ""
     return f"Successfully summoned {monster.name}{amount}"
 
 @register(group=Groups.GLOBAL, main=fear)
 @cooldown(hours=1, logic=HalloweenCooldown)
-async def scare(ctx: Context, target: User):
+async def scare(ctx: Context, target: User, *, session: sa.orm.Session):
     '''
     Scare user using your army!
     Params
@@ -144,11 +142,10 @@ async def scare(ctx: Context, target: User):
     '''
     if target.id == ctx.user_id:
         return "You can't send your army on your own self!"
-    s = ctx.db.sql.session()
 
-    fear_item = items.Item.fetch_or_add(s, name="Fear")
+    fear_item = items.Item.fetch_or_add(session, name="Fear")
     
-    u = models.User.fetch_or_add(s, id=ctx.user_id)
+    u = models.User.fetch_or_add(session, id=ctx.user_id)
     user_fear = next(filter(lambda x: x.item_id == fear_item.id, u.items), 0)
     if user_fear:
         user_fear = user_fear.quantity
@@ -157,7 +154,7 @@ async def scare(ctx: Context, target: User):
     if user_power == 0:
         return "You don't have any army to send!"
     
-    t = models.User.fetch_or_add(s, id=target.id)
+    t = models.User.fetch_or_add(session, id=target.id)
     target_fear = next(filter(lambda x: x.item_id == fear_item.id, t.items), 0)
     if target_fear:
         target_fear = target_fear.quantity
@@ -205,14 +202,14 @@ async def scare(ctx: Context, target: User):
         transaction, reward = award_points(t, u, user_fear, _fear)
         result = f"<@{ctx.user_id}> got scared by <@{target.id}>'s army and lost {reward} of Fear!"
     
-    s.add(transaction)
-    s.add(FearLog(server_id=ctx.guild_id, target_id=target.id, user_power=user_power, target_power=target_power, user_id=ctx.user_id, reward=reward))
-    s.commit()
+    session.add(transaction)
+    session.add(FearLog(server_id=ctx.guild_id, target_id=target.id, user_power=user_power, target_power=target_power, user_id=ctx.user_id, reward=reward))
+    session.commit()
     return result
 
 @register(group=Groups.GLOBAL, main=fear)
 @cooldown(minutes=10, logic=HalloweenCooldown)
-async def scout(ctx: Context, target: User) -> Embed:
+async def scout(ctx: Context, target: User, *, session: sa.orm.Session) -> Embed:
     '''
     Take a pick at someone elses army!
     Params
@@ -221,8 +218,7 @@ async def scout(ctx: Context, target: User) -> Embed:
         User you want to scout
     '''
     e = Embed().setTitle(f"{target.username}'s Army")
-    s = ctx.db.sql.session()
-    u = models.User.fetch_or_add(s, id=target.id)
+    u = models.User.fetch_or_add(session, id=target.id)
     summoned_entites = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
     entities = [f"{entity.item.name} - {entity.quantity}" for entity in summoned_entites]
     if entities:
