@@ -4,7 +4,7 @@
 # Increase power level of player based on bites/cures?
 # Boss raids?
 from enum import Enum
-from datetime import datetime
+from datetime import datetime, timedelta
 import sqlalchemy as sa
 from mlib.database import Base, Timestamp
 
@@ -12,9 +12,18 @@ from MFramework import register, Context, User, Groups, Embed
 from MFramework.commands.cooldowns import cooldown
 from MFramework.database.alchemy.mixins import ServerID
 
-from .general import HalloweenCooldown, halloween, inner, Race
+from .general import HUNTERS, IMMUNE_TABLE, HalloweenCooldown, halloween, inner, Race
 from ...database import items, types, models
 from ...database.mixins import UserID
+
+class FearCooldown(HalloweenCooldown):
+    @property
+    def cooldown_var(self) -> timedelta:
+        if self.race in HUNTERS:
+            return self.cooldown * 0.7
+        elif self.race in IMMUNE_TABLE:
+            return self.cooldown * 1.3
+        return timedelta()
 
 class Monsters(Enum):
     Imp = 10
@@ -136,7 +145,7 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, sessi
     return f"Successfully summoned {monster.name}{amount}"
 
 @fear
-@cooldown(hours=1, logic=HalloweenCooldown)
+@cooldown(hours=1, logic=FearCooldown)
 async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs):
     '''
     Scare user using your army!
@@ -226,7 +235,7 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
     return result
 
 @fear
-@cooldown(minutes=10, logic=HalloweenCooldown)
+@cooldown(minutes=10, logic=FearCooldown)
 async def scout(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs) -> Embed:
     '''
     Take a pick at someone elses army!
