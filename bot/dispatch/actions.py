@@ -138,11 +138,11 @@ async def fear_hunt(ctx: Bot, data: Message):
 
 @onDispatch(event="message_create")
 @Event(month=11, day=5)
-@Chance(10)
+@Chance(7)
 async def moka_hunt(ctx: Bot, data: Message):
     if data.guild_id == 289739584546275339:
         from random import SystemRandom as random
-        if random.randint(1,10) <= 1:
+        if random().randint(1,10) <= 1:
             await _handle_reaction(ctx, data, "mokaFoil:905061222846697503", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True, quantity=10)
         else:
             emoji = random().choice(['🐟', '🐔'])
