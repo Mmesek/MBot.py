@@ -1,6 +1,6 @@
 from MFramework import register, Groups, Context, User, Guild_Member
 
-@register(group=Groups.GLOBAL)
+@register(group=Groups.GLOBAL, private_response=True)
 async def Infractions(ctx: Context, user: User):
     '''
     Shows user Infractions
@@ -13,7 +13,7 @@ async def Infractions(ctx: Context, user: User):
     from ..commands_slash.infractions import list_
     return await list_(ctx, user)
 
-@register(group=Groups.GLOBAL)
+@register(group=Groups.GLOBAL, private_response=True)
 async def Info(ctx: Context, member: Guild_Member):
     '''
     Shows User Info
@@ -26,7 +26,7 @@ async def Info(ctx: Context, member: Guild_Member):
     from ..commands_slash.info import user
     return await user(ctx, member)
 
-@register(group=Groups.GLOBAL)
+@register(group=Groups.GLOBAL, private_response=True)
 async def Experience(ctx: Context, user: User):
     '''
     Shows Experience of user

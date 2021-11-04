@@ -1,7 +1,7 @@
 from MFramework import register, Groups, Context, ChannelID, Snowflake
 
 
-@register(group=Groups.MODERATOR)
+@register(group=Groups.MODERATOR, private_response=True)
 async def say(ctx: Context, message: str, channel: ChannelID=None, *, language):
     '''
     Sends message as a bot
@@ -15,7 +15,7 @@ async def say(ctx: Context, message: str, channel: ChannelID=None, *, language):
     msg = await ctx.bot.create_message(channel, message)
     await ctx.reply(f"Message sent.\nChannelID: {msg.channel_id}\nMessageID: {msg.id}", private=True)
 
-@register(group=Groups.MODERATOR)
+@register(group=Groups.MODERATOR, private_response=True)
 async def react(ctx: Context, reaction: str, message_id: Snowflake, channel: ChannelID=None, *, language):
     '''
     Reacts to a message as a bot

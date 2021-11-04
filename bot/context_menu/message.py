@@ -1,6 +1,6 @@
 from MFramework import register, Groups, Context, Embed, Discord_Paths, Message, Bitwise_Permission_Flags
 
-@register(group=Groups.GLOBAL)
+@register(group=Groups.GLOBAL, private_response=True)
 async def Bookmark(ctx: Context, message: Message) -> str:
     '''Bookmark a moment in chat to save in your DMs for easy navigation'''
     await ctx.deferred(private=True)
