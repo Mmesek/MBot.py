@@ -12,7 +12,7 @@ from MFramework import register, Context, User, Groups, Embed
 from MFramework.commands.cooldowns import cooldown
 from MFramework.database.alchemy.mixins import ServerID
 
-from .general import HUNTERS, IMMUNE_TABLE, HalloweenCooldown, halloween, inner, Race
+from .general import HUNTERS, IMMUNE_TABLE, Halloween, HalloweenCooldown, halloween, inner, Race
 from ...database import items, types, models
 from ...database.mixins import UserID
 
@@ -24,6 +24,11 @@ class FearCooldown(HalloweenCooldown):
         elif self.race in IMMUNE_TABLE:
             return self.cooldown * 1.3
         return timedelta()
+
+class FEAR_COOLDOWNS(Enum):
+    SCARE = timedelta(hours=1)
+    SCOUT = timedelta(minutes=10)
+    RAID = timedelta(hours=2)
 
 class Monsters(Enum):
     Imp = 10
@@ -82,7 +87,7 @@ async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session, **kwa
     return f"Successfully Carved {quantity} Jack-o-Laterns!"
 
 @fear
-async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, session: sa.orm.Session, **kwargs):
+async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, session: sa.orm.Session, this_user: Halloween, **kwargs):
     '''
     Summon an entity to fight for you in your army
     Params
@@ -133,6 +138,15 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, sessi
             entities.append(f"{entity} - {_quantity}")
         if entities:
             e.addField("Current Army", "\n".join(entities), True)
+        _cooldowns = []
+        from mlib.localization import secondsToText as s2t
+        for _cooldown in FEAR_COOLDOWNS:
+            r = FearCooldown(ctx, _cooldown.value, _cooldown.name.lower(), {"session": session, "this_user": this_user})
+            if r.on_cooldown:
+                _cooldowns.append((r._type, s2t(int(r.remaining.total_seconds()))))
+        if _cooldowns:
+            e.addField("Cooldowns", "\n".join(f"`{i[0].title()}`: `{i[1]}`" for i in _cooldowns))
+
         return e
     
     adjusted = monster.value # adjust_price(monster)
