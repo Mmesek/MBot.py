@@ -264,3 +264,65 @@ async def scout(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
     if entities:
         e.setDescription("\n".join(entities))
     return e
+
+class Bosses(Enum):
+    Moka = 5000
+    Volatile = 15000
+    Dracula = 25000
+    Dark_Enchanter = 30000
+    Wild_Moderator = 40000
+    Ancient_One = 50000
+
+@fear
+@cooldown(hours=2, logic=FearCooldown)
+async def raid(ctx: Context, boss: Bosses, *, session: sa.orm.Session, **kwargs):
+    '''
+    Send your army on a raid!
+    Params
+    ------
+    boss:
+        boss you want to attack
+    '''
+    name = boss.name.replace('_',' ')
+    boss_item = items.Item.fetch_or_add(session, name=name, type=types.Item.Entity)
+    if boss_item.durability == None:
+        boss_item.durability = boss.value
+        multipler = 0.1
+        for x, _ in enumerate(Bosses):
+            if _.name == boss.name:
+                multipler += x * 0.05
+        boss_item.damage = int(boss.value * multipler)
+
+    if boss_item.durability == 0:
+        return "This boss has already been defeated!"
+
+    u = models.User.fetch_or_add(session, id=ctx.user_id)
+    user_monsters = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
+    user_power = sum([monsterPower.get(i.item.name)*i.quantity for i in user_monsters])
+    if not user_power:
+        return "Come back with an army!"
+
+    import random
+    dmg = random.SystemRandom().randint(0, boss_item.damage)
+    dmg_dealt = user_power - dmg
+    if dmg_dealt <= 0:
+        return "Sadly your army did nothing!"
+
+    boss_item.durability -= dmg_dealt
+    if boss_item.durability <= 0:
+        boss_item.durability = 0
+        bonus = random.SystemRandom().randint(50, 500)
+        boss_remaining = f" You have Defeated {name}! Bonus: {bonus}"
+    else:
+        bonus = random.SystemRandom().randint(0, 50)
+        boss_remaining = f" Remaining health: {boss_item.durability}"
+
+    fear_item = items.Item.fetch_or_add(session, name="Fear")
+    d = random.SystemRandom().uniform(0.2, 1.0)
+    reward = items.Inventory(fear_item, int(dmg_dealt * d) + bonus)
+    t = u.claim_items(ctx.guild_id, [reward])
+    session.add(t)
+    session.add(FearLog(server_id=ctx.guild_id, target_id=ctx.user_id, user_power=user_power, target_power=dmg, user_id=ctx.user_id, reward=reward.quantity, success=True, user_fear=dmg_dealt, target_fear=boss.value))
+    session.commit()
+
+    return f"<@{ctx.user_id}>, you have gained {reward.quantity} and dealt {dmg_dealt} to {name}!" + boss_remaining
