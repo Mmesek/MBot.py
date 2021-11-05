@@ -318,6 +318,8 @@ async def raid(ctx: Context, boss: Bosses, *, session: sa.orm.Session, **kwargs)
     user_power = sum([monsterPower.get(i.item.name)*i.quantity for i in user_monsters])
     if not user_power:
         return "Come back with an army!"
+    if user_power > boss.value * 0.75:
+        return "Your army is too strong to fight with this entity!"
 
     import random
     dmg = random.SystemRandom().randint(0, boss_item.damage)
