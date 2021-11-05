@@ -42,6 +42,9 @@ class FearLog(ServerID, UserID, Timestamp, Base):
     user_power: int = sa.Column(sa.Integer)
     target_power: int = sa.Column(sa.Integer)
     reward: int = sa.Column(sa.Integer)
+    success: bool = sa.Column(sa.Boolean)
+    user_fear: int = sa.Column(sa.Integer)
+    target_fear: int = sa.Column(sa.Integer)
 
 
 @register(group=Groups.GLOBAL, main=halloween)
@@ -74,6 +77,7 @@ async def carve(ctx: Context, quantity: int=1, *, session: sa.orm.Session, **kwa
     result_inv = items.Inventory(result_item, quantity)
     t = u.claim_items(ctx.guild_id, [result_inv])
     u.remove_item(pumpkin_inv, transaction=t)
+    session.add(t)
     session.commit()
     return f"Successfully Carved {quantity} Jack-o-Laterns!"
 
@@ -165,7 +169,13 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
         user_fear = user_fear.quantity
     user_monsters = [i for i in u.items if i.item.name in list([j.name for j in Monsters])]
     user_power = sum([monsterPower.get(i.item.name)*i.quantity for i in user_monsters])
-    if user_power == 0:
+    if user_power == 0 or user_fear == 0:
+        if user_fear == 0:
+            first_fear = items.Inventory(fear_item, quantity=10)
+            transaction = u.claim_items(ctx.guild_id, [first_fear])
+            session.add(FearLog(server_id=ctx.guild_id, target_id=target.id, user_power=user_power, target_power=None, user_id=ctx.user_id, reward=10, success=True, user_fear=0, target_fear=None))
+            session.commit()
+            return "You have gained 10 of fear! Summon army in order to gain more fear!"
         return "You don't have any army to send!"
     
     t = models.User.fetch_or_add(session, id=target.id)
@@ -185,7 +195,7 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
         #if points > _fear:
         #d = random().randint(2,5)
         #fear_recv = (_fear or 50) // d
-        fear_rand = random().randint(10, 50)
+        fear_rand = random().randint(20, 50)
         if not fear_recv:
             # There is no fear, give some
             fear_recv = fear_rand
@@ -196,7 +206,7 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
             # User has enough fear, let's go
             return fear_recv
         # Return less than calculated fear if user doesn't have enough fear 
-        return random().randint(1, (total_fear or fear_rand))
+        return random().randint(10, max(20, (total_fear or fear_rand)))
     
     def award_points(winner: models.User, loser: models.User, loser_fear: int, _fear: int):
         reward_points = calculate_fear(_fear, loser_fear)
@@ -212,25 +222,28 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
         return int(b // (a / (b or 1)))
     
     if user_power > target_power:
-        if target_fear > 0:
+        if target_fear > 10:
             _fear = diff(user_power, target_power)
         else:
             _fear = target_fear // 1.2
         transaction, reward = award_points(u, t, target_fear, _fear)
+        success = True
         result = f"<@{ctx.user_id}>'s Army, Sucessfully scared <@{target.id}> and gained {reward} of Fear!"
     elif user_power == target_power:
         return "Draw! Both Armies tried to scare each other but failed!"
     elif random().randint(0, max(user_power, target_power)) < min(user_power, target_power):
         _fear = target_fear // 4
         transaction, reward = award_points(u, t, target_fear, _fear)
+        success = True
         result = f"<@{ctx.user_id}>'s Army managed to scare <@{target.id}> and gain {reward} of Fear!"
     else:
         _fear = diff(target_power, user_power)
         transaction, reward = award_points(t, u, user_fear, _fear)
+        success = False
         result = f"<@{ctx.user_id}> got scared by <@{target.id}>'s army and lost {reward} of Fear!"
     
     session.add(transaction)
-    session.add(FearLog(server_id=ctx.guild_id, target_id=target.id, user_power=user_power, target_power=target_power, user_id=ctx.user_id, reward=reward))
+    session.add(FearLog(server_id=ctx.guild_id, target_id=target.id, user_power=user_power, target_power=target_power, user_id=ctx.user_id, reward=reward, success=success, user_fear=user_fear, target_fear=target_fear))
     session.commit()
     return result
 
