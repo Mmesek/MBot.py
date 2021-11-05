@@ -51,6 +51,11 @@ class Statistic(Enum):
     Spawned_Eggs = 12
     Spawned_Presents = 13
     Spawned_Pumpkins = 14
+    #Spawned_Treats = 15
+    #Spawned_Fear = 16
+    #Spawned_Snowballs = 17
+    Spawned_Moka = 18
+    Spawned_GoldMoka = 19
 
     Halloween_Turn_Count = 20
 
@@ -163,10 +168,10 @@ class ItemFlags(enum.IntFlag):
     Giftable = 1 << 8
 
 class HalloweenRaces(Enum):
-    Human: Item.Race = "Human"#, Item.Race
-    Vampire: Item.Race = "Vampire"#, Item.Race
-    Werewolf: Item.Race = "Werewolf"#, Item.Race
-    Zombie: Item.Race = "Zombie"#, Item.Race
-    Hunter: Item.Race = "Hunter"#, Item.Race
-    Huntsmen: Item.Race = "Huntsmen"#, Item.Race
-    Enchanter: Item.Race = "Enchanter"#, Item.Race
+    Human: Item.Race = "Human"#, Item.Race ##818181
+    Vampire: Item.Race = "Vampire"#, Item.Race #6b1010 #a71919 #8f2727 #942710
+    Werewolf: Item.Race = "Werewolf"#, Item.Race #aa6b00
+    Zombie: Item.Race = "Zombie"#, Item.Race #03803c
+    Hunter: Item.Race = "Hunter"#, Item.Race #ad4949
+    Huntsmen: Item.Race = "Huntsmen"#, Item.Race #be923d
+    Enchanter: Item.Race = "Enchanter"#, Item.Race #4abe5f

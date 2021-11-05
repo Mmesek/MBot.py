@@ -19,7 +19,7 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
                 x.channel_id == data.channel_id and 
                 x.message_id == data.id and 
                 x.user_id != ctx.user_id and
-                x.emoji.name == reaction, timeout=t)
+                x.emoji.name == reaction.split(':')[0], timeout=t)
         except asyncio.TimeoutError:
             log.debug("No one reacted. Removing reaction")
             return await data.delete_reaction(reaction)
@@ -80,6 +80,8 @@ async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str,
     if announce_msg and claimed_by:
         # TODO If it's not first-only, there should be some additional logic to get list
         users = ", ".join([f"<@{i}>" for i in claimed_by])
+        if ":" in reaction:
+            reaction = f"<a:{reaction}>"
         result= f"{users} got {reaction} {item.name}"
         if quantity > 1:
             result += f" x {quantity}"
@@ -117,18 +119,20 @@ async def snowball_hunt(ctx: Bot, data: Message):
 async def halloween_hunt(ctx: Bot, data: Message):
     await _handle_reaction(ctx, data, "🎃", "Pumpkin", delete_own=False, first_only=True, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins, announce_msg=True)
 
+#@EventBetween(after_month=10, after_day=26, before_month=11, before_day=4)
 @onDispatch(event="message_create")
-@EventBetween(after_month=10, after_day=26, before_month=11, before_day=4)
-@Chance(2)
+@Event(month=10)
+@Chance(1.5)
 async def treat_hunt(ctx: Bot, data: Message):
     import random
     q = random.SystemRandom().randint(1,5)
     emoji = random.SystemRandom().choice(["🍬", "🧁", "🍭", "🍫", "🍪"])
     await _handle_reaction(ctx, data, emoji, "Halloween Treats", delete_own=False, first_only=False, logger="halloween_hunt", announce_msg=True, quantity=q)
 
+#@EventBetween(after_month=10, after_day=28, before_month=11, before_day=4)
 @onDispatch(event="message_create")
-@EventBetween(after_month=10, after_day=28, before_month=11, before_day=4)
-@Chance(4)
+@Event(month=10)
+@Chance(3)
 async def fear_hunt(ctx: Bot, data: Message):
     import random
     q = random.SystemRandom().randint(10, 32)
@@ -143,10 +147,10 @@ async def moka_hunt(ctx: Bot, data: Message):
     if data.guild_id == 289739584546275339:
         from random import SystemRandom as random
         if random().randint(1,10) <= 1:
-            await _handle_reaction(ctx, data, "mokaFoil:905061222846697503", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True, quantity=10)
+            await _handle_reaction(ctx, data, "mokaFoil:905061222846697503", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True, quantity=10, statistic=types.Statistic.Spawned_GoldMoka)
         else:
             emoji = random().choice(['🐟', '🐔'])
-            await _handle_reaction(ctx, data, emoji, "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True)
+            await _handle_reaction(ctx, data, emoji, "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True, statistic=types.Statistic.Spawned_Moka)
 
 async def responder(ctx: Bot, msg: Message, emoji: str):
     emoji = ctx.cache[msg.guild_id].custom_emojis.get(emoji.lower().strip(':'))
