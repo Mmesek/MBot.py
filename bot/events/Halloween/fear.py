@@ -146,6 +146,9 @@ async def summon(ctx: Context, monster: Monsters=None, quantity: int=1, *, sessi
                 _cooldowns.append((r._type, s2t(int(r.remaining.total_seconds()))))
         if _cooldowns:
             e.addField("Cooldowns", "\n".join(f"`{i[0].title()}`: `{i[1]}`" for i in _cooldowns))
+        user_power = sum([monsterPower.get(k)*v for k, v in summoned_entites])
+        if user_power:
+            e.setFooter(f"Approximate Army Power: {user_power}")
 
         return e
     
