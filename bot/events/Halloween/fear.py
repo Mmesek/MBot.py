@@ -283,12 +283,14 @@ async def scout(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
     return e
 
 class Bosses(Enum):
+    Troll = 2500
     Moka = 5000
-    Volatile = 15000
-    Dracula = 25000
-    Dark_Enchanter = 30000
-    Wild_Moderator = 40000
-    Ancient_One = 50000
+    Volatile = 12500
+    Dracula = 30000
+    Dark_Enchanter = 75000
+    Wild_Moderator = 125000
+    Ancient_One = 750000
+    Champion = 5000000
 
 @fear
 @cooldown(hours=2, logic=FearCooldown)
@@ -307,7 +309,7 @@ async def raid(ctx: Context, boss: Bosses, *, session: sa.orm.Session, **kwargs)
         multipler = 0.1
         for x, _ in enumerate(Bosses):
             if _.name == boss.name:
-                multipler += x * 0.05
+                multipler += x * 0.1
         boss_item.damage = int(boss.value * multipler)
 
     if boss_item.durability == 0:
@@ -337,7 +339,7 @@ async def raid(ctx: Context, boss: Bosses, *, session: sa.orm.Session, **kwargs)
         boss_remaining = f" Remaining health: {boss_item.durability}"
 
     fear_item = items.Item.fetch_or_add(session, name="Fear")
-    d = random.SystemRandom().uniform(0.2, 1.0)
+    d = random.SystemRandom().uniform(0.1, 0.45)
     reward = items.Inventory(fear_item, int(dmg_dealt * d) + bonus)
     t = u.claim_items(ctx.guild_id, [reward])
     session.add(t)
