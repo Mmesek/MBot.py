@@ -785,7 +785,7 @@ async def summary(ctx: Context):
         Race.Enchanter: "Enchanters"
     }
 
-    stats = [("Players",players[0]), ("Victims",unique_victims), ("Turns", turns[0]), ("Bites", bites[0]), ("Cures", cures[0])]
+    stats = [("Players",players[0]), ("Victims",unique_victims[0]), ("Turns", turns[0]), ("Bites", bites[0]), ("Cures", cures[0])]
     e.addField("Total", "\n".join([f"`{i[0]:10}`: `{i[1]:>5}`" for i in stats]))
     total = sorted(Halloween.get_total(s, ctx.guild_id).items(), key=lambda x: x[1], reverse=True)
     total = "\n".join([f"`{PLURALS.get(i[0], i[0]):10}`: `{i[1]:>5}`" for i in total])
