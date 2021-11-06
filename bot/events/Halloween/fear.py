@@ -345,3 +345,28 @@ async def raid(ctx: Context, boss: Bosses, *, session: sa.orm.Session, **kwargs)
     session.commit()
 
     return f"<@{ctx.user_id}>, you have gained {reward.quantity} and dealt {dmg_dealt} to {name}!" + boss_remaining
+
+@fear
+async def sacrifice(ctx: Context, monster: Monsters, quantity: int=1, *, session: sa.orm.Session, **kwargs):
+    """
+    Sacrifice your Army units for Reinforced Fear™
+    Params
+    ------
+    monster:
+        Monster you want to sacrifice.
+    quantity:
+        Amount of entities you want to sacrifice at once
+    """
+    u = models.User.fetch_or_add(session, id=ctx.user_id)
+    summoned_entites = {i.item.name: i for i in u.items if i.item.name in MONSTER_NAMES}
+    owned = summoned_entites.get(monster.name, None)
+    if owned and owned.quantity >= quantity:
+        rf = items.Item.fetch_or_add(session, name="Reinforced Fear", type=types.Item.Currency)
+        rf_q = (quantity*monster.value) // 10
+        t = u.add_item(items.Inventory(rf, quantity = rf_q))
+        u.remove_item(items.Inventory(owned, quantity=quantity), transaction=t)
+        session.add(t)
+        session.commit()
+        return f"Successfuly sacrificed {monster.name}{f' x {quantity}' if quantity > 1 else ''} and received Reinforced Fear x {rf_q}!" 
+    return "You don't have enough monsters of that type!"
+    
