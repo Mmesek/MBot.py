@@ -193,7 +193,7 @@ class Leaderboards(Enum):
     Easter_Egg = "Easter Egg"
     Pumpkin_Hunt = "Pumpkin"
     #Halloween = "Halloween"
-    Fear = "Fear"
+    Fear = "Reinforced Fear"
     Candies = "Halloween Treats"
     Moka = "Moka Treats"
     #Cookies = "Cookie"
