@@ -365,7 +365,7 @@ async def sacrifice(ctx: Context, monster: Monsters, quantity: int=1, *, session
     if owned and owned.quantity >= quantity:
         rf = items.Item.fetch_or_add(session, name="Reinforced Fear", type=types.Item.Currency)
         rf_q = (quantity*monster.value) // 10
-        t = u.add_item(items.Inventory(rf, quantity = rf_q))
+        t = u.claim_items(ctx.guild_id, [items.Inventory(rf, quantity = rf_q)])
         u.remove_item(items.Inventory(owned.item, quantity=quantity), transaction=t)
         session.add(t)
         session.commit()
