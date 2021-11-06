@@ -766,7 +766,7 @@ async def summary(ctx: Context):
         HalloweenLog.race == Race.Human
     ).first()
     players = s.query(sa.func.count(sa.distinct(HalloweenLog.user_id))).filter(
-        Halloween.server_id == ctx.guild_id
+        HalloweenLog.server_id == ctx.guild_id
     ).first()
     unique_victims = s.query(sa.func.count(Halloween.server_id)).filter(
         Halloween.server_id == ctx.guild_id
