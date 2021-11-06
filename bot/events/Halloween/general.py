@@ -333,7 +333,7 @@ def inner(f, races: List[Race], main: object, should_register: bool = True):
             raise Error("You want to do what?")
         raise Cant(f.__name__)
     if should_register:
-        register(group=Groups.GLOBAL, main=main)(EventBetween(after_month=10, after_day=14, before_month=11, before_day=7))(wrapped)
+        register(group=Groups.GLOBAL, main=main)(EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)(wrapped))
     return wrapped
 
 ##########
