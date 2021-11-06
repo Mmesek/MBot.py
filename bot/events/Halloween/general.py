@@ -323,7 +323,6 @@ async def roles(ctx: Context, delete:bool=False, update_permissions: bool=False)
 import functools
 
 def inner(f, races: List[Race], main: object, should_register: bool = True):
-    @EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)
     @functools.wraps(f)
     def wrapped(ctx: Context, s: sa.orm.Session=None, this_user: Halloween = None, **kwargs):
         s = s or ctx.db.sql.session()
@@ -334,7 +333,7 @@ def inner(f, races: List[Race], main: object, should_register: bool = True):
             raise Error("You want to do what?")
         raise Cant(f.__name__)
     if should_register:
-        register(group=Groups.GLOBAL, main=main)(wrapped)
+        register(group=Groups.GLOBAL, main=main)(EventBetween(after_month=10, after_day=14, before_month=11, before_day=7))(wrapped)
     return wrapped
 
 ##########
