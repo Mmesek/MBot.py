@@ -20,7 +20,7 @@ async def presence_update(self: Bot, data: Presence_Update):
         if (
             data.user.id in self.cache[data.guild_id].presence 
             and (len(data.activities) == 0 
-                or data.activities[0].name != self.cache[data.guild_id].presence[data.user.id][0])
+                or data.activities[0].name != self.cache[data.guild_id].presence[data.user.id].activities[0].name)
         ):
             s = self.cache[data.guild_id].presence.pop(data.user.id)
             elapsed = 0 #TODO
