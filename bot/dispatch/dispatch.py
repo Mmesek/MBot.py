@@ -28,7 +28,7 @@ async def presence_update(self: Bot, data: Presence_Update):
         ):
             s = self.cache[data.guild_id].presence.pop(data.user.id)
             elapsed = 0 #TODO
-            self.db.influx.commitPresence(data.guild_id, data.user.id, s[0], elapsed)
+            self.db.influx.commitPresence(data.guild_id, data.user.id, s.activities[0].name, elapsed)
         if (
             data.user.id not in self.cache[data.guild_id].presence 
             and len(data.activities) > 0 
