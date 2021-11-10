@@ -635,6 +635,7 @@ async def info(ctx: Context, user: User=None):
 from MFramework import onDispatch, Bot, Guild_Member_Add, Message
 
 @onDispatch
+@EventBetween(after_month=10, after_day=14, before_month=11, before_day=7)
 async def guild_member_add(self: Bot, data: Guild_Member_Add):
     s = self.db.sql.session()
     r = s.query(Halloween).filter(Halloween.user_id == data.user.id).first()
