@@ -6,7 +6,7 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
     from datetime import timedelta
     if _last and abs(_last.as_date - data.user.id.as_date) < timedelta(days=1):
         from ..database import types
-        _ = self.cache[data.guild_id].logging.get("infraction", None)
+        _ = self.cache[data.guild_id].logging.get("auto_mod", None)
         if _:
             await _(
                 guild_id=data.guild_id,

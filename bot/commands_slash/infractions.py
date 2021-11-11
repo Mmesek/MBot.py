@@ -446,3 +446,6 @@ class Guild_Ban_Remove(Infraction_Event):
         reason, moderator = await self.get_ban_data(data, types.Infraction.Unban, 23)
         if reason is not False:
             await super().log(data, type="unbanned", reason=reason, by_user=moderator)
+
+class Auto_Mod(Infraction):
+    pass
