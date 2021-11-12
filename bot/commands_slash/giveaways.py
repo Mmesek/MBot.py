@@ -14,7 +14,7 @@ async def giveaway(ctx: Context, *, language):
     '''Giveaways'''
     pass
 
-@register(group=Groups.MODERATOR, main=giveaway)
+@register(group=Groups.MODERATOR, main=giveaway, private_response=True)
 async def create(ctx: Context, prize: str, duration: str = '1h', description: str=None, winner_count: int=1, reactions: str = '🎉', channel: ChannelID=None, hidden:bool=False, author: User=None, *, language):
     '''Create new giveaway
     Params
@@ -44,7 +44,7 @@ async def create(ctx: Context, prize: str, duration: str = '1h', description: st
     add_task(ctx.bot, ctx.guild_id, db.types.Task.Giveaway if not hidden else db.types.Task.Hidden_Giveaway, channel, msg.id, author.id or ctx.member.user.id, datetime.now(tz=timezone.utc), finish, prize, winner_count)
     await ctx.reply("Created", private=True)
 
-@register(group=Groups.MODERATOR, main=giveaway)
+@register(group=Groups.MODERATOR, main=giveaway, private_response=True)
 async def delete(ctx: Context, message_id: Snowflake, *args, language, **kwargs):
     '''
     Deletes Giveaway
@@ -62,7 +62,7 @@ async def delete(ctx: Context, message_id: Snowflake, *args, language, **kwargs)
     s.commit()
     await ctx.reply("Giveaway deleted Successfully", private=True)
 
-@register(group=Groups.MODERATOR, main=giveaway)
+@register(group=Groups.MODERATOR, main=giveaway, private_response=True)
 async def end(ctx: Context, message_id: Snowflake, *, language):
     '''
     Ends Giveaway
@@ -79,7 +79,7 @@ async def end(ctx: Context, message_id: Snowflake, *, language):
     await giveaway(ctx, task)
     await ctx.reply("Giveaway ended Successfully")
 
-@register(group=Groups.MODERATOR, main=giveaway)
+@register(group=Groups.MODERATOR, main=giveaway, private_response=True)
 async def reroll(ctx: Context, message_id: Snowflake, amount: int=0, *, language):
     '''
     Rerolls giveaway
