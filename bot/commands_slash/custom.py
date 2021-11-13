@@ -190,7 +190,7 @@ async def when(ctx: Context, arg:str=None) -> str:
         return "Released!"
     return f"Remaining `{delta}` until (according to Steam) <t:{timestamp}:D> which is <t:{timestamp}:R>"
 
-@register(group=Groups.GLOBAL, guild=289739584546275339)
+@register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
 async def ayo(ctx: Context, captions: str="Farewell, we will tell people you went to Harran for Olympics"):
     '''
     Shows what happened with Ayo
