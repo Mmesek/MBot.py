@@ -137,7 +137,8 @@ async def remove_links(self: Bot, data: Message) -> bool:
             )
             return True
         try:
-            await self.create_message(dm.id, f"Hey, we don't allow sending links by people without colored role. Be more active to gain colored role before attempting to do so again (Violations before being flagged as hijacked account: {len(violations)}/{VIOLATIONS_COUNT})")
+            embed = Embed().setDescription(data.content).setTitle("Message").setColor("#d10a2b")
+            await self.create_message(dm.id, f"Hey, we do not allow sending links by people without colored role. Be more active to gain colored role before attempting to do so again (Violations before being flagged as hijacked account: {len(violations)}/{VIOLATIONS_COUNT})", embeds=[embed])
         except:
             pass
         return True
