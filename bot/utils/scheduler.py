@@ -19,6 +19,7 @@ def add_guild_tasks(self: Bot, guild_id: Snowflake):
 def add_task(self: Bot, guild_id: Snowflake, type: db.types.Task, channel_id: Snowflake, message_id: Snowflake, author_id: Snowflake, timestamp: str, finish: bool, prize: str, winner_count: int, finished: bool=False):
     task = db.Task(server_id=guild_id, type=type, channel_id=channel_id, message_id=message_id, user_id=author_id, end=finish, description=prize, count=winner_count, finished=finished)
     s = self.db.sql.session()
+    channel = db.Channel.fetch_or_add(s, server_id=guild_id, id=channel_id)
     s.add(task)
     s.commit()
     #self.db.sql.add(task)
