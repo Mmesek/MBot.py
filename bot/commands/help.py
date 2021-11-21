@@ -47,18 +47,18 @@ async def help(ctx: Context, command: str=None, *, language):
             pass
     string += '\n'
     if string != '':
-        embed.addFields("\u200b", string)
+        embed.addFields("Message commands", string)
     string = ""
     a = [i for i in allowed_commands]
     for cmd in filter(lambda x: x.interaction, allowed_commands):
         if cmd.guild and cmd.guild != ctx.guild_id:
             continue
-        if ' ' in cmd.name or cmd.name.isupper():
+        if ' ' in cmd.name or cmd.name.istitle():
             continue
         string += f"**/{cmd.name}**"
         string += f" - {cmd.help.strip()}"
         string += '\n'
     if string != '':
-        embed.addFields("\u200b", string)
+        embed.addFields("Slash Commands", string)
     embed.setColor(ctx.cache.color).setFooter(tr('commands.help.yourPerm', language, group=group))
     await ctx.reply(embeds=[embed])
