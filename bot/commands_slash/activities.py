@@ -1,7 +1,6 @@
 from enum import Enum
 
-from MFramework import register, Groups, Context, Channel_Types, Invite_Target_Types
-from MFramework.commands._utils import ChannelType
+from MFramework import register, Groups, Context, Channel, Invite_Target_Types
 
 class Activities(Enum):
     Watch_Together = 880218394199220334
@@ -20,12 +19,12 @@ class Activities(Enum):
 
 
 @register(group=Groups.NITRO)
-async def activity(ctx: Context, channel: ChannelType[Channel_Types.GUILD_VOICE.value], activity: Activities) -> str:
+async def activity(ctx: Context, channel: Channel, activity: Activities) -> str:
     '''
     Start activity in selected voice channel
     Params
     ------
-    channel:
+    channel: Voice
         voice channel to start activity in
     activity:
         activity to start (Not all them might work)
