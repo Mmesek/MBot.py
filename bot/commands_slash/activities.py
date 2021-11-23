@@ -1,33 +1,35 @@
-from enum import Enum
-
-from MFramework import register, Groups, Context, Channel, Invite_Target_Types
-
-class Activities(Enum):
-    Watch_Together = 880218394199220334
-    Poker_Night = 755827207812677713
-    Betrayal = 773336526917861400
-    Fishington = 814288819477020702
-    Chess = 832012774040141894
-    Checkers = 832013003968348200
-    Sketchy_Artist = 879864070101172255
-    Awkword = 879863881349087252
-    Putts = 832012854282158180
-    Doodle_Crew = 878067389634314250
-    Letter_Tile = 879863686565621790
-    World_Snacks = 879863976006127627
-    SpellCast = 852509694341283871
-
+from MFramework import register, Groups, Context, Invite_Target_Types
 
 @register(group=Groups.NITRO)
-async def activity(ctx: Context, channel: Channel, activity: Activities) -> str:
+async def activity(ctx: Context, activity: str) -> str:
     '''
     Start activity in selected voice channel
     Params
     ------
-    channel: Voice
-        voice channel to start activity in
     activity:
         activity to start (Not all them might work)
+        Choices:
+            Watch Together = 880218394199220334
+            Poker Night = 755827207812677713
+            Betrayal.io = 773336526917861400
+            Fishington.io = 814288819477020702
+            Chess = 832012774040141894
+            Checkers = 832013003968348200
+            Sketchy Artist = 879864070101172255
+            Awkword (Cards against Humanity) = 879863881349087252
+            Putts (Doesn't Work) = 832012854282158180
+            Doodle Crew (Drawing) = 878067389634314250
+            Letter Tile (Scrabble) = 879863686565621790
+            Word Snacks = 879863976006127627
+            SpellCast = 852509694341283871
+            Decoders (Guess Card) = 891001866073296967
+            Ocho = 832025144389533716
+            Youtube Together = 755600276941176913
+    pass:
+        pass
     '''
-    invite = await ctx.bot.create_channel_invite(channel.id, target_type=Invite_Target_Types.EMBEDDED_APPLICATION, target_application_id=activity.value)
+    channel_id = next(filter(lambda x: ctx.user_id in ctx.cache.voice.get(x, []), ctx.cache.voice), None)
+    if not channel_id:
+        return "You have to be in a voice channel first! Join some and then use the command again!"
+    invite = await ctx.bot.create_channel_invite(channel_id, target_type=Invite_Target_Types.EMBEDDED_APPLICATION, target_application_id=activity)
     return f"[Click here to join {invite.target_application.name} in {invite.channel.name}!](<https://discord.gg/{invite.code}>)"
