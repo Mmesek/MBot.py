@@ -1,6 +1,6 @@
 from MFramework import register, Groups, Context, Invite_Target_Types
 
-@register(group=Groups.NITRO)
+@register(group=Groups.GLOBAL)
 async def activity(ctx: Context, activity: str) -> str:
     '''
     Start activity in selected voice channel
