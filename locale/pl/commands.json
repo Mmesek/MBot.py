@@ -737,5 +737,11 @@
         "core_1": "Rdzeń 1",
         "core_2": "Rdzeń 2",
         "core_3": "Rdzeń 3"
+    },
+    "aoc":{
+        "participants":"Uczestników: %{number}",
+        "header":"Wynik. Nick - Gwiazdki | Ostatnia\n",
+        "join_title": "Jak dołączyć?",
+        "join_text": "Możesz dołączyć do tabeli [tutaj](https://adventofcode.com/2021/leaderboard/private) korzystająć z kodu zaproszeniowego `%{invite_code}`"
     }
 }

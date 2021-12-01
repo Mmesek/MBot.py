@@ -196,6 +196,7 @@ class Leaderboards(Enum):
     Fear = "Reinforced Fear"
     Candies = "Halloween Treats"
     Moka = "Moka Treats"
+    Present_Hunt = "Presents"
     #Cookies = "Cookie"
     #Gifting = "Present"
     #Advent = "Advent"
@@ -277,30 +278,40 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
 async def aoc(ctx: Context, year:int=None) -> Embed:
     '''Shows Advent of Code leaderboard'''
     import requests
+    import json
     from datetime import datetime
     with open('data/aoc_cookie.txt','r',newline='',encoding='utf-8') as file:
         cookie = file.readline()
-    leaderboard_number = 1010436
+
+    with open('data/aoc_leaderboards.json','r',newline='',encoding='utf-8') as file:
+        leaderboards = json.load(file)
+    _ = leaderboards.get(str(ctx.guild_id), ({"invite":None, "number":None, "language": ctx.language}))
+    leaderboard_number, invite_code, language = _.get("number", None), _.get("invite", ""), _.get("language", ctx.language)
+    if not leaderboard_number:
+        return "Sorry, there is no leaderboard configured for this server \:("
+
     r = requests.get(f"https://adventofcode.com/{year or datetime.now().year}/leaderboard/private/view/{leaderboard_number}.json", cookies={"session": cookie})
     r = r.json()
     members = []
     for member in r["members"]:
         members.append({"name": r["members"][member]["name"], "score": r["members"][member]["local_score"], "last_star": r["members"][member]["last_star_ts"], "stars": r["members"][member]["stars"]})
     members = sorted(members, key= lambda i: i["score"], reverse=True)
-    t = ["Wynik. Nick - Gwiazdki | Ostatnia\n"]
+    t = [tr("commands.aoc.header", language)]
+
     for member in members:
-        l = f'{member["score"]}. {member["name"]} - {member["stars"]} | {datetime.fromtimestamp(int(member["last_star"])).strftime(" %d/%H:%M").replace(" 0"," ")}'
+        l = f'{member["score"]}. {member["name"]} - {member["stars"]} | <t:{member["last_star"]}:t>'
         if member["name"] == ctx.user.username or member["name"] == ctx.member.nick:
             l = '__' + l + '__'
         if member["stars"] == 0:
             continue
         t.append(l)
+
     return (Embed()
-        .setFooter("1010436-ed148a8d")
-        .addField("Uczestników", str(len(members)))
+        .setFooter(tr("commands.aoc.participants", language, number=len(members)))
         .setUrl("https://adventofcode.com")
         .setTitle("Advent of Code")
         .setDescription("\n".join(t))
+        .addField(tr("commands.aoc.join_title", language), tr("commands.aoc.join_text", language, invite_code=invite_code))
         .setColor(ctx.cache.color)
     )
 

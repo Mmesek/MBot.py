@@ -709,5 +709,11 @@
     },
     "join": {
         "cmd_trigger": "join"
+    },
+    "aoc":{
+        "participants":"Participants: %{number}",
+        "header":"Score. Nick - Stars | Last\n",
+        "join_title": "How to join?",
+        "join_text": "You can join leaderboard [here](https://adventofcode.com/2021/leaderboard/private) using invite code `%{invite_code}`"
     }
 }
