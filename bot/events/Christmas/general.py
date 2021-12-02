@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, timedelta
-from MFramework import Context, User, Groups, register, Event, EventBetween, Cooldown
-from MFramework.database import alchemy as db
+from MFramework import Context, User, Groups, register, Event, EventBetween
+from MFramework.commands.cooldowns import CacheCooldown, cooldown
+from ... import database as db
 
 def _t(key, language='en', **kwargs):
     from mlib.localization import tr
@@ -8,12 +9,12 @@ def _t(key, language='en', **kwargs):
 
 @register(group=Groups.GLOBAL)
 @Event(month=12)
-async def Christmas(ctx: Context):
+async def christmas(ctx: Context):
     '''Christmas Event commands'''
     pass
 
-@register(group=Groups.GLOBAL, main=Christmas)
-@Cooldown(hours=2)
+@register(group=Groups.GLOBAL, main=christmas)
+@cooldown(hours=2, logic=CacheCooldown)
 async def gift(ctx: Context, user: User, *, language):
     '''Send specified user a gift'''
     if user.id == ctx.user.id:
@@ -25,38 +26,39 @@ async def gift(ctx: Context, user: User, *, language):
     gift_type = db.types.Item.Gift
     own_present = False
 
-    user_history = db.Log.filter(s, server_id=ctx.guild_id, user_id=user, ByUser=ctx.user.id, type=gift_type).first()
+    #user_history = db.Log.filter(s, server_id=ctx.guild_id, user_id=user, ByUser=ctx.user.id, type=gift_type).first()
 
-    if user_history is not None:
-        return await ctx.reply(_t('present_already_sent', language, timestamp=user_history.Timestamp.strftime("%Y/%m/%d %H:%M")))
+    #if user_history is not None:
+    #    return await ctx.reply(_t('present_already_sent', language, timestamp=user_history.Timestamp.strftime("%Y/%m/%d %H:%M")))
 
-    for item in this_user.Items:
-        if 'Present' in item.Item.Name and item.Item.Name != 'Golden Present':
-            if item.Quantity > 0:
+    for item in this_user.items:
+        if 'Presents' == item.item.name and item.item.name != 'Golden Present':
+            if item.quantity > 0:
                 own_present = True
             break
 
     if not own_present:
         return await ctx.reply(_t('not_enough_presents', language))
 
-    golden_present = db.Items.by_name(s, "Golden Present")
+    golden_present = db.items.Item.by_name(s, "Golden Present")
 
-    last_gift = s.query(db.Log).filter(db.Log.server_id == ctx.guild_id, db.Log.user_id == ctx.user.id, db.Log.type == gift_type).order_by(db.Log.timestamp.desc()).first()
+    last_gift = None# s.query(db.Log).filter(db.Log.server_id == ctx.guild_id, db.Log.user_id == ctx.user.id, db.Log.type == gift_type).order_by(db.Log.timestamp.desc()).first()
     now = datetime.now(tz=timezone.utc)
 
     if last_gift is None or (now - last_gift.timestamp) >= timedelta(hours=2):
-        target_user = db.User.fetch_or_add(s, id=user)
+        target_user = db.User.fetch_or_add(s, id=user.id)
 
         gift = db.Inventory(golden_present, 1)
-        send_item = db.Inventory(item.Item)
+        send_item = db.Inventory(item.item)
         this_user.transfer(ctx.guild_id, target_user, [send_item], [gift], turn_item=True)
+        this_user.claim_items(ctx.guild_id, [db.Inventory(db.items.Item.by_name(s, "Sent Present"))])
         s.commit()
-        await ctx.reply(_t('present_sent_successfully', language))        
+        await ctx.reply(_t('present_sent_successfully', language, user=user.username))        
     else:
         await ctx.reply(_t('remaining_cooldown', language, cooldown=timedelta(hours=2) - (now - last_gift.Timestamp)))
 
 
-@register(group=Groups.GLOBAL, main=Christmas)
+@register(group=Groups.GLOBAL, main=christmas)
 async def cookie(ctx: Context, user: User, *, language):
     '''Send specified user a cookie'''
     if user.id == ctx.user.id:
@@ -67,14 +69,14 @@ async def cookie(ctx: Context, user: User, *, language):
     this_user = db.User.fetch_or_add(s, id=ctx.user_id)
     recipent_user = db.User.fetch_or_add(s, id=user.id)
 
-    inv = db.Inventory(db.Item("Cookie", db.Items.Cookie))
+    inv = db.Inventory(db.items.Item.fetch_or_add(s, name="Cookie", type="Gift"))
     transaction = this_user.transfer(ctx.guild_id, recipent_user, [inv], remove_item=False)
 
     s.add(transaction)
     s.commit()
     await ctx.reply(_t('cookie_sent', language))
 
-@register(group=Groups.GLOBAL, main=Christmas)
+@register(group=Groups.GLOBAL, main=christmas)
 @EventBetween(after_month=12, before_day=24)
 async def advent(ctx: Context, *, language):
     '''Claim today's Advent'''
@@ -85,7 +87,7 @@ async def advent(ctx: Context, *, language):
     if today.month != 12 or today.day > 24:
         return await ctx.reply(_t('advent_finished', language))
 
-    advent_type = db.Items.Advent
+    advent_type = db.items.Items.Advent
     _today = datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
     _year = datetime(today.year, 1, 1)
     claimed_total = s.query(db.Log).filter(db.Log.user_id == ctx.user.id, db.Log.type == "Advent", db.Log.timestamp >= _year).all()
@@ -95,7 +97,7 @@ async def advent(ctx: Context, *, language):
             claimed_today = True
 
     if not claimed_today:
-        advent_item = db.Item('Advent', advent_type)
+        advent_item = db.items.Item('Advent', advent_type)
         advent_inventory = db.Inventory(advent_item)
         this_user.claim_items(ctx.guild_id, [advent_inventory])
         s.commit()
@@ -103,7 +105,7 @@ async def advent(ctx: Context, *, language):
     else:
         await ctx.reply(_t('advent_already_claimed', language))
 
-@register(group=Groups.GLOBAL, main=Christmas)
+@register(group=Groups.GLOBAL, main=christmas, private_response=True)
 async def hat(ctx: Context, user: User):
     '''Adds Santa's hat onto user's avatar'''
     await ctx.deferred()
@@ -117,4 +119,4 @@ async def hat(ctx: Context, user: User):
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     img_str = buffered.getvalue()
-    await ctx.send(file=img_str, filename="avatar.png")
+    await ctx.bot.create_message(ctx.channel_id, file=img_str, filename="avatar.png")
