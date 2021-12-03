@@ -15,10 +15,10 @@ async def christmas(ctx: Context):
 
 @register(group=Groups.GLOBAL, main=christmas)
 @cooldown(hours=2, logic=CacheCooldown)
-async def gift(ctx: Context, user: User, *, language):
+async def gift(ctx: Context, user: User, *, language) -> str:
     '''Send specified user a gift'''
     if user.id == ctx.user.id:
-        return await ctx.reply(_t("cant_send_present_to_yourself", language))
+        return _t("cant_send_present_to_yourself", language)
     s = ctx.db.sql.session()
 
     this_user = db.User.fetch_or_add(s, id=ctx.user_id)
@@ -38,7 +38,7 @@ async def gift(ctx: Context, user: User, *, language):
             break
 
     if not own_present:
-        return await ctx.reply(_t('not_enough_presents', language))
+        return _t('not_enough_presents', language)
 
     golden_present = db.items.Item.by_name(s, "Golden Present")
 
@@ -53,16 +53,16 @@ async def gift(ctx: Context, user: User, *, language):
         this_user.transfer(ctx.guild_id, target_user, [send_item], [gift], turn_item=True)
         this_user.claim_items(ctx.guild_id, [db.Inventory(db.items.Item.by_name(s, "Sent Present"))])
         s.commit()
-        await ctx.reply(_t('present_sent_successfully', language, user=user.username))        
+        return _t('present_sent_successfully', language, user=user.username)
     else:
-        await ctx.reply(_t('remaining_cooldown', language, cooldown=timedelta(hours=2) - (now - last_gift.Timestamp)))
+        return _t('remaining_cooldown', language, cooldown=timedelta(hours=2) - (now - last_gift.Timestamp))
 
 
 @register(group=Groups.GLOBAL, main=christmas)
-async def cookie(ctx: Context, user: User, *, language):
+async def cookie(ctx: Context, user: User, *, language) -> str:
     '''Send specified user a cookie'''
     if user.id == ctx.user.id:
-        return await ctx.reply(_t("cant_send_cookie_to_yourself", language))
+        return _t("cant_send_cookie_to_yourself", language)
 
     s = ctx.db.sql.session()
 
@@ -74,18 +74,18 @@ async def cookie(ctx: Context, user: User, *, language):
 
     s.add(transaction)
     s.commit()
-    await ctx.reply(_t('cookie_sent', language))
+    return _t('cookie_sent', language)
 
 @register(group=Groups.GLOBAL, main=christmas)
 @EventBetween(after_month=12, before_day=24)
-async def advent(ctx: Context, *, language):
+async def advent(ctx: Context, *, language) -> str:
     '''Claim today's Advent'''
     s = ctx.db.sql.session()
     this_user = db.User.fetch_or_add(s, id=ctx.user_id)
 
     today = datetime.now(tz=timezone.utc)
     if today.month != 12 or today.day > 24:
-        return await ctx.reply(_t('advent_finished', language))
+        return _t('advent_finished', language)
 
     advent_type = db.items.Items.Advent
     _today = datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
@@ -101,9 +101,9 @@ async def advent(ctx: Context, *, language):
         advent_inventory = db.Inventory(advent_item)
         this_user.claim_items(ctx.guild_id, [advent_inventory])
         s.commit()
-        await ctx.reply(_t('advent_claimed_successfully', language, total=len(claimed_total)+1))
+        return _t('advent_claimed_successfully', language, total=len(claimed_total)+1)
     else:
-        await ctx.reply(_t('advent_already_claimed', language))
+        return _t('advent_already_claimed', language)
 
 @register(group=Groups.GLOBAL, main=christmas, private_response=True)
 async def hat(ctx: Context, user: User):
