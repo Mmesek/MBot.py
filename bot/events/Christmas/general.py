@@ -97,7 +97,7 @@ async def advent(ctx: Context, *, language):
             claimed_today = True
 
     if not claimed_today:
-        advent_item = db.items.Item('Advent', advent_type)
+        advent_item = db.items.Item.fetch_or_add(s, name='Advent', type=advent_type)
         advent_inventory = db.Inventory(advent_item)
         this_user.claim_items(ctx.guild_id, [advent_inventory])
         s.commit()
