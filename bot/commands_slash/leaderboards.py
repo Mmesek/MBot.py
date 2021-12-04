@@ -200,6 +200,7 @@ class Leaderboards(Enum):
     Sent_Presents = "Sent Present"
     Hitted_Snowballs = "Thrown Snowball"
     Mostly_Snowballed = "Splashed Snowball"
+    Grinch = "Stolen Presents"
     #Cookies = "Cookie"
     #Gifting = "Present"
     #Advent = "Advent"
