@@ -1,6 +1,7 @@
 from datetime import datetime, timezone, timedelta
 from MFramework import Context, User, Groups, register, Event, EventBetween
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
+from MFramework.commands.decorators import Chance
 from ... import database as db
 
 def _t(key, language='en', **kwargs):
@@ -57,6 +58,37 @@ async def gift(ctx: Context, user: User, *, language) -> str:
     else:
         return _t('remaining_cooldown', language, cooldown=timedelta(hours=2) - (now - last_gift.Timestamp))
 
+@register(group=Groups.GLOBAL, main=christmas)
+@cooldown(hours=3, logic=CacheCooldown)
+@Chance(50, "You've failed!")
+async def steal(ctx: Context, target: User) -> str:
+    '''
+    Attempt to steal someone else's present! (If they have any)
+    Params
+    ------
+    target:
+        User you want to rob
+    '''
+    if target.id == ctx.user.id:
+        return "You can't steal from yourself!"
+    s = ctx.db.sql.session()
+
+    target_user = db.User.fetch_or_add(s, id=target.id)
+    this_user = db.User.fetch_or_add(s, id=ctx.user_id)
+    for item in target_user.items:
+        if 'Presents' == item.item.name:
+            if item.quantity > 0:
+                own_present = True
+            break
+
+    if not own_present:
+        return "Your target doesn't have any presents left!"
+    green_present = db.items.Item.by_name(s, "Green Present")
+    gift = db.Inventory(green_present, 1)
+    target_user.transfer(ctx.guild_id, this_user, [db.Inventory(db.items.Item.by_name(s, "Presents"))], [gift], turn_item=True)
+    this_user.claim_items(ctx.guild_id, [db.Inventory(db.items.Item.by_name(s, "Stolen Presents"))])
+    s.commit()
+    return "Congratulations Mr Grinch! You've managed to steal a present!"
 
 @register(group=Groups.GLOBAL, main=christmas)
 async def cookie(ctx: Context, user: User, *, language) -> str:
