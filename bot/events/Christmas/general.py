@@ -54,7 +54,7 @@ async def gift(ctx: Context, user: User, *, language) -> str:
         this_user.transfer(ctx.guild_id, target_user, [send_item], [gift], turn_item=True)
         this_user.claim_items(ctx.guild_id, [db.Inventory(db.items.Item.by_name(s, "Sent Present"))])
         s.commit()
-        return _t('present_sent_successfully', language, user=user.username)
+        return _t('present_sent_successfully', language, user=user.username) + "<:gold_gift:917012628310724659>"
     else:
         return _t('remaining_cooldown', language, cooldown=timedelta(hours=2) - (now - last_gift.Timestamp))
 
@@ -88,7 +88,7 @@ async def steal(ctx: Context, target: User) -> str:
     target_user.transfer(ctx.guild_id, this_user, [db.Inventory(db.items.Item.by_name(s, "Presents"))], [gift], turn_item=True)
     this_user.claim_items(ctx.guild_id, [db.Inventory(db.items.Item.by_name(s, "Stolen Presents"))])
     s.commit()
-    return "Congratulations Mr Grinch! You've managed to steal a present!"
+    return "Congratulations Mr Grinch! You've managed to steal a present! <:rotten_gift:917012629518684230>"
 
 @register(group=Groups.GLOBAL, main=christmas)
 async def cookie(ctx: Context, user: User, *, language) -> str:
