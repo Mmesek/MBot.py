@@ -55,7 +55,10 @@ async def throw(ctx: Context, target: User):
             user.claim_items(ctx.guild_id, [items.Inventory(items.Item.by_name(s, "Missed Snowball"))])
 
         #transaction = user.transfer(ctx.guild_id, target.id, [item]) 
-        transaction = user.transfer(ctx.guild_id, target_user, [send_item], splashed)
+        #transaction = user.transfer(ctx.guild_id, target_user, [send_item], splashed, turn_item=True)
+        transaction = user.claim_items(ctx.guild_id, splashed)
+        target_user.claim_items(ctx.guild_id, [send_item])
+
         #FIXME: Right now it only transfers snowball,
         # adding a method that "turns" item in transit (Sent A, Received B)
         # would be a possible solution for this [There was something similiar for gifting 2020]

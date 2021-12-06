@@ -51,7 +51,8 @@ async def gift(ctx: Context, user: User, *, language) -> str:
 
         gift = db.Inventory(golden_present, 1)
         send_item = db.Inventory(item.item)
-        this_user.transfer(ctx.guild_id, target_user, [send_item], [gift], turn_item=True)
+        target_user.claim_items(ctx.guild_id, [gift])
+        this_user.remove_item(send_item)
         this_user.claim_items(ctx.guild_id, [db.Inventory(db.items.Item.by_name(s, "Sent Present"))])
         s.commit()
         return _t('present_sent_successfully', language, user=user.username) + "<:gold_gift:917012628310724659>"
@@ -85,7 +86,8 @@ async def steal(ctx: Context, target: User) -> str:
         return "Your target doesn't have any presents left!"
     green_present = db.items.Item.by_name(s, "Green Present")
     gift = db.Inventory(green_present, 1)
-    target_user.transfer(ctx.guild_id, this_user, [db.Inventory(db.items.Item.by_name(s, "Presents"))], [gift], turn_item=True)
+    this_user.claim_items(ctx.guild_id, [gift])
+    target_user.remove_item(db.Inventory(db.items.Item.fetch_or_add(s, name="Presents")))
     this_user.claim_items(ctx.guild_id, [db.Inventory(db.items.Item.by_name(s, "Stolen Presents"))])
     s.commit()
     return "Congratulations Mr Grinch! You've managed to steal a present! <:rotten_gift:917012629518684230>"
