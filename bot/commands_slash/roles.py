@@ -1,9 +1,139 @@
-from MFramework import register, Groups, Context, Snowflake, ChannelID, RoleID
+from typing import List
+import enum
+from MFramework import register, Groups, Context, Snowflake, ChannelID, RoleID, Role, Component_Types, Button_Styles, Select_Option
+from MFramework.commands.components import Select, Option, Row, Button
 
 @register(group=Groups.MODERATOR)
 async def role(ctx: Context, *args, language, **kwargs):
     '''Manages Roles'''
     pass
+
+@register(group=Groups.MODERATOR, main=role)
+async def button(ctx: Context, *, language):
+    '''
+    Description to use with help command
+    '''
+    pass
+
+class Button_Types(enum.Enum):
+    Button = Component_Types.BUTTON.value
+    Select = Component_Types.SELECT_MENU.value
+
+class RoleSelect(Select):
+    private_response = True
+    @classmethod
+    async def execute(cls, ctx: Context, data: str, values: List[str], not_selected: List[Select_Option]) -> str:
+        added = []
+        removed = []
+        for value in values:
+            if int(value) not in ctx.member.roles:
+                await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, value, "Interaction Role - Select")
+                added.append(value)
+        for option in not_selected:
+            if int(option.value) in ctx.member.roles:
+                await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, option.value, "Interaction Role - Select")
+                removed.append(option.value)
+        msg = []
+        if added:
+            msg.append(f"Added: {', '.join([f'<@&{id}>' for id in added])}")
+        if removed:
+            msg.append(f"Removed: {', '.join([f'<@&{id}>' for id in removed])}")
+        await ctx.reply("\n".join(msg))
+
+class RoleButton(Button):
+    private_response = True
+    @classmethod
+    async def execute(cls, ctx: Context, data: str) -> str:
+        if int(data) not in ctx.member.roles:
+            await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, data, "Interaction Role - Select")
+            msg = f"Added <@&{data}>"
+        else:
+            await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, data, "Interaction Role - Button")
+            msg = f"Removed <@&{data}>"
+        await ctx.reply(msg)
+
+
+@register(group=Groups.MODERATOR, main=button, private_response=True)
+async def create(ctx: Context, 
+                role: Role, 
+                message_id: Snowflake, 
+                label: str = None, 
+                emoji: str = None, 
+                group: str = None, 
+                type: Button_Types = Button_Types.Button, 
+                style: Button_Styles = Button_Styles.PRIMARY, 
+                description: str = None, 
+                disabled: bool= False, 
+                default: bool = False, 
+                placeholder: str = None, 
+                min_picks: int = 0, 
+                max_picks: int = 1
+    ):
+    '''
+    Adds new interaction role button/option
+    Params
+    ------
+    role:
+        Role that should be toggled on click
+    message_id:
+        ID of bot's Message that should have this interaction role assigned to
+    label:
+        Name of this button or option (Defaults to Role's name)
+    emoji:
+        Emoji to use as an icon for button or option
+    group:
+        [Select] Selection group for this role (for example for One of or Unique)
+    type:
+        Type of this role interaction
+    disabled:
+        Whether this button or Selection should be disabled by default
+    style:
+        [Button] Style of the button
+    description:
+        [Select] Description of this role for option
+    default:
+        [Select] Whether this option should be default in selection
+    placeholder:
+        [Select] Selection's default name when no choice is specified
+    min_picks:
+        [Select] Minimal amount of roles to pick in this selection (0-25)
+    max_picks:
+        [Select] Maximal amount of roles to pick in this selection (0-25)
+    '''
+    msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
+
+    if msg.author.id != ctx.bot.user_id:
+        return "Sorry, I can add interactions only to my own messages!"
+
+    place_found = False
+
+    if type is Button_Types.Button:
+        btn = RoleButton(label or role.name, role.id, style, emoji, disabled)
+        opt = None
+    elif type is Button_Types.Select:
+        btn = None
+        opt = Option(label or role.name, role.id, description, emoji, default)
+
+    for row in msg.components:
+        if btn and len(row.components) < 5:
+            row.components.append(btn)
+            place_found = True
+        elif opt and row.components and row.components[0].type is Component_Types.SELECT_MENU and all(i in row.components[0].custom_id.split("-") for i in {str(group), "RoleSelect"}):
+            if len(row.components[0].options) < 25:
+                row.components[0].options.append(opt)
+                place_found = True
+
+    if not place_found and len(msg.components) == 5:
+        return "This message have already exhausted limits!"
+
+    if not place_found:
+        if btn:
+            msg.components.append(Row(btn))
+        elif opt:
+            msg.components.append(Row(RoleSelect(opt, custom_id=group, placeholder=placeholder, min_values=min_picks, max_values=max_picks, disabled=disabled)))
+
+    await msg.edit()
+    return "Role added!"
 
 @register(group=Groups.MODERATOR, main=role)
 async def reaction(ctx: Context, *args, language, **kwargs):
