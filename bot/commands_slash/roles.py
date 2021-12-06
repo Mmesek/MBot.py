@@ -1,6 +1,6 @@
 from typing import List
 import enum
-from MFramework import register, Groups, Context, Snowflake, ChannelID, RoleID, Role, Component_Types, Button_Styles, Select_Option
+from MFramework import register, Groups, Context, Snowflake, ChannelID, RoleID, Role, Component_Types, Button_Styles, Select_Option, Emoji
 from MFramework.commands.components import Select, Option, Row, Button
 
 @register(group=Groups.MODERATOR)
@@ -16,8 +16,11 @@ async def button(ctx: Context, *, language):
     pass
 
 class Button_Types(enum.Enum):
-    Button = Component_Types.BUTTON.value
-    Select = Component_Types.SELECT_MENU.value
+    Primary = Button_Styles.PRIMARY.name
+    Secondary = Button_Styles.SECONDARY.name
+    Success = Button_Styles.SUCCESS.name
+    Danger = Button_Styles.DANGER.name
+    Select = Component_Types.SELECT_MENU.name
 
 class RoleSelect(Select):
     private_response = True
@@ -60,14 +63,14 @@ async def create(ctx: Context,
                 label: str = None, 
                 emoji: str = None, 
                 group: str = None, 
-                type: Button_Types = Button_Types.Button, 
-                style: Button_Styles = Button_Styles.PRIMARY, 
+                style: Button_Types = Button_Styles.PRIMARY, 
                 description: str = None, 
                 disabled: bool= False, 
                 default: bool = False, 
                 placeholder: str = None, 
                 min_picks: int = 0, 
-                max_picks: int = 1
+                max_picks: int = 1,
+                update: bool = False
     ):
     '''
     Adds new interaction role button/option
@@ -83,8 +86,6 @@ async def create(ctx: Context,
         Emoji to use as an icon for button or option
     group:
         [Select] Selection group for this role (for example for One of or Unique)
-    type:
-        Type of this role interaction
     disabled:
         Whether this button or Selection should be disabled by default
     style:
@@ -99,28 +100,40 @@ async def create(ctx: Context,
         [Select] Minimal amount of roles to pick in this selection (0-25)
     max_picks:
         [Select] Maximal amount of roles to pick in this selection (0-25)
+    update:
+        Whether to update existing values
     '''
     msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
+    if emoji:
+        emoji = emoji.strip('<>').split(":")
+        if len(emoji) == 1:
+            emoji.append(None)
+        emoji = Emoji(id=emoji[-1], name=emoji[-2], animated='a' == emoji[0])
 
     if msg.author.id != ctx.bot.user_id:
         return "Sorry, I can add interactions only to my own messages!"
 
     place_found = False
 
-    if type is Button_Types.Button:
-        btn = RoleButton(label or role.name, role.id, style, emoji, disabled)
+    if style is not Button_Types.Select:
+        btn = RoleButton(label or role.name, role.id, Button_Styles.get(style.value), emoji, disabled)
         opt = None
-    elif type is Button_Types.Select:
+    else:
         btn = None
         opt = Option(label or role.name, role.id, description, emoji, default)
 
     for row in msg.components:
-        if btn and len(row.components) < 5:
+        if btn and len(row.components) < 5 and row.components and row.components[0].type is not Component_Types.SELECT_MENU:
             row.components.append(btn)
             place_found = True
         elif opt and row.components and row.components[0].type is Component_Types.SELECT_MENU and all(i in row.components[0].custom_id.split("-") for i in {str(group), "RoleSelect"}):
             if len(row.components[0].options) < 25:
                 row.components[0].options.append(opt)
+                if update:
+                    row.components[0].max_values = max_picks
+                    row.components[0].min_values = min_picks
+                if placeholder:
+                    row.components[0].placeholder = placeholder
                 place_found = True
 
     if not place_found and len(msg.components) == 5:
