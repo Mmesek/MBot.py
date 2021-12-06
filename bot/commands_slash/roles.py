@@ -148,6 +148,47 @@ async def create(ctx: Context,
     await msg.edit()
     return "Role added!"
 
+@register(group=Groups.MODERATOR, main=button)
+async def edit(ctx: Context, role: Role, message_id: Snowflake, group: str = None, description: str = None, emoji: str = None, placeholder: str = None, min_picks: int=None, max_picks: int=None):
+    '''
+    Edits existing interaction roles
+    Params
+    ------
+    group:
+        [Select] Selection group to edit
+    placeholder:
+        [Select] Selection's default name when no choice is specified
+    min_picks:
+        [Select] Minimal amount of roles to pick in this selection (0-25)
+    max_picks:
+        [Select] Maximal amount of roles to pick in this selection (0-25)
+    '''
+    msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
+    if emoji:
+        emoji = emoji.strip('<>').split(":")
+        if len(emoji) == 1:
+            emoji.append(None)
+        emoji = Emoji(id=emoji[-1], name=emoji[-2], animated='a' == emoji[0])
+
+    if msg.author.id != ctx.bot.user_id:
+        return "Sorry, I can add interactions only to my own messages!"
+
+    for row in msg.components:
+        if row.components and row.components[0].type is Component_Types.SELECT_MENU and all(i in row.components[0].custom_id.split("-") for i in {str(group), "RoleSelect"}):
+            if len(row.components[0].options) < 25:
+                if max_picks:
+                    row.components[0].max_values = max_picks
+                if min_picks:
+                    row.components[0].min_values = min_picks
+                if placeholder:
+                    row.components[0].placeholder = placeholder
+                for option in row.components[0].options:
+                    if option.value == str(role.id):
+                        option.description = description
+                        option.emoji = emoji
+    await msg.edit()
+    return "Role edited!"
+
 @register(group=Groups.MODERATOR, main=role)
 async def reaction(ctx: Context, *args, language, **kwargs):
     '''Manages Reaction Roles'''
