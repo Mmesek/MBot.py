@@ -5,7 +5,8 @@ from MFramework import register, Groups, Context, ChannelID, Snowflake, Embed, M
 @register(group=Groups.MODERATOR, private_response=True)
 async def say(ctx: Context, 
     message: str, 
-    channel: ChannelID=None, reply: str = None, 
+    channel: ChannelID=None, edit: Snowflake = None,
+    reply: str = None, 
     skip_message: bool = False,
     title: str = None, description: str = None,
     footer: str = None, footer_icon: str = None,
@@ -25,6 +26,8 @@ async def say(ctx: Context,
         Message to send
     channel:
         Channel to which message should be send
+    edit:
+        ID of bot's message to edit
     reply:
         ID or link to message to which is should reply to
     skip_message:
@@ -94,12 +97,25 @@ async def say(ctx: Context,
         if right_name or right_text:
             e.addField(name=right_name or '\u200b', value=right_text or '\u200b', inline=True)
     try:
-        msg = await ctx.bot.create_message(
-            channel_id=channel, 
-            content=message if not skip_message else "", 
-            embeds=[e] if e.total_characters-8 else None,
-            message_reference=reply
-        )
+        if edit and ctx.permission_group.can_use(Groups.ADMIN):
+            msg = await ctx.bot.get_channel_message(channel, edit)
+            if message and not skip_message:
+                msg.content = message
+            if e and e.total_characters-8:
+                if len(msg.embeds) > 0:
+                    msg.embeds.append(e)
+                else:
+                    msg.embeds = [e]
+            if reply:
+                msg.message_reference = reply
+            await msg.edit()
+        else:
+            msg = await ctx.bot.create_message(
+                channel_id=channel, 
+                content=message if not skip_message else "", 
+                embeds=[e] if e.total_characters-8 else None,
+                message_reference=reply
+            )
         await ctx.reply(f"Message sent.\nChannelID: {msg.channel_id}\nMessageID: {msg.id}", private=True)
     except BadRequest as ex:
         await ctx.reply(ex.msg or f"Exception: {ex}")
