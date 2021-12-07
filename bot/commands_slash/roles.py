@@ -41,8 +41,9 @@ class RoleSelect(Select):
             msg.append(f"Added: {', '.join([f'<@&{id}>' for id in added])}")
         if removed:
             msg.append(f"Removed: {', '.join([f'<@&{id}>' for id in removed])}")
-        if msg:
-            await ctx.reply("\n".join(msg))
+        if not msg:
+            msg.append("No change")
+        await ctx.reply("\n".join(msg))
 
 class RoleButton(Button):
     private_response = True
@@ -60,7 +61,7 @@ class RoleButton(Button):
 @register(group=Groups.MODERATOR, main=button, private_response=True)
 async def create(ctx: Context, 
                 role: Role, 
-                message_id: Snowflake, 
+                message_id: Snowflake = None, 
                 label: str = None, 
                 emoji: str = None, 
                 group: str = None, 
@@ -104,15 +105,20 @@ async def create(ctx: Context,
     update:
         Whether to update existing values
     '''
+    if not message_id:
+        message_id = ctx.channel.last_message_id
+
     msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
+
+    if msg.author.id != ctx.bot.user_id:
+        return "Sorry, I can add interactions only to my own messages!"
+
     if emoji:
         emoji = emoji.strip('<>').split(":")
         if len(emoji) == 1:
             emoji.append(None)
         emoji = Emoji(id=emoji[-1], name=emoji[-2], animated='a' == emoji[0])
 
-    if msg.author.id != ctx.bot.user_id:
-        return "Sorry, I can add interactions only to my own messages!"
 
     place_found = False
 
