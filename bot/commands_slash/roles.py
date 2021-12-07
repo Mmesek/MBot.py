@@ -41,7 +41,8 @@ class RoleSelect(Select):
             msg.append(f"Added: {', '.join([f'<@&{id}>' for id in added])}")
         if removed:
             msg.append(f"Removed: {', '.join([f'<@&{id}>' for id in removed])}")
-        await ctx.reply("\n".join(msg))
+        if msg:
+            await ctx.reply("\n".join(msg))
 
 class RoleButton(Button):
     private_response = True
