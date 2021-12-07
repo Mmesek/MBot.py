@@ -76,6 +76,7 @@ async def steal(ctx: Context, target: User) -> str:
 
     target_user = db.User.fetch_or_add(s, id=target.id)
     this_user = db.User.fetch_or_add(s, id=ctx.user_id)
+    own_present = False
     for item in target_user.items:
         if 'Presents' == item.item.name:
             if item.quantity > 0:
