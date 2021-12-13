@@ -242,6 +242,28 @@ async def empty_option(ctx: Context, select_group: str, message_id: Snowflake = 
         return "Cleanup selection added!"
     return "Couldn't find suitable Selection"
 
+
+@register(group=Groups.MODERATOR, main=button, private_response=True)
+async def info(ctx: Context, message_id: Snowflake=None, *, language):
+    '''
+    Shows info about Interaction Roles associated with this message
+    Params
+    ------
+    message_id:
+        Message to query
+    '''
+    if not message_id:
+        message_id = ctx.channel.last_message_id
+    msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
+    components = []
+    for row in msg.components:
+        if row.components and row.components[0].type is Component_Types.SELECT_MENU:
+            components.append(row.components[0].custom_id)
+            for option in row.components[0].options:
+                components.append(f"{option.label} - {option.value}")
+    return "\n".join(components)
+
+
 @register(group=Groups.MODERATOR, main=role)
 async def reaction(ctx: Context, *args, language, **kwargs):
     '''Manages Reaction Roles'''
