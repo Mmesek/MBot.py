@@ -29,10 +29,14 @@ class RoleSelect(Select):
         added = []
         removed = []
         for value in values:
+            if value == "None":
+                continue
             if int(value) not in ctx.member.roles:
                 await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, value, "Interaction Role - Select")
                 added.append(value)
         for option in not_selected:
+            if option.value == "None":
+                continue
             if int(option.value) in ctx.member.roles:
                 await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, option.value, "Interaction Role - Select")
                 removed.append(option.value)
@@ -195,6 +199,48 @@ async def edit(ctx: Context, role: Role, message_id: Snowflake, group: str = Non
                         option.emoji = emoji
     await msg.edit()
     return "Role edited!"
+
+@register(group=Groups.MODERATOR, main=button, private_response=True)
+async def empty_option(ctx: Context, select_group: str, message_id: Snowflake = None, label: str = "None", description: str = None, emoji: str = None):
+    """
+    Adds "Clear all" selection option that does nothing (Allows clearing roles from selection)
+    Params
+    ------
+    select_group:
+        Group to which option should be added
+    message_id:
+        Message to which option should be added
+    label:
+        Name of option (Default: None)
+    description:
+        Description of option
+    emoji:
+        Emoji of option
+    """
+    if not message_id:
+        message_id = ctx.channel.last_message_id
+    msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
+    if emoji:
+        emoji = emoji.strip('<>').split(":")
+        if len(emoji) == 1:
+            emoji.append(None)
+        emoji = Emoji(id=emoji[-1], name=emoji[-2], animated='a' == emoji[0])
+    btn_added = False
+    for row in msg.components:
+        if row.components and row.components[0].type is Component_Types.SELECT_MENU and all(i in row.components[0].custom_id.split("-") for i in {str(select_group), "RoleSelect"}):
+            for x, option in enumerate(row.components[0].options):
+                if option.value == "None":
+                    row.components[0].options.pop(x)
+                    break
+            if len(row.components[0].options) < 25:
+                row.components[0].options.append(Option(label, "None", description, emoji))
+                btn_added = True
+            else:
+                return "This Selection doesn't have any space left! (25 options)"
+    if btn_added:
+        await msg.edit()
+        return "Cleanup selection added!"
+    return "Couldn't find suitable Selection"
 
 @register(group=Groups.MODERATOR, main=role)
 async def reaction(ctx: Context, *args, language, **kwargs):
