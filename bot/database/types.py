@@ -59,6 +59,9 @@ class Statistic(Enum):
 
     Halloween_Turn_Count = 20
 
+    Story_Start = 30
+    Story_End = 31
+
 
 class Item(Enum):
     SYSTEM = 0 # Metadata Items
