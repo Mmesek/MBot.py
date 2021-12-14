@@ -1,5 +1,6 @@
 from datetime import datetime, timezone, timedelta
-from MFramework import Context, User, Groups, register, Event, EventBetween
+
+from MFramework import Context, User, Groups, register, Event, EventBetween, Embed, Channel_Types
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.commands.decorators import Chance
 from ... import database as db
@@ -155,3 +156,124 @@ async def hat(ctx: Context, user: User):
     img.save(buffered, format="PNG")
     img_str = buffered.getvalue()
     await ctx.bot.create_message(ctx.channel_id, file=img_str, filename="avatar.png")
+
+from functools import cache
+import asyncio, re
+from random import SystemRandom as random
+
+loaded_stories = {}
+
+async def delayed_message(ctx: Context, message: str, total: int, embed: Embed = None):
+    if type(message) is not Embed:
+        await ctx.bot.create_message(ctx.channel_id, message, embeds=[embed] if embed else None)
+        sleep = len(message)/60
+    else:
+        await ctx.bot.create_message(ctx.channel_id, embeds=[message])
+        sleep = 10
+    await ctx.bot.trigger_typing_indicator(ctx.channel_id)
+    if total > 1:
+        await asyncio.sleep(sleep)
+
+@cache
+def load(story):
+    import json
+    if story in loaded_stories:
+        return loaded_stories[story]
+    with open(f'data/stories/wip/{story}.json','r',newline='',encoding='utf-8') as file:
+        story_json = json.load(file)
+    loaded_stories[story] = story_json
+    return story_json
+
+import sqlalchemy as sa
+from mlib.database import Base
+
+class StoryStats(Base):
+    name: str = sa.Column(sa.String, primary_key=True)
+    value: int = sa.Column(sa.Integer, default=0, nullable=False)
+    @classmethod
+    def get(cls, s, name: str):
+        r = cls.fetch_or_add(s, name=name)
+        if not r.value:
+            r.value = 0
+        return r
+
+    @classmethod
+    def incr(cls, s, name: str):
+        r = cls.get(s, name)
+        r.value += 1
+        s.commit()
+
+
+@register(group=Groups.GLOBAL, main=christmas, private_response=True)
+@cooldown(hours=3, logic=CacheCooldown)
+async def story(ctx: Context):
+    '''
+    Christmas Gatherer's Story made by Command Sergeant Major Cock#0001
+    '''
+    await ctx.reply("Hey! Your story will continue in a private thread, have fun!")
+    try:
+        thread = await ctx.bot.start_thread_without_message(ctx.channel_id, f"Christmas Gatherer's Story - {ctx.user.username}", 60, Channel_Types.GUILD_PRIVATE_THREAD, "User started Christmas Story!")
+        ctx.channel_id = thread.id
+    except Exception as ex:
+        pass
+    await ctx.send(channel_id=ctx.channel_id, content=f"<@{ctx.user_id}>: During story progression, you'll have to reply with one of available choices to proceed further.\n- There might be hidden choices which you can take that won't be listed.\n- Each choice is case sensitive.\n- You'll have around 5 minutes each time to respond before the context will expire.\nHave fun!")
+    story = load("gatherers")
+    chapter = "start"
+    option = None
+    from ...database import log, types
+    session = ctx.db.sql.session()
+    with ctx.db.sql.session.begin() as session:
+        log.Statistic.increment(session, ctx.guild_id, 0, types.Statistic.Story_Start)
+    while True:
+        with ctx.db.sql.session.begin() as s:
+            StoryStats.incr(s, chapter)
+        options = story.get(chapter, None)
+        if not options:
+            return f"Couldn't find any matching option for your response. Contact <@187924023424974859> to check for chapter {chapter}"#f"There is no option matching your response mate, check the json for {chapter}"
+        if chapter == "end":
+            break
+        if option:
+            pamphlet = options.get(option, None)
+        else:
+            pamphlet = random().choice(list(options.values()))
+        msgs = pamphlet.get("text", ["Missing text"])
+        if type(msgs) == str:
+            if len(msgs.split('. ')) > 3:
+                msgs = msgs.split(". ")
+            else:
+                msgs = [msgs]
+        choices = None
+        _regex = None
+        if pamphlet and pamphlet.get("next", None):
+            hidden = [_hidden for _hidden in pamphlet.get("next",{}) if pamphlet.get("next",{}).get(_hidden, {}).get("hidden", None)]
+            if hidden:
+                _regex = re.compile(r"(?:{})".format("|".join("(?P<{}>{})".format(k.replace(" ","_"), k) for k in hidden)), re.IGNORECASE)
+            choices = Embed(description="Choices: "+" ".join([f"[`{_choice}`]" for _choice in pamphlet.get("next",{}) if not pamphlet.get("next",{}).get(_choice, {}).get("hidden", None)]))
+        for x, message in enumerate(msgs):
+            await delayed_message(ctx, message.format(code="#"+str(random().randbytes(4))), len(msgs), choices if x+1 == len(msgs) else None)
+        try:
+            user_input = await ctx.bot.wait_for(
+                        "message_create" if not ctx.is_dm else "direct_message_create", 
+                        check=lambda x: x.author.id == ctx.user_id and 
+                                        x.channel_id == ctx.channel_id and
+                                        x.content in pamphlet.get("next") or (_regex and _regex.search(x.content)),
+                        timeout=360)
+        except asyncio.TimeoutError:
+            await ctx.bot.create_message(ctx.channel_id, "Waited too long for an answer and current progression has expired \=(")
+            return
+        n = None
+        if _regex:
+            n = _regex.search(user_input.content)
+        if n:
+            n = n.group().replace("_"," ")
+        else:
+            n = user_input.content
+        next = pamphlet.get("next", {}).get(n, {})
+        chapter = next.get("chapter", "end")
+        if type(chapter) is list:
+            chapter = random().choice(chapter)
+
+        option = next.get("option", None)
+    with ctx.db.sql.session.begin() as session:
+        log.Statistic.increment(session, ctx.guild_id, 0, types.Statistic.Story_End)
+    return "Curtain falls... Hope you have enjoyed this story!"
