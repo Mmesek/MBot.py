@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author, Discord_Paths, Channel_Types
+from MFramework.commands.decorators import Chance
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
 async def docket(ctx: Context, interaction: Interaction, docket: str, description: str='', publish: bool=True):
@@ -211,3 +212,20 @@ async def ayo(ctx: Context, captions: str="Farewell, we will tell people you wen
     from mlib.colors import buffered_image
     img_str = buffered_image(img)
     await ctx.reply(file=img_str, filename="WhatReallyHappened.png")
+
+from MFramework import Guild_Member
+from MFramework.commands.cooldowns import cooldown
+@register(group=Groups.OWNER, guild=289739584546275339)
+@cooldown(minutes=5)
+@Chance(10, "You missed")
+async def ak47(ctx: Context, user: Guild_Member):
+    '''
+    Timeout person for a day!
+    Params
+    ------
+    user:
+        user you want to timeout
+    '''
+    t = datetime.utcnow() + timedelta(days=1)
+    await ctx.bot.modify_guild_member(ctx.guild_id, user.user.id, communication_disabled_until=t, reason="AK-47")
+    return "Shots fired!"
