@@ -157,7 +157,7 @@ async def hat(ctx: Context, user: User):
     img_str = buffered.getvalue()
     await ctx.bot.create_message(ctx.channel_id, file=img_str, filename="avatar.png")
 
-from functools import cache
+#from functools import cache
 import asyncio, re
 from random import SystemRandom as random
 
@@ -174,7 +174,7 @@ async def delayed_message(ctx: Context, message: str, total: int, embed: Embed =
     if total > 1:
         await asyncio.sleep(sleep)
 
-@cache
+#@cache
 def load(story):
     import json
     if story in loaded_stories:
@@ -250,7 +250,9 @@ async def story(ctx: Context):
                 _regex = re.compile(r"(?:{})".format("|".join("(?P<{}>{})".format(k.replace(" ","_"), k) for k in hidden)), re.IGNORECASE)
             choices = Embed(description="Choices: "+" ".join([f"[`{_choice}`]" for _choice in pamphlet.get("next",{}) if not pamphlet.get("next",{}).get(_choice, {}).get("hidden", None)]))
         for x, message in enumerate(msgs):
-            await delayed_message(ctx, message.format(code="#"+str(random().randbytes(4))), len(msgs), choices if x+1 == len(msgs) else None)
+            await delayed_message(ctx, message.format(code="#SECRET_CODE"), len(msgs), choices if x+1 == len(msgs) else None)
+        if not pamphlet:
+            break
         try:
             user_input = await ctx.bot.wait_for(
                         "message_create" if not ctx.is_dm else "direct_message_create", 
@@ -261,6 +263,9 @@ async def story(ctx: Context):
         except asyncio.TimeoutError:
             await ctx.bot.create_message(ctx.channel_id, "Waited too long for an answer and current progression has expired \=(")
             return
+        except Exception:
+            await ctx.bot.create_message(ctx.channel_id, "An exception occured \=(")
+            break
         n = None
         if _regex:
             n = _regex.search(user_input.content)
@@ -276,4 +281,5 @@ async def story(ctx: Context):
         option = next.get("option", None)
     with ctx.db.sql.session.begin() as session:
         log.Statistic.increment(session, ctx.guild_id, 0, types.Statistic.Story_End)
-    return "Curtain falls... Hope you have enjoyed this story!"
+
+    await ctx.bot.create_message(ctx.channel_id, "Curtain falls... Hope you have enjoyed this story!")
