@@ -12,6 +12,10 @@ from ..database import types, models
 #                |--------- [User] increase [reason]
 #                |--------- [User] decrease [reason]
 #TODO:
+# - Timeouts
+# - Timeouts instead of mutes
+# - Infraction "weight" (0.1, 0.5, 1.0, 1.5, 2, etc)
+#TODO:
 # Each infraction as separate command instead of choice type?
 # move everything to infraction command group?
 # or make infraction list an info subcommand or some other?
@@ -133,7 +137,9 @@ async def list_(ctx: Context, user: User=None):
     from MFramework import Discord_Paths
     await ctx.deferred()
     language = ctx.language
+    dm_response = False
     if not ctx.permission_group.can_use(Groups.HELPER) and user.id != ctx.user_id:
+        dm_response = True
         user = ctx.user
     session = ctx.db.sql.session()
     u = models.User.fetch_or_add(session, id = user.id)
@@ -194,7 +200,11 @@ async def list_(ctx: Context, user: User=None):
         if remaining_to_auto_ban > 0:
             currently_active += ["🟡"] * remaining_to_auto_ban
         e.setFooter(tr("commands.infractions.counter", language, currently_active="-".join(currently_active), active=active, total=len(user_infractions)))
-        return e
+        if dm_response:
+            await ctx.send_dm(embeds=[e])
+            return "Check your DM"
+        else:
+            return e
     return tr("commands.infractions.no_infractions", language)
 
 
