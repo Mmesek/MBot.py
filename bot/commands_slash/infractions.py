@@ -138,9 +138,10 @@ async def list_(ctx: Context, user: User=None):
     await ctx.deferred()
     language = ctx.language
     dm_response = False
-    if not ctx.permission_group.can_use(Groups.HELPER) and user.id != ctx.user_id:
+    if not ctx.permission_group.can_use(Groups.HELPER):
         dm_response = True
-        user = ctx.user
+        if user.id != ctx.user_id:
+            user = ctx.user
     session = ctx.db.sql.session()
     u = models.User.fetch_or_add(session, id = user.id)
     _infractions = u.infractions
