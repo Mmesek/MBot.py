@@ -4,6 +4,9 @@ from datetime import datetime, timedelta, timezone
 from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove
 from MFramework.utils.log import Log
 from ..database import types, models
+
+check_type = type # #HACK alias so we can use type as argument name
+
 #/infraction 
 #  | | |---- InfractionType
 #  | |           |--------- [User] [reason] [duration]
@@ -46,7 +49,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
         Whether this infraction should increase currently active infractions
     '''
     await ctx.deferred()
-    if duration and type(duration) is str:
+    if duration and check_type(duration) is str:
         from mlib.converters import total_seconds
         duration = total_seconds(duration)
 
