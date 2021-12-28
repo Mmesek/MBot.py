@@ -46,7 +46,7 @@ async def infraction(ctx: Context, *, type: types.Infraction, user: User=None, r
         Whether this infraction should increase currently active infractions
     '''
     await ctx.deferred()
-    if duration:
+    if duration and type(duration) is str:
         from mlib.converters import total_seconds
         duration = total_seconds(duration)
 
