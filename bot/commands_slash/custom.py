@@ -214,9 +214,9 @@ async def ayo(ctx: Context, captions: str="Farewell, we will tell people you wen
     await ctx.reply(file=img_str, filename="WhatReallyHappened.png")
 
 from MFramework import Guild_Member
-from MFramework.commands.cooldowns import cooldown
+from MFramework.commands.cooldowns import cooldown, CacheCooldown
 @register(group=Groups.OWNER, guild=289739584546275339)
-@cooldown(minutes=5)
+@cooldown(minutes=5, logic=CacheCooldown)
 @Chance(10, "You missed")
 async def ak47(ctx: Context, user: Guild_Member):
     '''
