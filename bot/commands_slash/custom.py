@@ -229,3 +229,79 @@ async def ak47(ctx: Context, user: Guild_Member):
     t = datetime.utcnow() + timedelta(days=1)
     await ctx.bot.modify_guild_member(ctx.guild_id, user.user.id, communication_disabled_until=t, reason="AK-47")
     return "Shots fired!"
+
+@register(group=Groups.GLOBAL, guild=340185368655560704)
+async def serverlist(ctx: Context) -> Embed:
+    '''
+    Pokazuje listę serwerów na Northstar z wolnymi miejscami
+    '''
+    url = "https://northstar.tf/client/servers"
+    import requests
+    servers = requests.get(url).json()
+    maps = {
+      "mp_angel_city" : "Angel City",
+      "mp_black_water_canal" : "Black Water Canal",
+      "mp_grave" : "Boomtown",
+      "mp_colony02" : "Colony",
+      "mp_complex3" : "Complex",
+      "mp_crashsite3" : "Crashsite",
+      "mp_drydock" : "DryDock",
+      "mp_eden" : "Eden",
+      "mp_thaw" : "Exoplanet",
+      "mp_forwardbase_kodai" : "Forward Base Kodai",
+      "mp_glitch" : "Glitch",
+      "mp_homestead" : "Homestead",
+      "mp_relic02" : "Relic",
+      "mp_rise" : "Rise",
+      "mp_wargames" : "Wargames",
+      "mp_lobby" : "Lobby",
+      "mp_lf_deck" : "Deck",
+      "mp_lf_meadow" : "Meadow",
+      "mp_lf_stacks" : "Stacks",
+      "mp_lf_township" : "Township",
+      "mp_lf_traffic" : "Traffic",
+      "mp_lf_uma" : "UMA",
+      "mp_coliseum" : "The Coliseum",
+      "mp_coliseum_column" : "Pillars",
+    }
+    playlists = {
+        "tdm" : "Team Death Match",
+        "cp" : "Amped Hardpoint",
+        "at" : "Bounty Hunt",
+        "ctf" : "Capture the Flag",
+        "lts" : "Last Titan Standing",
+        "ps" : "Pilots vs Pilots",
+        "ffa" : "Free For All",
+        "coliseum": "Coliseum",
+        "aitdm" : "Attrition",
+        "speedball" : "Live Fire",
+        "mfd" : "Marked For Death",
+        "ttdm" : "Titan Brawl",
+        "fra" : "Free Agents",
+        "fd" : "Frontier Defense",
+        "gg" : "Gun Game",
+        "inf" : "Infection",
+        "fw" : "Frontier Wars",
+        "tt" : "Titan Tag",
+        "kr" : "Amped Killrace",
+        "fastball" : "Fast Ball",
+        "arena" : "1v1",
+        "ctf_comp" : "Competitive Capture the Flag",
+        "hs" : "Hide and Seek"
+    }
+    ls = {}
+    full_servers = 0
+    for server in sorted(servers, key=lambda x: x.get("playerCount", 0), reverse=True):
+        if server.get("playerCount", 0) < server.get("maxPlayers", 0) and not server.get("hasPassword", False):
+            playlist = playlists.get(server.get("playlist", "Unknown"), server.get("playlist", "Unknown"))
+            smap = maps.get(server.get("map", "Unknown"), server.get("map", "Unknown"))
+            if playlist not in ls:
+                ls[playlist] = []
+            ls[playlist].append(f'{server.get("playerCount", "?")}/{server.get("maxPlayers", "?")} - {server.get("name", "Server Name")} - {smap}')
+        else:
+            full_servers += 1
+    e = Embed()
+    for playlist, _servers in ls.items():
+        e.addFields(playlist, "\n".join(_servers))
+    e.setFooter(f"Full or Private Servers: {full_servers}/{len(servers)}")
+    return e
