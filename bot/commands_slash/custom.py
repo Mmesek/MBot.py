@@ -183,13 +183,17 @@ async def when(ctx: Context, arg:str=None) -> str:
         return "If you set a timer for a few hours, do you also check it every few seconds?"
     elif r < 10 / 100:
         return "Good question."
+    elif r < 12.5 / 100:
+        return "You aren't alone"
+    elif r < 15 / 100:
+        return "Soon™"
     from datetime import datetime
     date = datetime(2022, 2, 4, 19)
     timestamp = int(date.timestamp())
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
         return "Released!"
-    return f"Remaining `{delta}` until (according to Steam) <t:{timestamp}:D> which is <t:{timestamp}:R>"
+    return f"Remaining `{delta.days}` days until (estimated, according to Steam day. *NOT OFFICIALLY CONFIRMED*) <t:{timestamp}:D> which is <t:{timestamp}:R>"
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
 async def ayo(ctx: Context, captions: str="Farewell, we will tell people you went to Harran for Olympics"):
