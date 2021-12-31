@@ -159,7 +159,10 @@ async def loadout(ctx: Context) -> Embed:
 
     return embed
 
+from MFramework.commands.cooldowns import cooldown, CacheCooldown
+
 @register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
+@cooldown(days=1, logic=CacheCooldown)
 async def when(ctx: Context, arg:str=None) -> str:
     '''
     Shows remaining delta
@@ -175,7 +178,9 @@ async def when(ctx: Context, arg:str=None) -> str:
         if any(i in bad_words for i in arg.lower().split(' ')):
             return "Hey, that's rude! <:pepemad:676181484238798868>"
     r = random().random()
-    if r < 2.5 / 100:
+    if r < 1 / 100:
+        return "Error"
+    elif r < 2.5 / 100:
         return "When it's ready."
     elif r < 5 / 100:
         return "If you put a bread into your toaster, do you also constantly look at it?"
@@ -195,11 +200,15 @@ async def when(ctx: Context, arg:str=None) -> str:
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
         return "Released!"
+    if r < 20 / 100:
+        return f"{delta.days / 2} * 2"
+    if r < 25 / 100:
+        return f"{delta.days / 3} + {delta.days / 3} * 2 + 2 * x"
     if r < 30 / 100:
         return f"<t:{timestamp}:R>"
     elif r < 50 / 100:
-        return f"**Around** `{delta.days}` days to *(ESTIMATED)* <t:{timestamp}:D>"
-    return f"Remaining around `{delta.days}` days until (estimated, according to Steam day which means it's *NOT OFFICIALLY CONFIRMED* window) <t:{timestamp}:D> which is <t:{timestamp}:R>"
+        return f"*Around* `{delta.days}` days *(ESTIMATED)* to <t:{timestamp}:D>"
+    return f"Remaining around `{delta}` (estimated, according to Steam day which means it's *NOT OFFICIALLY CONFIRMED* window) until <t:{timestamp}:D> which is <t:{timestamp}:R>"
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
 async def ayo(ctx: Context, captions: str="Farewell, we will tell people you went to Harran for Olympics"):
