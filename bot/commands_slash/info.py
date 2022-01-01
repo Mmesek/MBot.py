@@ -215,7 +215,7 @@ async def channel(ctx: Context, channel_id: ChannelID = 0) -> Embed:
     return embed
 
 @register(group=Groups.ADMIN, main=info)
-async def members(ctx: Context, role: Role, force_update: bool=False) -> Embed:
+async def members(ctx: Context, role: Role, force_update: bool=False, show_id: bool=False) -> Embed:
     '''
     Lists users with provided role
     Params
@@ -235,7 +235,11 @@ async def members(ctx: Context, role: Role, force_update: bool=False) -> Embed:
         if role.id in member.roles:
             total.append(member_id)
     from MFramework import Embed
-    embed = Embed().setDescription(''.join([f'<@{i}>' for i in total])).setFooter(f'Total users/members: {len(total)}/{len(ctx.cache.members)}')
+    if show_id:
+        desc = ",".join([str(i) for i in total])
+    else:
+        desc = ''.join([f'<@{i}>' for i in total])
+    embed = Embed().setDescription(desc).setFooter(f'Total users/members: {len(total)}/{len(ctx.cache.members)}')
     embed.setColor(role.color).setTitle(f'List of members with role {role.name}')
     return embed
 
