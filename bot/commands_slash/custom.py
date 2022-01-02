@@ -161,13 +161,16 @@ async def loadout(ctx: Context) -> Embed:
 
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 
-@register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
+@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
 @cooldown(days=1, logic=CacheCooldown)
-async def when(ctx: Context, arg:str=None) -> str:
+async def when(ctx: Context) -> str:
     '''
-    Shows remaining delta
+    Shows remaining delta to release
     '''
+    if ctx.is_message:
+        return
     from random import SystemRandom as random
+    arg = ""
     if arg:
         try:
             with open("data/bad_words.txt", encoding="utf-8") as word_file:
