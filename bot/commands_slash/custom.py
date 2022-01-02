@@ -200,11 +200,13 @@ async def when(ctx: Context, arg:str=None) -> str:
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
         return "Released!"
-    if r < 20 / 100:
+    if r < 18 / 100:
+        return f"{delta.seconds}s"
+    elif r < 20 / 100:
         return f"{delta.days / 2} * 2"
-    if r < 25 / 100:
+    elif r < 25 / 100:
         return f"{delta.days / 3} + {delta.days / 3} * 2 + 2 * x"
-    if r < 30 / 100:
+    elif r < 30 / 100:
         return f"<t:{timestamp}:R>"
     elif r < 50 / 100:
         return f"*Around* `{delta.days}` days *(ESTIMATED)* to <t:{timestamp}:D>"
