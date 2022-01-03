@@ -162,15 +162,11 @@ async def loadout(ctx: Context) -> Embed:
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
-@cooldown(days=1, logic=CacheCooldown)
-async def when(ctx: Context) -> str:
+@cooldown(hours=1, logic=CacheCooldown)
+async def when(ctx: Context, arg: str = None) -> str:
     '''
     Shows remaining delta to release
     '''
-    if ctx.is_message:
-        return
-    from random import SystemRandom as random
-    arg = ""
     if arg:
         try:
             with open("data/bad_words.txt", encoding="utf-8") as word_file:
@@ -179,41 +175,36 @@ async def when(ctx: Context) -> str:
         except:
             bad_words = set()
         if any(i in bad_words for i in arg.lower().split(' ')):
-            return "Hey, that's rude! <:pepemad:676181484238798868>"
-    r = random().random()
-    if r < 1 / 100:
-        return "Error"
-    elif r < 2.5 / 100:
-        return "When it's ready."
-    elif r < 5 / 100:
-        return "If you put a bread into your toaster, do you also constantly look at it?"
-    elif r < 7.5 / 100:
-        return "If you set a timer for a few hours, do you also check it every few seconds?"
-    elif r < 10 / 100:
-        return "Good question."
-    elif r < 12.5 / 100:
-        return "You aren't alone"
-    elif r < 15 / 100:
-        return "Soon™"
-    elif r < 16 / 100:
-        return "We are getting closer..."
+            return "Hey, that's rude! <:pepe_mad:676181484238798868>"
+
+    if ctx.is_message:
+        return "Enjoy cooldown! New command is `/when`"
+
     from datetime import datetime
     date = datetime(2022, 2, 4, 19)
     timestamp = int(date.timestamp())
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
         return "Released!"
-    if r < 18 / 100:
-        return f"{delta.seconds}s"
-    elif r < 20 / 100:
-        return f"{delta.days / 2} * 2"
-    elif r < 25 / 100:
-        return f"{delta.days / 3} + {delta.days / 3} * 2 + 2 * x"
-    elif r < 30 / 100:
-        return f"<t:{timestamp}:R>"
-    elif r < 50 / 100:
-        return f"*Around* `{delta.days}` days *(ESTIMATED)* to <t:{timestamp}:D>"
-    return f"Remaining around `{delta}` (estimated, according to Steam day which means it's *NOT OFFICIALLY CONFIRMED* window) until <t:{timestamp}:D> which is <t:{timestamp}:R>"
+
+    from random import SystemRandom as random
+    responses = {
+        0.01: "Error",
+        0.025: "When it's ready.",
+        0.05: "If you put a bread into your toaster, do you also constantly look at it?",
+        0.075: "If you set a timer for a few hours, do you also check it every few seconds?",
+        0.1: "Good question.",
+        0.125: "You aren't alone",
+        0.15: "Soon™",
+        0.16: "We are getting closer...",
+        0.18: f"{delta.seconds}s",
+        0.2: f"{delta.days / 2} * 2",
+        0.25: f"{delta.days / 3} + {delta.days / 3} * 2 + 2 * x",
+        0.3: f"<t:{timestamp}:R>",
+        0.5: f"*Around* `{delta.days}` days *(ESTIMATED)* to <t:{timestamp}:D>",
+        1: f"Remaining around `{delta}` (estimated, according to Steam day which means it's *NOT OFFICIALLY CONFIRMED* window) until <t:{timestamp}:D> which is <t:{timestamp}:R>"
+    }
+    return random().choices(list(responses.values()), list(responses.keys()))[0]
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
 async def ayo(ctx: Context, captions: str="Farewell, we will tell people you went to Harran for Olympics"):
