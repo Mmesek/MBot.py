@@ -177,17 +177,23 @@ async def when(ctx: Context, arg: str = None) -> str:
         if any(i in bad_words for i in arg.lower().split(' ')):
             return "Hey, that's rude! <:pepe_mad:676181484238798868>"
 
+    from random import SystemRandom as random
+    from datetime import datetime, timedelta
     if ctx.is_message:
+        if random().random() < 0.1:
+            await ctx.bot.modify_guild_member(ctx.guild_id, ctx.user_id, 
+            communication_disabled_until=datetime.utcnow() + timedelta(minutes=10),
+            reason="Timed Out for 10 minutes for using !when (10% chance)")
+            return "Enjoy timeout! New command is `/when`"
+
         return "Enjoy cooldown! New command is `/when`"
 
-    from datetime import datetime
     date = datetime(2022, 2, 4, 19)
     timestamp = int(date.timestamp())
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
         return "Released!"
 
-    from random import SystemRandom as random
     responses = {
         0.01: "Error",
         0.025: "When it's ready.",
