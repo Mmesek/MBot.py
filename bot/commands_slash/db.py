@@ -101,7 +101,7 @@ def rebuild_cache(ctx: Context, s: db.Session=None):
         s = ctx.db.sql.session()
     if type is db.types.Snippet.Canned_Response:
         ctx.cache.recompile_Canned(s)
-    elif type in db.types.Snippet.Regex:
+    elif type is db.types.Snippet.Regex:
         ctx.cache.recompile_Triggers(s)
     elif type is db.types.Snippet.Blacklisted_Word:
         ctx.cache.get_Blacklisted_Words(s)
