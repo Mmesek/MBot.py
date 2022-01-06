@@ -245,3 +245,20 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, emoji: str = 
             content="{user} {state} <@&{role}> with name {name} and color {color}{emoji}".format(
                 user=ctx.user.username, state=state, role=role.id, name=role.name, color=role.color, emoji=f" and icon {emoji}" if emoji else ""), 
             username="Nitro Role")
+
+@register(group=Groups.ADMIN, interaction=False)
+async def remove_invalid(ctx: Context):
+    '''
+    Clears invalid roles from DB
+    '''
+    s = ctx.db.sql.session()
+    from MFramework.database.alchemy.models import Role
+    roles = s.query(Role).filter(Role.server_id == ctx.guild_id).all()
+    server_roles = [r for r in ctx.cache.roles]
+    to_delete = []
+    for role in roles:
+        if role.id not in server_roles:
+            s.delete(role)
+            to_delete.append(role.id)
+    s.commit()
+    return ", ".join([f"<@&{id}>" for id in to_delete])
