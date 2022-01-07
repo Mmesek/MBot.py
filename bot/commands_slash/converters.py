@@ -311,6 +311,28 @@ async def rot(ctx: Context, message: str, shift: int=13, alphabet: str='ABCDEFGH
     e = Embed().addField("Alphabet", f"`{alphabet}`\n"+msg).setDescription(from_key)
     return e
 
+@register(group=Groups.GLOBAL, main=convert, private_response=True)
+async def hex2dec(ctx: Context, value: str) -> int:
+    '''
+    Convert hexadecimal value to Decimal
+    Params
+    ------
+    value:
+        Hex value to convert
+    '''
+    return int(value, base=16)
+
+@register(group=Groups.GLOBAL, main=convert, private_response=True)
+async def dec2hex(ctx: Context, value: int) -> int:
+    '''
+    Convert decimal value to Hexadecimal
+    Params
+    ------
+    value:
+        Decimal value to convert
+    '''
+    return hex(value)
+
 @register(group=Groups.GLOBAL, main=convert, interaction=False)
 async def asciitohex(ctx: Context, ascii_:str) -> Embed:
     '''Converts Ascii to Numbers
