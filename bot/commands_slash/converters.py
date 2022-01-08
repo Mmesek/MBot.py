@@ -404,13 +404,19 @@ async def reverse(ctx: Context, message: str, in_place: bool=False) -> str:
         r = message[::-1]
     return r
 
-@register(group=Groups.GLOBAL, main=convert, interaction=False)
-async def electricity(ctx: Context, interaction: Interaction, price: float=0.64, watts: float=1, active_hours: float=24, active_days: int=30, *args, language, **kwargs):
+@register(group=Groups.GLOBAL, main=convert)
+async def electricity(ctx: Context, price: float=0.78, watts: float=1, active_hours: float=24, active_days: int=30) -> str:
     '''
     Calculate averange cost of upkeeping provided amount of watts 24/7
     Params
     ------
     price:
-        description
+        Price of kWh (1000 Watts * Active hours)
+    watts:
+        Watts
+    active_hours:
+        Hours per day (Default: 24)
+    active_days:
+        Days in month (Default: 30)
     '''
-    pass
+    return f"~{round(((watts * (active_hours * active_days)) / 1000) * price, 2)} / month"
