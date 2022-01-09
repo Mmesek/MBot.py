@@ -1,7 +1,7 @@
 import datetime
 from typing import List, Optional
 
-from sqlalchemy import Column, ForeignKey, Enum, Boolean, UnicodeText, Integer, String, Interval, BigInteger
+from sqlalchemy import Column, ForeignKey, Enum, Boolean, UnicodeText, Integer, String, Interval
 from sqlalchemy.orm import relationship
 
 from mlib.database import Base, ID, Timestamp, TimestampUpdate
@@ -89,54 +89,6 @@ class Activity(Timestamp, UserID, ServerID, Base):
     user_id: Snowflake = Column(ForeignKey("User.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True, nullable=False)
     name: types.Statistic = Column(Enum(types.Statistic), primary_key=True)
     value: int = Column(Integer, default=0)
-
-class Infraction(Timestamp, UserID, ServerID, ID, Base):
-    '''Infractions Table
-
-    Columns
-    -------
-    id: `int`
-        Autoincremented ID of infraction
-    server_id: `Snowflake`
-        ID of server there this infraction happen
-    user_id: `Snowflake`
-        ID of User that is infracted
-    timestamp: `datetime.datetime`
-        Timestamp when this infraction happened
-    moderator_id: `Snowflake`
-        ID of Moderator that issued this infraction
-    type : `types.Infractions`
-        `Infractions` type of this infraction
-    reason : `str`
-        Reason of this infraction
-    duration : `datetime.timedelta`
-        How long this infraction should be valid/active
-    channel_id : `Snowflake`
-        Channel where this infraction happened
-    message_id : `Snowflake`
-        Message that caused this infraction (or moderator message that issued infraction)
-    active : `bool`
-        Whether this Infraction should be counted as active
-
-    Relations
-    -------------
-    moderator: `User`
-        Moderator `User` relationship
-    user : `User`
-        Infracted `User` relationship
-    '''
-    user_id: Snowflake = Column(ForeignKey("User.id", ondelete='SET DEFAULT', onupdate='Cascade'), nullable=False, default=0)
-    user = relationship("User", foreign_keys="Infraction.user_id")
-    moderator_id: Optional[Snowflake] = Column(ForeignKey("User.id", ondelete='SET DEFAULT', onupdate='Cascade'), nullable=True, default=0)
-    moderator = relationship("User", foreign_keys="Infraction.moderator_id")
-
-    type: types.Infraction = Column(Enum(types.Infraction))
-    reason: Optional[str] = Column(UnicodeText, nullable=True)
-    duration: Optional[datetime.timedelta] = Column(Interval, nullable=True)
-
-    channel_id: Optional[Snowflake] = Column(BigInteger, nullable=True)
-    message_id: Optional[Snowflake] = Column(BigInteger, nullable=True)
-    active: Optional[bool] = Column(Boolean, default=True, nullable=True)
 
 class Log(Timestamp, UserID, ServerID, ID, Base):
     '''General Log Table

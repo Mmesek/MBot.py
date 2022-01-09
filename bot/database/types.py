@@ -3,22 +3,6 @@ import enum
 from mlib.types import Enum
 from MFramework.database.alchemy.types import *
 
-class Infraction(Permissions):
-    '''Infractions'''
-    Warn: Groups.HELPER = (0, "Warns user")
-    Mute: Groups.MODERATOR = (1, "Mutes user")
-    Kick: Groups.MODERATOR = (2, "Kicks user")
-    Ban: Groups.MODERATOR = (3, "Bans user")
-    Temp_Mute: Groups.HELPER = (4, "Temporarly mutes user")
-    Temp_Ban: Groups.HELPER = (5, "Temporarly bans user")
-    Unban: Groups.ADMIN = (6, "Unbans user")
-    Unmute: Groups.MODERATOR = (7, "Unmutes user")
-    Limbo: Groups.ADMIN = (8, "Throws user to Limbo")
-    DM_Mute: Groups.MODERATOR = (9, "Mutes DMs from user in Modmail")
-    DM_Unmute: Groups.MODERATOR = (10, "Unmutes DMs from user in Modmail")
-    Report: Groups.GLOBAL = (11, "Reports user")
-
-
 class Snippet(Permissions):
     '''Snippets'''
     Snippet: Groups.MODERATOR = (0, "Snippet text")

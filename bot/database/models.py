@@ -13,6 +13,7 @@ from mlib.database import Base, File, Timestamp
 from .mixins import UserID
 from . import Inventory
 from . import log, types
+from ..commands_slash.infractions import db_Infraction as Infraction, InfractionTypes
 
 class User(HasDictSettingsRelated, Snowflake, Base):
     '''Users table representing user in Database
@@ -20,8 +21,8 @@ class User(HasDictSettingsRelated, Snowflake, Base):
     Columns
     -------
     id: `Snowflake`'''
-    infractions: List[log.Infraction] = relationship("Infraction", back_populates="user", foreign_keys="Infraction.user_id", order_by="desc(Infraction.timestamp)")
-    mod_actions: List[log.Infraction] = relationship("Infraction", back_populates="moderator", foreign_keys="Infraction.moderator_id", order_by="desc(Infraction.timestamp)")
+    infractions: List[Infraction] = relationship("Infraction", back_populates="user", foreign_keys="Infraction.user_id", order_by="desc(Infraction.timestamp)")
+    mod_actions: List[Infraction] = relationship("Infraction", back_populates="moderator", foreign_keys="Infraction.moderator_id", order_by="desc(Infraction.timestamp)")
     transactions: List[log.Transaction] = relationship("Transaction_Inventory", order_by="desc(Transaction.timestamp)")
     activities: List[log.Activity] = relationship("Activity", order_by="desc(Activity.timestamp)")
     statistics: List[log.Statistic] = relationship("Statistic")
@@ -57,13 +58,13 @@ class User(HasDictSettingsRelated, Snowflake, Base):
                         #pass # TODO: Remove from mapping/association or something
                     continue
 
-    def add_infraction(self, server_id: int, moderator_id: int, type: types.Infraction, reason: str=None, duration: timedelta=None, channel_id: int=None, message_id: int=None, active: bool=True) -> List[log.Infraction]:
+    def add_infraction(self, server_id: int, moderator_id: int, type: InfractionTypes, reason: str=None, duration: timedelta=None, channel_id: int=None, message_id: int=None, expire: datetime=None) -> List[Infraction]:
         '''
         Add infraction to current user. Returns total user infractions on server
         '''
-        self.infractions.append(log.Infraction(server_id = server_id, moderator_id = moderator_id, type=type, reason=reason, duration=duration, channel_id=channel_id, message_id=message_id, active=active))
+        self.infractions.append(Infraction(server_id = server_id, moderator_id = moderator_id, type=type, reason=reason, duration=duration, channel_id=channel_id, message_id=message_id, expire_at=expire))
         return [i for i in self.infractions if i.server_id == server_id]
-    
+
     def transfer(self, server_id: int, recipent: User, sent: List[Inventory] = None, recv: List[Inventory] = None, remove_item:bool=True, turn_item:bool=False) -> log.Transaction:
         '''
         Transfers item from current user to another user & returns transaction log (Which needs to be added to session manually[!])
