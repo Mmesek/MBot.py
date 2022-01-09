@@ -222,3 +222,45 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
             # All letters are known
             break
     await msg.edit(f"The word was `{hidden}`! Took `{x-1}` rounds to guess", embeds=[e])
+
+@register(group=Groups.GLOBAL)
+async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False):
+    '''
+    Worlde game with random words each time
+    Params
+    ------
+    tries:
+        Amount of chances you have to guess the word
+    multiplayer:
+        Whether you want to allow other people in chat to guess as well
+    '''
+    with open('/usr/share/dict/words') as f:
+        words = [word.strip() for word in f if "'" not in word]
+    hidden = random.choice(list(words))
+    await ctx.send("Send word of same length as \"mystery word\".\n`*` Means it's a correct letter in correct place, `!` is just correct letter and `_` means wrong letter")
+    await ctx.reply("`"+"_"*len(hidden)+"`")
+    r = 0
+    for i in range(tries+1):
+        r += 1
+        answer = await ctx.bot.wait_for("message_create",
+                                    check = lambda x: 
+                                            x.channel_id == ctx.channel_id and 
+                                            len(x.content) == len(hidden) and
+                                            (x.author.id == ctx.user_id if not multiplayer else True), 
+                                    timeout = 360)
+        positions = []
+        for x, letter in enumerate(answer.content.lower().strip()):
+            if letter in hidden:
+                if hidden[x] == letter:
+                    # Correct letter
+                    positions.append("*")
+                else:
+                    # Correct letter, wrong place
+                    positions.append("!")
+            else:
+                positions.append("_")
+        guess = "".join(positions)
+        if guess == hidden:
+            await answer.reply(f"You guessed correctly! Took `{r}` rounds to guess")
+            break
+        await ctx.edit(guess)
