@@ -90,7 +90,7 @@ async def top(ctx: Context, limit: int=10, type: TopLeaderboards=None, count: bo
             .filter(log.Statistic.server_id == ctx.guild_id)
             .group_by(log.Statistic.user_id)
             .order_by(func.sum(log.Statistic.value).desc())
-            .limit(limit)
+            .limit(limit * 2)
             .all()
         )
         if (len(stats) > 1 and t is types.Statistic.Voice) and not count:
@@ -103,6 +103,7 @@ async def top(ctx: Context, limit: int=10, type: TopLeaderboards=None, count: bo
 
     value_processing = lambda x: secondsToText(x, ctx.language) if voice and not count else x
     r = [Leaderboard_Entry(ctx, k, v, value_processing) for k, v in r.items()]
+    r = list(filter(lambda x: x.user_id in ctx.cache.members, r))[:limit]
     r.sort(key=lambda x: x.value, reverse=True)
     r = r[:limit]
     leaderboard = Leaderboard(ctx, ctx.user_id, r, limit)
