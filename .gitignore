@@ -6,9 +6,10 @@ __pycache__/
 data/secrets.ini
 
 # Other
-.vscode/settings.json
+.vscode/
 *.db
 pyrightconfig.json
 local/*
 data/*
 tools/*
+extensions/*
