@@ -31,7 +31,7 @@ Minigames:
 - [Hangman](bot/slash/random.py) game
 - [Halloween](bot/events/Halloween)
 - Reaction [Hunt](bot/events/hunts.py) events
-
+- [Christmas](bot/events/Christmas)
 
 Launch via docker-compose:
 ```sh
