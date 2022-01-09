@@ -62,6 +62,20 @@ class RoleButton(Button):
         await ctx.reply(msg)
 
 
+class CurrentRoles(Button):
+    private_response = True
+    @classmethod
+    async def execute(cls, ctx: Context, data: str) -> str:
+        picked = []
+        for row in ctx.data.message.components:
+            for select_component in filter(lambda x: x.type == Component_Types.SELECT_MENU, row.components):
+                for value in select_component.options:
+                    if int(value.value) in ctx.member.roles:
+                        picked.append(value)        
+        msg = ", ".join([f"<@{id}>" for id in picked])
+        await ctx.reply(msg or "None")
+
+
 @register(group=Groups.MODERATOR, main=button, private_response=True)
 async def create(ctx: Context, 
                 role: Role, 
