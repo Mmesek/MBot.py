@@ -246,6 +246,7 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False):
                                     check = lambda x: 
                                             x.channel_id == ctx.channel_id and 
                                             len(x.content) == len(hidden) and
+                                            x.content in set(words) and
                                             (x.author.id == ctx.user_id if not multiplayer else True), 
                                     timeout = 360)
         positions = []
