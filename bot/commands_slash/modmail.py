@@ -1,5 +1,8 @@
+from typing import List
+
 from MFramework import register, Groups, Context, UserID, Snowflake, onDispatch, Bot, Message, Channel_Types
 from MFramework.utils.log import Message as MessageLog
+from MFramework.commands.components import Select, Select_Option
 
 @register(group=Groups.MODERATOR)
 async def dm(ctx: Context, user: UserID, message: str, *, language):
@@ -136,7 +139,35 @@ class Direct_Message(MessageLog):
                 linked.setTitle("Referenced Message")
                 embeds.append(linked)
         try:
-            await self._log(content=content+f' <@!{msg.author.id}>', embeds=embeds, username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id)
+            from MFramework.commands.components import Option, Row
+            dm_components = [
+                Row(
+                    CannedResponses(
+                        *[Option(label=k, value=v, description=v) for k, v in canned["responses"].items()][:25],
+                        custom_id=msg.channel_id,
+                        placeholder="Send Canned Response"
+                    )
+                )
+            ]
+            await self._log(content=content+f' <@!{msg.author.id}>', embeds=embeds, username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id, components=dm_components)
             await msg.react(self.bot.emoji['success'])
         except:
             await msg.react(self.bot.emoji["failure"])
+    async def _log(self, content: str = "", embeds = None, components = None, *, username: str = None, avatar: str = None, thread_id = None, wait: bool = None):
+        return await self.bot.create_message(thread_id, content=content, embeds=embeds, components=components)
+
+class CannedResponses(Select):
+    private_response = False
+    @classmethod
+    async def execute(cls, ctx: Context, data: str, values: List[str], not_selected: List[Select_Option]):
+        ctx.data.message._Client = ctx.bot
+        ctx.data.message.components = []
+        await ctx.data.message.edit()
+        msg = await ctx.bot.create_message(data, values[0])
+        log = ctx.cache.logging["direct_message"]
+        if not log:
+            return
+        msg.author = ctx.user
+        e = log._create_embed(msg)
+        e.setColor("#ff8f00")
+        await ctx.reply(embeds=[e])
