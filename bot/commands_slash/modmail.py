@@ -40,7 +40,7 @@ async def dm_thread(ctx: Bot, msg: Message):
     if channel != 686371597895991327:
         return
     _g = detect_group(ctx, msg.author.id, msg.guild_id, msg.member.roles)
-    if _g > Groups.MODERATOR:
+    if _g > Groups.HELPER:
         return
     user_id = ctx.cache[msg.guild_id].dm_threads.get(msg.channel_id, None)
     if user_id:
