@@ -116,12 +116,10 @@ def format_values(iterable: List[Tuple[str, str]], check: Callable = None):
     return r
 
 @register(group=Groups.MODERATOR, main=info)
-async def server(ctx: Context, guild_id: Snowflake = 0, *, group) -> Embed:
+async def server(ctx: Context) -> Embed:
     '''Shows server info'''
     await ctx.deferred()
-    if group < Groups.SYSTEM or guild_id == 0:
-        guild_id = ctx.guild_id
-    guild = await ctx.bot.get_guild(guild_id, True)
+    guild = await ctx.bot.get_guild(ctx.guild_id, True)
     channel_names = {"Widget":guild.widget_channel_id, "Rules":guild.rules_channel_id, "Public Updates":guild.public_updates_channel_id, "AFK":guild.afk_channel_id, "System":guild.system_channel_id}
     channels = [f"{key} Channel <#{value}>" for key, value in channel_names.items() if value]
     fields = {
@@ -154,7 +152,7 @@ async def server(ctx: Context, guild_id: Snowflake = 0, *, group) -> Embed:
         if fields[field] != "":
             embed.addField(field, fields[field], True)
 
-    bans = await ctx.bot.get_guild_bans(guild_id)
+    bans = await ctx.bot.get_guild_bans(ctx.guild_id)
     if bans != []:
         embed.addField(f"Amount of Bans", str(len(bans)), True)
 
