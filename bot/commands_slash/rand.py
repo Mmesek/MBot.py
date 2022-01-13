@@ -224,7 +224,7 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     await msg.edit(f"The word was `{hidden}`! Took `{x-1}` rounds to guess", embeds=[e])
 
 @register(group=Groups.GLOBAL)
-async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False):
+async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: bool = False):
     '''
     Worlde game with random words each time
     Params
@@ -233,13 +233,17 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False):
         Amount of chances you have to guess the word
     multiplayer:
         Whether you want to allow other people in chat to guess as well
+    hard:
+        Whether new attempt should contain previously guessed letters
     '''
     with open('/usr/share/dict/words') as f:
         words = [word.strip() for word in f if "'" not in word]
     hidden = random.choice(list(words))
-    await ctx.send("Send word of same length as \"mystery word\".\n`*` Means it's a correct letter in correct place, `!` is just correct letter and `_` means wrong letter")
-    await ctx.reply("`"+"_"*len(hidden)+"`")
+    await ctx.reply("Send word of same length as \"mystery word\".\n`*` Means it's a correct letter in correct place, `!` is just correct letter and `-` means wrong letter")
+    await ctx.data.send_followup("`"+"-"*len(hidden)+f"` ({len(hidden)})")
     r = 0
+    guesses = []
+    correct_letters = set()
     for i in range(tries+1):
         r += 1
         answer = await ctx.bot.wait_for("message_create",
@@ -247,21 +251,24 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False):
                                             x.channel_id == ctx.channel_id and 
                                             len(x.content) == len(hidden) and
                                             x.content in set(words) and
+                                            all(letter in x.content for letter in correct_letters) and
                                             (x.author.id == ctx.user_id if not multiplayer else True), 
                                     timeout = 360)
+        if answer.content == hidden:
+            await answer.reply(f"You guessed correctly! Took `{r}` rounds to guess")
+            break
         positions = []
         for x, letter in enumerate(answer.content.lower().strip()):
             if letter in hidden:
                 if hidden[x] == letter:
                     # Correct letter
                     positions.append("*")
+                    correct_letters.add(letter)
                 else:
                     # Correct letter, wrong place
                     positions.append("!")
             else:
-                positions.append("_")
+                positions.append("-")
         guess = "".join(positions)
-        if guess == hidden:
-            await answer.reply(f"You guessed correctly! Took `{r}` rounds to guess")
-            break
-        await ctx.edit(guess)
+        guesses.append(guess)
+        await ctx.data.edit_followup(content="\n".join([f"{x+1}. - `{i}`" for x, i in enumerate(guesses)]))
