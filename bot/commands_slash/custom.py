@@ -182,6 +182,7 @@ async def when(ctx: Context, arg: str = None) -> str:
     if ctx.is_message:
         if random().random() < 0.1:
             await ctx.bot.modify_guild_member(ctx.guild_id, ctx.user_id, 
+            mute=None, deaf=None,
             communication_disabled_until=datetime.utcnow() + timedelta(minutes=10),
             reason="Timed Out for 10 minutes for using !when (10% chance)")
             return "Enjoy timeout! New command is `/when`"
@@ -248,7 +249,7 @@ async def ak47(ctx: Context, user: Guild_Member):
         user you want to timeout
     '''
     t = datetime.utcnow() + timedelta(days=1)
-    await ctx.bot.modify_guild_member(ctx.guild_id, user.user.id, communication_disabled_until=t, reason="AK-47")
+    await ctx.bot.modify_guild_member(ctx.guild_id, user.user.id, mute=None, deaf=None, communication_disabled_until=t, reason="AK-47")
     return "Shots fired!"
 
 @register(group=Groups.GLOBAL, guild=340185368655560704)
