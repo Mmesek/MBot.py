@@ -161,8 +161,8 @@ async def loadout(ctx: Context) -> Embed:
 
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 
-@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
-@cooldown(hours=1, logic=CacheCooldown)
+@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=False)
+@cooldown(minutes=1, logic=CacheCooldown)
 async def when(ctx: Context, arg: str = None) -> str:
     '''
     Shows remaining delta to release
@@ -180,14 +180,15 @@ async def when(ctx: Context, arg: str = None) -> str:
     from random import SystemRandom as random
     from datetime import datetime, timedelta
     if ctx.is_message:
-        if random().random() < 0.1:
-            await ctx.bot.modify_guild_member(ctx.guild_id, ctx.user_id, 
-            mute=None, deaf=None,
-            communication_disabled_until=datetime.utcnow() + timedelta(minutes=10),
-            reason="Timed Out for 10 minutes for using !when (10% chance)")
-            return "Enjoy timeout! New command is `/when`"
-
-        return "Enjoy cooldown! New command is `/when`"
+        await ctx.bot.modify_guild_member(ctx.guild_id, ctx.user_id, 
+        mute=None, deaf=None,
+        communication_disabled_until=datetime.utcnow() + timedelta(minutes=10),
+        reason="Timed Out for 10 minutes for using !when")
+        msg = await ctx.reply("Enjoy timeout! New command is `/when`")
+        import asyncio
+        await asyncio.sleep(10)
+        await msg.delete()
+        return
 
     date = datetime(2022, 2, 4, 19)
     timestamp = int(date.timestamp())
@@ -198,16 +199,16 @@ async def when(ctx: Context, arg: str = None) -> str:
     responses = {
         0.01: "Error",
         0.025: "When it's ready.",
-        0.05: "If you put a bread into your toaster, do you also constantly look at it?",
-        0.075: "If you set a timer for a few hours, do you also check it every few seconds?",
-        0.1: "Good question.",
-        0.125: "You aren't alone",
-        0.15: "Soon™",
-        0.16: "We are getting closer...",
-        0.18: f"{delta.seconds}s",
-        0.2: f"{delta.days / 2} * 2",
-        0.25: f"{delta.days / 3} + {delta.days / 3} * 2 + 2 * x",
-        0.3: f"<t:{timestamp}:R>",
+        0.03: "If you put a bread into your toaster, do you also constantly look at it?",
+        0.035: "If you set a timer for a few hours, do you also check it every few seconds?",
+        0.04: "Good question.",
+        0.05: "You aren't alone",
+        0.06: "Soon™",
+        0.07: "We are getting closer...",
+        0.075: f"{delta.seconds}s",
+        0.075: f"{delta.days / 2} * 2",
+        0.075: f"{delta.days / 3} + {delta.days / 3} * 2 + 2 * x",
+        0.4: f"<t:{timestamp}:R>",
         0.5: f"*Around* `{delta.days}` days *(ESTIMATED)* to <t:{timestamp}:D>",
         1: f"Remaining around `{delta}` (estimated, according to Steam day which means it's *NOT OFFICIALLY CONFIRMED* window) until <t:{timestamp}:D> which is <t:{timestamp}:R>"
     }
@@ -222,6 +223,9 @@ async def ayo(ctx: Context, captions: str="Farewell, we will tell people you wen
     captions:
         text to place on image
     '''
+    if ctx.is_interaction:
+        await ctx.deferred(True)
+        return "This command works only as regular `!` one as long as interactions don't support attachments, try again with `!ayo`"
     await ctx.deferred()
     from PIL import Image, ImageDraw, ImageFont
     img = Image.open('data/Hakon_Betrayal.png')
