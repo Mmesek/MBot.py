@@ -13,7 +13,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     member:
         Member to show info about'''
     await ctx.deferred()
-    if not member or not ctx.permission_group.can_use(Groups.MODERATOR):
+    if not member or not ctx.permission_group.can_use(Groups.HELPER):
         member = ctx.member
     from mlib.colors import get_main_color
     embed = (
