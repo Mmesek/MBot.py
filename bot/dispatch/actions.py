@@ -1,5 +1,5 @@
 from MFramework import *
-from ..database import types
+from ..commands_slash.infractions import InfractionTypes
 
 async def responder(ctx: Bot, msg: Message, emoji: str):
     emoji = ctx.cache[msg.guild_id].custom_emojis.get(emoji.lower().strip(':'))
@@ -133,7 +133,7 @@ async def remove_links(self: Bot, data: Message) -> bool:
                 user_id=data.author.id,
                 reason="Hijacked Account",
                 duration=None,
-                type=types.Infraction.Kick
+                type=InfractionTypes.Kick
             )
             return True
         try:
