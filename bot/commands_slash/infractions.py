@@ -89,7 +89,7 @@ class Infraction(Timestamp, UserID, ServerID, ID, Base):
 
     channel_id: Optional[Snowflake] = sa.Column(sa.BigInteger, nullable=True)
     message_id: Optional[Snowflake] = sa.Column(sa.BigInteger, nullable=True)
-    expire_at: Optional[datetime] = sa.Column(sa.TIMESTAMP(timezone=True), nullable=True)
+    expires_at: Optional[datetime] = sa.Column(sa.TIMESTAMP(timezone=True), nullable=True)
 
 db_Infraction = Infraction
 
@@ -194,7 +194,7 @@ async def infraction(ctx: Context, *, type: InfractionTypes, user: User=None, re
         return True
 
 async def auto_moderation(ctx: Context, session, user: User, type: InfractionTypes, infractions: List=[]):
-    active = len(list(filter(lambda x: x.server_id == ctx.guild_id and (not x.expire_at or x.expire_at >= datetime.utcnow()), infractions)))
+    active = len(list(filter(lambda x: x.server_id == ctx.guild_id and (not x.expires_at or x.expires_at >= datetime.utcnow()), infractions)))
     automute = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, None)
     autoban = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, None)
     if automute and active == automute and type is not InfractionTypes.Mute:
@@ -249,10 +249,10 @@ async def list_(ctx: Context, user: User=None):
                 duration=tr("commands.infractions.for_duration", language, 
                         duration=secondsToText(int(infraction.duration.total_seconds()), language)) 
                         if infraction.duration else "",
-                active="~~" if (infraction.expire_at and infraction.expire_at <= datetime.utcnow()) else ""
+                active="~~" if (infraction.expires_at and infraction.expires_at <= datetime.utcnow()) else ""
             )
         )
-        if (not infraction.expire_at or infraction.expire_at >= datetime.utcnow()) and infraction.type not in {
+        if (not infraction.expires_at or infraction.expires_at >= datetime.utcnow()) and infraction.type not in {
             InfractionTypes.Unban,
             InfractionTypes.Unmute,
             InfractionTypes.DM_Unmute,
@@ -408,7 +408,7 @@ class Report(Log):
         await self._log_dm()
 
 @register(group=Groups.ADMIN, main=infraction)
-async def expire(ctx: Context, infraction_id: int, *, language):
+async def expire(ctx: Context, infraction_id: int) -> str:
     '''
     Expires an infraction
     Params
@@ -419,10 +419,10 @@ async def expire(ctx: Context, infraction_id: int, *, language):
     session = ctx.db.sql.session()
     infraction = Infraction.filter(session, server_id=ctx.guild_id, id=infraction_id).first()
     if not infraction:
-        return await ctx.reply("Couldn't find infraction with provided id")
-    infraction.active = False
+        return "Couldn't find infraction with provided id"
+    infraction.expires_at = datetime.utcnow()
     session.commit()
-    await ctx.reply(f"Successfully expired infraction with reason `{infraction.reason}` added by {infraction.moderator_id}")
+    return f"Successfully expired infraction with reason `{infraction.reason}` added by {infraction.moderator_id}"
 
 
 class Infraction(Log):
