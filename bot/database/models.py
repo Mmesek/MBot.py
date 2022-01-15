@@ -62,7 +62,7 @@ class User(HasDictSettingsRelated, Snowflake, Base):
         '''
         Add infraction to current user. Returns total user infractions on server
         '''
-        self.infractions.append(Infraction(server_id = server_id, moderator_id = moderator_id, type=type, reason=reason, duration=duration, channel_id=channel_id, message_id=message_id, expire_at=expire))
+        self.infractions.append(Infraction(server_id = server_id, moderator_id = moderator_id, type=type, reason=reason, duration=duration, channel_id=channel_id, message_id=message_id, expires_at=expire))
         return [i for i in self.infractions if i.server_id == server_id]
 
     def transfer(self, server_id: int, recipent: User, sent: List[Inventory] = None, recv: List[Inventory] = None, remove_item:bool=True, turn_item:bool=False) -> log.Transaction:
