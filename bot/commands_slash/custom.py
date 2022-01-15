@@ -187,6 +187,7 @@ async def when(ctx: Context, arg: str = None) -> str:
         msg = await ctx.reply("Enjoy timeout! New command is `/when`")
         import asyncio
         await asyncio.sleep(10)
+        await ctx.delete()
         await msg.delete()
         return
 
