@@ -178,13 +178,9 @@ async def when(ctx: Context, arg: str = None) -> str:
             return "Hey, that's rude! <:pepe_mad:676181484238798868>"
 
     from random import SystemRandom as random
-    from datetime import datetime, timedelta
+    from datetime import datetime
     if ctx.is_message:
-        await ctx.bot.modify_guild_member(ctx.guild_id, ctx.user_id, 
-        mute=None, deaf=None,
-        communication_disabled_until=datetime.utcnow() + timedelta(minutes=10),
-        reason="Timed Out for 10 minutes for using !when")
-        msg = await ctx.reply("Enjoy timeout! New command is `/when`")
+        msg = await ctx.reply("New command is `/when`")
         import asyncio
         await asyncio.sleep(10)
         await ctx.delete()
