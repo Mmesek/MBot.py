@@ -20,6 +20,7 @@ class Cache(Tasks, Cache):
     tracked_streams: List[str]
     canned: Dict[str, re.Pattern]
     responses: Dict[Snowflake, re.Pattern]
+    dm_replies: Dict[str, str]
     blacklisted_words: re.Pattern = None
     def __init__(self, bot, guild: Guild, rds: Optional[collections.Redis] = None):
         self.custom_emojis = {}
@@ -38,6 +39,7 @@ class Cache(Tasks, Cache):
             self.get_Custom_Emojis(s)
             self.get_Blacklisted_Words(s)
             self.get_tracked_streams(s)
+            self.get_dm_replies(s)
 
     def get_Custom_Emojis(self, session):
         s = db.Snippet.filter(session, server_id = self.guild_id, type = types.Snippet.Emoji).all()
@@ -79,3 +81,6 @@ class Cache(Tasks, Cache):
 
     def get_tracked_streams(self, session):
         self.tracked_streams = [i.name for i in db.Snippet.filter(session, server_id = self.guild_id, type = types.Snippet.Stream).all()]
+    
+    def get_dm_replies(self, session):
+        self.dm_replies = {i.name: i.content for i in db.Snippet.filter(session, server_id=self.guild_id, type=types.Snippet.DM_Reply).all()}

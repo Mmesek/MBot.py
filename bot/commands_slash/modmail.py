@@ -143,7 +143,7 @@ class Direct_Message(MessageLog):
             dm_components = [
                 Row(
                     CannedResponses(
-                        *[Option(label=k, value=v, description=v) for k, v in canned["responses"].items()][:25],
+                        *[Option(label=k, value=k, description=v[:100]) for k, v in ctx.bot.cache[ctx.guild_id].dm_replies.items()][:25],
                         custom_id=msg.channel_id,
                         placeholder="Send Canned Response"
                     )
@@ -163,7 +163,7 @@ class CannedResponses(Select):
         ctx.data.message._Client = ctx.bot
         ctx.data.message.components = []
         await ctx.data.message.edit()
-        msg = await ctx.bot.create_message(data, values[0])
+        msg = await ctx.bot.create_message(data, ctx.bot.cache[ctx.guild_id].dm_replies[values[0]])
         log = ctx.cache.logging["direct_message"]
         if not log:
             return

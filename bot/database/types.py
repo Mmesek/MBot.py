@@ -20,6 +20,7 @@ class Snippet(Permissions):
     Response_Reaction: Groups.MODERATOR = (19, "Works: ✔")
     Stream: Groups.MODERATOR = (20, "Someone is Streaming... HEY CHECK THEM OUT!")
     Definition: Groups.NITRO = (21, "Admin - Person you don't want to mess with")
+    DM_Reply: Groups.MODERATOR = (22, "Thanks for contacting mod team!")
 
 
 class Statistic(Enum):

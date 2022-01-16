@@ -109,6 +109,8 @@ def rebuild_cache(ctx: Context, s: db.Session=None):
         ctx.cache.get_Custom_Emojis(s)
     elif type is db.types.Snippet.Stream:
         ctx.cache.get_tracked_streams(s)
+    elif type is db.types.Snippet.DM_Reply:
+        ctx.cache.get_dm_replies(s)
 
 
 @register(group=Groups.SYSTEM, interaction=False)
