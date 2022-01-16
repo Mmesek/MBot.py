@@ -143,7 +143,7 @@ class Direct_Message(MessageLog):
             dm_components = [
                 Row(
                     CannedResponses(
-                        *[Option(label=k, value=k, description=v[:100]) for k, v in ctx.bot.cache[ctx.guild_id].dm_replies.items()][:25],
+                        *[Option(label=k, value=k, description=v[:100]) for k, v in self.bot.cache[self.guild_id].dm_replies.items()][:25],
                         custom_id=msg.channel_id,
                         placeholder="Send Canned Response"
                     )
