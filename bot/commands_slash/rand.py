@@ -224,7 +224,7 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     await msg.edit(f"The word was `{hidden}`! Took `{x-1}` rounds to guess", embeds=[e])
 
 @register(group=Groups.GLOBAL)
-async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: bool = False, accept_invalid: bool = False):
+async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: bool = False, accept_invalid: bool = False, view_letters: bool = False):
     '''
     Worlde game with random words each time
     Params
@@ -237,6 +237,8 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
         Whether new attempt should contain previously guessed letters
     accept_invalid:
         Whether not valid words should be accepted and consume try
+    view_letters:
+        Whether correct letters should be displayed instead of hidden characters
     '''
     with open('/usr/share/dict/words') as f:
         words = [word.strip() for word in f if "'" not in word]
@@ -248,7 +250,8 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
     correct_letters = set()
     for i in range(tries+1):
         r += 1
-        answer = await ctx.bot.wait_for("message_create",
+        try:
+            answer = await ctx.bot.wait_for("message_create",
                                     check = lambda x: 
                                             x.channel_id == ctx.channel_id and 
                                             len(x.content) == len(hidden) and
@@ -259,6 +262,8 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                                             )) and
                                             (x.author.id == ctx.user_id if not multiplayer else True), 
                                     timeout = 360)
+        except TimeoutError:
+            return f"Didn't receive any answer for past 6 minutes! Game ended \=( Correct word was: `{hidden}`"
         if answer.content == hidden:
             await answer.reply(f"You guessed correctly! Took `{r}` rounds to guess")
             return
@@ -267,11 +272,11 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
             if letter in hidden:
                 if hidden[x] == letter:
                     # Correct letter
-                    positions.append("*")
+                    positions.append(f"__{letter}__" if view_letters else "*")
                     correct_letters.add(letter)
                 else:
                     # Correct letter, wrong place
-                    positions.append("!")
+                    positions.append(f"**{letter}**" if view_letters else "!")
             else:
                 positions.append("-")
         guess = "".join(positions)
