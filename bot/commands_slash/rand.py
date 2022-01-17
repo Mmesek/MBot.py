@@ -251,7 +251,10 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                                             x.channel_id == ctx.channel_id and 
                                             len(x.content) == len(hidden) and
                                             x.content in set(words) and
-                                            all(letter in x.content for letter in correct_letters) and
+                                            (not hard or (
+                                                not correct_letters or 
+                                                all(letter in x.content for letter in correct_letters)
+                                            )) and
                                             (x.author.id == ctx.user_id if not multiplayer else True), 
                                     timeout = 360)
         if answer.content == hidden:
