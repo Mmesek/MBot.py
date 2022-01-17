@@ -261,7 +261,7 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                                     timeout = 360)
         if answer.content == hidden:
             await answer.reply(f"You guessed correctly! Took `{r}` rounds to guess")
-            break
+            return
         positions = []
         for x, letter in enumerate(answer.content.lower().strip()):
             if letter in hidden:
@@ -276,4 +276,5 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                 positions.append("-")
         guess = "".join(positions)
         guesses.append(guess)
-        await ctx.data.edit_followup(content="```"+"\n".join([f"{x+1} | {i}" for x, i in enumerate(guesses)] + "```"))
+        await ctx.data.edit_followup(content="```"+"\n".join([f"{x+1} | {i}" for x, i in enumerate(guesses)] + f"```\nRemaining attempts: {r}"))
+    return f"Sadly you ran out of attempts! Correct word was: `{hidden}`"
