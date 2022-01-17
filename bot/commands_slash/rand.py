@@ -224,7 +224,7 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     await msg.edit(f"The word was `{hidden}`! Took `{x-1}` rounds to guess", embeds=[e])
 
 @register(group=Groups.GLOBAL)
-async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: bool = False):
+async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: bool = False, accept_invalid: bool = False):
     '''
     Worlde game with random words each time
     Params
@@ -235,11 +235,13 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
         Whether you want to allow other people in chat to guess as well
     hard:
         Whether new attempt should contain previously guessed letters
+    accept_invalid:
+        Whether not valid words should be accepted and consume try
     '''
     with open('/usr/share/dict/words') as f:
         words = [word.strip() for word in f if "'" not in word]
     hidden = random.choice(list(words))
-    await ctx.reply("Send word of same length as \"mystery word\".\n`*` Means it's a correct letter in correct place, `!` is just correct letter and `-` means wrong letter")
+    await ctx.reply("Send word (only valid words are accepted) of same length as \"mystery word\".\n`*` Means it's a correct letter in correct place\n`!` is just correct letter\n`-` means wrong letter")
     await ctx.data.send_followup("`"+"-"*len(hidden)+f"` ({len(hidden)})")
     r = 0
     guesses = []
@@ -250,7 +252,7 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                                     check = lambda x: 
                                             x.channel_id == ctx.channel_id and 
                                             len(x.content) == len(hidden) and
-                                            x.content in set(words) and
+                                            (not accept_invalid or x.content.lower() in set(words)) and
                                             (not hard or (
                                                 not correct_letters or 
                                                 all(letter in x.content for letter in correct_letters)
@@ -274,4 +276,4 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                 positions.append("-")
         guess = "".join(positions)
         guesses.append(guess)
-        await ctx.data.edit_followup(content="\n".join([f"{x+1}. - `{i}`" for x, i in enumerate(guesses)]))
+        await ctx.data.edit_followup(content="```"+"\n".join([f"{x+1} | {i}" for x, i in enumerate(guesses)] + "```"))
