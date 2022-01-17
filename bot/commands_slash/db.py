@@ -34,7 +34,7 @@ async def add(ctx: Context,
     s = ctx.db.sql.session()
     existing = db.Snippet.filter(s, server_id=ctx.guild_id, user_id=ctx.user_id, name=name, type=type).first()
     ctx.db.sql.merge_or_add(existing, snippet)
-    rebuild_cache(ctx, s)
+    rebuild_cache(ctx, s, type)
     return "Added Succesfully"
 
 @register(group=Groups.NITRO)
@@ -96,7 +96,7 @@ async def stashed(ctx: Context, type: db.types.Snippet, name: str=None, search_c
     return embed
 
 
-def rebuild_cache(ctx: Context, s: db.Session=None):
+def rebuild_cache(ctx: Context, s: db.Session=None, type: db.Snippet = None):
     if not s:
         s = ctx.db.sql.session()
     if type is db.types.Snippet.Canned_Response:
