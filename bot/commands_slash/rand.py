@@ -252,7 +252,7 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                                     check = lambda x: 
                                             x.channel_id == ctx.channel_id and 
                                             len(x.content) == len(hidden) and
-                                            (not accept_invalid or x.content.lower() in set(words)) and
+                                            (accept_invalid or x.content.lower() in set(words)) and
                                             (not hard or (
                                                 not correct_letters or 
                                                 all(letter in x.content for letter in correct_letters)
