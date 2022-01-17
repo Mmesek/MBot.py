@@ -281,5 +281,8 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                 positions.append("-")
         guess = "".join(positions)
         guesses.append(guess)
-        await ctx.data.edit_followup(content="```"+"\n".join([f"{x+1} | {i}" for x, i in enumerate(guesses)]) + f"```\nRemaining attempts: {tries-r}")
+        attempts = "\n".join([f"{x+1} | {i}" for x, i in enumerate(guesses)])
+        if not view_letters:
+            attempts = f"```{attempts}```"
+        await ctx.data.edit_followup(content=f"{attempts}\nRemaining attempts: {tries-r}")
     return f"Sadly you ran out of attempts! Correct word was: `{hidden}`"
