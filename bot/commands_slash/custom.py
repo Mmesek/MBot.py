@@ -15,10 +15,7 @@ async def docket(ctx: Context, interaction: Interaction, docket: str, descriptio
     description:
         Optional description of docket
     publish:
-        Whether message should be auto published to following channels or not (Works only in announcement channels)
-        Choices:
-            True = True
-            False = False
+        Whether message should be auto published to following channels or not (Works only in announcement)
     '''
     await ctx.deferred(private=True)
     if description != '':
@@ -159,10 +156,7 @@ async def loadout(ctx: Context) -> Embed:
 
     return embed
 
-from MFramework.commands.cooldowns import cooldown, CacheCooldown
-
 @register(group=Groups.GLOBAL, guild=289739584546275339, private_response=False)
-@cooldown(minutes=1, logic=CacheCooldown)
 async def when(ctx: Context, arg: str = None) -> str:
     '''
     Shows remaining delta to release
