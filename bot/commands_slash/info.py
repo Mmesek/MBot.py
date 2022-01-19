@@ -87,11 +87,12 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     from ..database import User
     u = User.by_id(s, id=member.user.id)
     if u:
+        from datetime import datetime
         infractions = list(filter(lambda x: x.server_id == ctx.guild_id, u.infractions))
         if infractions:
             _ = [
                 ("Total", len(infractions)),
-                ("Active", len([i.active for i in infractions]))
+                ("Active", len([i.expires_at for i in infractions if i.expires_at >= datetime.utcnow()]))
             ]
             embed.addField("Infractions", "\n".join(format_values(_, lambda x: x[1])), True)
         mod_actions = list(filter(lambda x: x.server_id == ctx.guild_id, u.mod_actions))
