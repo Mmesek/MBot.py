@@ -21,7 +21,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
             .setAuthor(name=f"{member.user.username}#{member.user.discriminator}", icon_url=member.user.get_avatar())
             .setThumbnail(member.user.get_avatar())
             .setColor(get_main_color(member.user.get_avatar()))
-            .setFooter(text=f"ID: {member.user.id}")
+            .setFooter(text=f"ID: {member.user.id} | Bot Group: {ctx.cache.cachedRoles(member.roles).name.title()}")
     )
     
     dates = []
@@ -75,11 +75,13 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
 
     try:
         permissions = Bitwise_Permission_Flags.current_permissions(Bitwise_Permission_Flags, int(member.permissions))
+        everyone = Bitwise_Permission_Flags.current_permissions(Bitwise_Permission_Flags, int(ctx.cache.roles[ctx.guild_id].permissions))
+        permissions = [i for i in permissions if i not in everyone]
     except:
         permissions = []
 
     if permissions:
-        embed.addField("Permissions", ", ".join(i.title().replace("_", " ") for i in permissions))
+        embed.addField(f"Permissions [{len(permissions)}]", ", ".join(i.title().replace("_", " ") for i in permissions))
 
     embed.addField("\u200b", "\u200b")
 
@@ -94,7 +96,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
                 ("Total", len(infractions)),
                 ("Active", len([i.expires_at for i in infractions if i.expires_at and i.expires_at >= datetime.utcnow()]))
             ]
-            embed.addField("Infractions", "\n".join(format_values(_, lambda x: x[1])), True)
+            embed.addField(f"Infractions [{len(infractions)}]", "\n".join([f"[`{i.type}`] {i.reason}" for i in infractions if not i.expires_at or i.expires_at >= datetime.utcnow()][:5]), True)
         mod_actions = list(filter(lambda x: x.server_id == ctx.guild_id, u.mod_actions))
         if mod_actions:
             embed.addField("Moderation Actions", str(len(mod_actions)), True)
