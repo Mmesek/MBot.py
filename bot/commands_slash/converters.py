@@ -5,7 +5,7 @@ async def convert(ctx: Context, interaction: Interaction, *args, language, **kwa
     '''Converts things'''
     pass
 
-@register(group=Groups.GLOBAL, main=convert)
+@register(group=Groups.GLOBAL, main=convert, private_response=True)
 async def morse(ctx: Context, message: str, decode: bool=False, *args, language, **kwargs):
     '''Decodes or Encodes message in Morse
     
@@ -81,7 +81,7 @@ async def morse(ctx: Context, message: str, decode: bool=False, *args, language,
         reward = reward[:2048]
     await ctx.reply('Orginal: '+org, [Embed(title=t, description=reward)])
 
-@register(group=Groups.GLOBAL, main=convert, interaction=False)
+@register(group=Groups.GLOBAL, main=convert, interaction=False, private_response=True)
 async def roman(ctx: Context, value: str) -> str:
     '''Converts Roman to digits, or vice versa
     value:
@@ -258,7 +258,7 @@ async def timezone(ctx: Context, yymmdd: str='YYYY-MM-DD', hhmm:str='HH:MM', tim
             e.addField(timezone, dt)
     return e
 
-@register(group=Groups.GLOBAL, main=convert)
+@register(group=Groups.GLOBAL, main=convert, private_response=True)
 async def upside(ctx: Context, text: str) -> str:
     '''Makes text uʍop ǝpᴉsdn!
     text:
@@ -266,7 +266,7 @@ async def upside(ctx: Context, text: str) -> str:
     import upsidedown
     return upsidedown.transform(text)
 
-@register(group=Groups.GLOBAL, main=convert)
+@register(group=Groups.GLOBAL, main=convert, private_response=True)
 async def rot(ctx: Context, message: str, shift: int=13, alphabet: str='ABCDEFGHIJKLMNOPQRSTUVWXYZ') -> Embed:
     '''Caesar Cipher
     message:
@@ -333,7 +333,7 @@ async def dec2hex(ctx: Context, value: int) -> int:
     '''
     return hex(value)
 
-@register(group=Groups.GLOBAL, main=convert, interaction=False)
+@register(group=Groups.GLOBAL, main=convert, interaction=False, private_response=True)
 async def asciitohex(ctx: Context, ascii_:str) -> Embed:
     '''Converts Ascii to Numbers
     ascii_:
@@ -391,7 +391,7 @@ async def currency(ctx: Context, amount: float=1, from_currency: str="EUR", to_c
     r = tr('commands.currency_exchange.result', language, result=result, to_currency=to_currency, amount=amount, currency=from_currency)
     return r+'\n'+src
 
-@register(group=Groups.GLOBAL, main=convert)
+@register(group=Groups.GLOBAL, main=convert, private_response=True)
 async def reverse(ctx: Context, message: str, in_place: bool=False) -> str:
     '''Reverses letters
     message:
