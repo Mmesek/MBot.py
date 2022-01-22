@@ -403,7 +403,7 @@ from MFramework import Presence_Update, onDispatch, Bot
 @onDispatch
 async def presence_update(self: Bot, data: Presence_Update):
     member = self.cache[data.guild_id].members.get(data.user.id)
-    if self.cache[data.guild_id].cachedRoles(member.roles).can_use(Groups.MODERATOR):
+    if member and self.cache[data.guild_id].cachedRoles(member.roles).can_use(Groups.MODERATOR):
         self.cache[data.guild_id].moderators[data.user.id] = data
 
 @register(group=Groups.GLOBAL, interaction=False, aliases=["op"])
