@@ -27,6 +27,7 @@ class Cache(Tasks, Cache):
         self.tracked_streams = []
         self.canned = {}
         self.responses = {}
+        self.moderators = {}
         self.msgs_violating_link_filter = set()
         self.last_violating_user = None
         self.last_join = None

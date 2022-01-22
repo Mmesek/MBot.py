@@ -4,7 +4,8 @@ from datetime import datetime, timedelta, timezone
 import sqlalchemy as sa
 from mlib.database import Base, ID, Timestamp
 
-from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove
+from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove, Discord_Paths
+from MFramework.commands.components import LinkButton, Row
 from MFramework.utils.log import Log
 from MFramework.database.alchemy.types import Permissions
 from MFramework.database.alchemy.mixins import Snowflake, ServerID
@@ -108,7 +109,7 @@ db_Infraction = Infraction
 #@shortcut(name="tempban", group=Groups.HELPER, type=InfractionTypes.Temp_Ban, help="Temporarly bans user")
 #@shortcut(name="unmute", group=Groups.MODERATOR, type=InfractionTypes.Unban, help="Unmutes user")
 #@shortcut(name="unban", group=Groups.ADMIN, type=InfractionTypes.Unmute, help="Unbans user")
-async def infraction(ctx: Context, *, type: InfractionTypes, user: User=None, reason:str="", duration:timedelta=None, increase_counter: bool=True):
+async def infraction(ctx: Context, *, type: InfractionTypes, user: User=None, reason:str="", duration:timedelta=None, increase_counter: bool=True, expire_date: datetime = None):
     '''Base command for infractions
     Params
     ------
@@ -150,7 +151,7 @@ async def infraction(ctx: Context, *, type: InfractionTypes, user: User=None, re
         else:
             increase_counter = False
             should_commit = False
-    infractions = u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, expire=None, channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
+    infractions = u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, expire=expire_date or datetime.utcnow() + timedelta(weeks=16), channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
     if should_commit:
         session.commit()
     ending = "ned" if type.name.endswith('n') and type is not InfractionTypes.Warn else "ed" if not type.name.endswith("e") else "d"
@@ -285,7 +286,7 @@ async def list_(ctx: Context, user: User=None):
     return tr("commands.infractions.no_infractions", language)
 
 
-@register(group=Groups.MODERATOR, main=infraction)
+#@register(group=Groups.MODERATOR, main=infraction)
 async def counter(ctx: Context, type: str, user: User, number: int=1, reason: str=None, affect_total: bool=False):
     '''
     Manages infraction counter
@@ -386,8 +387,16 @@ async def unban(ctx: Context, user: User, reason: str = "", *, language):
     if await infraction(ctx, type=InfractionTypes.Unban, user=user, reason=reason):
         await ctx.bot.remove_guild_ban(ctx.guild_id, user.id, reason=f"Unbanned by {ctx.user.username}")
 
-@register(group=Groups.GLOBAL, interaction=False)
-async def report(ctx: Context, msg: str, *, language, **kwargs):
+from MFramework import Presence_Update, onDispatch, Bot
+
+@onDispatch
+async def presence_update(self: Bot, data: Presence_Update):
+    member = self.cache[data.guild_id].members.get(data.user.id)
+    if self.cache[data.guild_id].cachedRoles(member.roles).can_use(Groups.MODERATOR):
+        self.cache[data.guild_id].moderators[data.user.id] = data
+
+@register(group=Groups.GLOBAL, interaction=False, aliases=["op"])
+async def report(ctx: Context, msg: str = None):
     '''
     Report situation on server to Moderators
     Params
@@ -395,17 +404,43 @@ async def report(ctx: Context, msg: str, *, language, **kwargs):
     msg:
         optional message about what's happening
     '''
-    await ctx.cache.logging["report"](ctx.data)
-    for moderator in filter(lambda x: ctx.data.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
-        await ctx.cache.logging["report"].log_dm(ctx.data)
-    await ctx.data.react(ctx.bot.emoji.get("success"))
+    #await ctx.cache.logging["report"](ctx.data)
+    reported_to = 0
+    _msg = await ctx.reply("I'm on my way to notify moderators!")
+
+    embeds = [Embed().setTitle(f"Report made by {ctx.data.author.username}").setDescription(msg).setColor("#C29D60").setAuthor(str(ctx.data.author), icon_url=ctx.data.author.get_avatar()).setUrl(ctx.data.message_link)]
+    if ctx.data.referenced_message:
+        ref = ctx.data.referenced_message
+        e = Embed().setTitle(f"Referenced Message from {ref.author.username}").setDescription(ref.content).setColor("#a52f37").setAuthor(str(ref.author), icon_url=ref.author.get_avatar()).setUrl(ref.message_link)
+        if ref.attachments:
+            e.addField("Attachments", "\n".join([f"[{i.filename}.{i.content_type.split('/')[-1]}]({i.url})" for i in ref.attachments]))
+        embeds.append(e)
+    components = [Row(LinkButton(f"Jump to Message", Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.data.id)))]
+
+    import time
+    start = time.time()
+    #for moderator in filter(lambda x: ctx.data.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
+    for moderator in filter(lambda x: ctx.cache.cachedRoles(ctx.cache.members[x].roles).can_use(Groups.MODERATOR), ctx.cache.members):
+        if ctx.cache.members[moderator].user.bot or (ctx.cache.moderators[moderator] and ctx.cache.moderators[moderator].status not in ["online", "idle"]):
+            continue
+
+        await ctx.cache.logging["report"].log_dm(moderator, embeds, components)
+        reported_to += 1
+
+    end = time.time()
+    if reported_to:
+        await _msg.edit(f"Notified {reported_to} Moderator(s) in {end-start:.2}s!")
+        await ctx.data.react(ctx.bot.emoji.get("success"))
+    else:
+        await _msg.edit(f"Couldn't find any moderator online, falling back to regular ping")
+        await ctx.bot.create_message(f"<@{496201383524171776}>, There is a report waiting!")
 
 class Report(Log):
     username = "User Report Log"
     async def log(self, data: Message) -> Message:
         await self._log()
-    async def log_dm(self, data: Message, user_id: Snowflake) -> Message:
-        await self._log_dm()
+    async def log_dm(self, user_id: Snowflake, embeds: Embed, compontents) -> Message:
+        await self._log_dm(user_id, embeds=embeds, components=compontents)
 
 @register(group=Groups.ADMIN, main=infraction)
 async def expire(ctx: Context, infraction_id: int) -> str:
