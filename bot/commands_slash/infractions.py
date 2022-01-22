@@ -151,7 +151,9 @@ async def infraction(ctx: Context, *, type: InfractionTypes, user: User=None, re
         else:
             increase_counter = False
             should_commit = False
-    infractions = u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, expire=expire_date or datetime.utcnow() + timedelta(weeks=16), channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
+    if not expire_date and type is InfractionTypes.Warn:
+        expire_date = datetime.now(tz=timezone.utc) + timedelta(weeks=16)
+    infractions = u.add_infraction(server_id=ctx.guild_id, moderator_id=ctx.user.id, type=type.name, reason=reason, duration=duration, expire=expire_date, channel_id=ctx.channel_id, message_id=ctx.message_id) # TODO Add overwrites if it references another message
     if should_commit:
         session.commit()
     ending = "ned" if type.name.endswith('n') and type is not InfractionTypes.Warn else "ed" if not type.name.endswith("e") else "d"
@@ -194,8 +196,8 @@ async def infraction(ctx: Context, *, type: InfractionTypes, user: User=None, re
     elif type in {InfractionTypes.Unban, InfractionTypes.Unmute, InfractionTypes.DM_Unmute}:
         return True
 
-async def auto_moderation(ctx: Context, session, user: User, type: InfractionTypes, infractions: List=[]):
-    active = len(list(filter(lambda x: x.server_id == ctx.guild_id and (not x.expires_at or x.expires_at >= datetime.utcnow()), infractions)))
+async def auto_moderation(ctx: Context, session, user: User, type: InfractionTypes, infractions: List[Infraction]=[]):
+    active = len(list(filter(lambda x: x.server_id == ctx.guild_id and (not x.expires_at or x.expires_at >= datetime.now(tz=timezone.utc)), infractions)))
     automute = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, None)
     autoban = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, None)
     if automute and active == automute and type is not InfractionTypes.Mute:
