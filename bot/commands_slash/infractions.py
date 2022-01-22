@@ -200,9 +200,12 @@ async def auto_moderation(ctx: Context, session, user: User, type: InfractionTyp
     autoban = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, None)
     if automute and active == automute and type is not InfractionTypes.Mute:
         MUTED_ROLE = list(ctx.cache.groups.get(Groups.MUTED, [None]))
+        duration = ctx.cache.settings.get(types.Setting.Auto_Mute_Duration, '12h')
         if MUTED_ROLE:
             await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, MUTED_ROLE[0], reason=f"{active} active infractions")
-            await infraction(ctx, InfractionTypes.Mute, user, reason=f"{active} active infractions", duration=ctx.cache.settings.get(types.Setting.Auto_Mute_Duration, '12h'), increase_counter=False)
+        else:
+            await ctx.bot.modify_guild_member(ctx.guild_id, user.id, mute=None, deaf=None, communication_disabled_until=datetime.utcnow()+duration, reason=f"{active} active infractions")
+        await infraction(ctx, InfractionTypes.Mute, user, reason=f"{active} active infractions", duration=duration, increase_counter=False)
     elif autoban and active >= autoban and type is not InfractionTypes.Ban:
         await ctx.bot.create_guild_ban(ctx.guild_id, user.id, reason=f"{active} active infractions")
         await infraction(ctx, InfractionTypes.Ban, user, reason=f"{active} active infractions", increase_counter=False)
@@ -329,57 +332,65 @@ async def counter(ctx: Context, type: str, user: User, number: int=1, reason: st
 
 
 @register(group=Groups.HELPER, main=infraction, aliases=["warn"])
-async def warn(ctx: Context, user: User, reason: str = "", *, language):
+async def warn(ctx: Context, user: User, reason: str = ""):
     '''Warns user'''
     await infraction(ctx, type=InfractionTypes.Warn, user=user, reason=reason)
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["mute"])
-async def mute(ctx: Context, user: User, reason: str = "", *, language):
+async def mute(ctx: Context, user: User, reason: str = ""):
     '''Mutes user'''
     if await infraction(ctx, type=InfractionTypes.Mute, user=user, reason=reason):
         MUTED = list(ctx.cache.groups.get(Groups.MUTED, [None]))
         if MUTED:
             await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, role_id=MUTED[0], reason=reason or f"User Muted by {ctx.user.username}")
+        else:
+            await ctx.bot.modify_guild_member(ctx.guild_id, user.id, mute=None, deaf=None, communication_disabled_until=datetime.utcnow()+timedelta(weeks=4), reason=reason)
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["kick"])
-async def kick(ctx: Context, user: User, reason: str = "", *, language):
+async def kick(ctx: Context, user: User, reason: str = ""):
     '''Kicks user'''
     if await infraction(ctx, type=InfractionTypes.Kick, user=user, reason=reason):
         await ctx.bot.remove_guild_member(ctx.guild_id, user.id, reason=reason or f"User Kicked by {ctx.user.username}")
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["ban"])
-async def ban(ctx: Context, user: User, reason: str = "", *, language):
+async def ban(ctx: Context, user: User, reason: str = ""):
     '''Bans user'''
     if await infraction(ctx, type=InfractionTypes.Ban, user=user, reason=reason):
         await ctx.bot.create_guild_ban(ctx.guild_id, user.id, None, reason=reason or f"User banned by {ctx.user.username}")
 
 @register(group=Groups.HELPER, main=infraction, aliases=["tempmute"])
-async def tempmute(ctx: Context, user: User, duration: timedelta=None, reason: str = "", *, language):
+async def tempmute(ctx: Context, user: User, duration: timedelta=None, reason: str = ""):
     '''Temporarly mutes user'''
     if await infraction(ctx, type=InfractionTypes.Temp_Mute, user=user, reason=reason, duration=duration):
         MUTED = list(ctx.cache.groups.get(Groups.MUTED, [None]))
         if MUTED:
             await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, role_id=MUTED[0], reason=reason or f"User temporarly muted by {ctx.user.username} for {str(duration)}")
+            # TODO
             import asyncio
             await asyncio.sleep(duration.total_seconds())
             await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, MUTED[0], reason="Unmuted as timer ran out")
+        else:
+            await ctx.bot.modify_guild_member(ctx.guild_id, user.id, mute=None, deaf=None, communication_disabled_until=datetime.utcnow()+duration, reason=reason)
 
 @register(group=Groups.HELPER, main=infraction, aliases=["tempban"])
-async def tempban(ctx: Context, user: User, duration: timedelta=None, reason: str = "", *, language):
+async def tempban(ctx: Context, user: User, duration: timedelta=None, reason: str = ""):
     '''Temporarly bans user'''
     if await infraction(ctx, type=InfractionTypes.Temp_Ban, user=user, reason=reason, duration=duration):
         await ctx.bot.create_guild_ban(ctx.guild_id, user.id, None, reason=reason or f"User temporarly banned by {ctx.user.username} for {str(duration)}")
+        # TODO
         import asyncio
         await asyncio.sleep(duration.total_seconds())
         await ctx.bot.remove_guild_ban(ctx.guild_id, user.id, reason="Unbanned as timer ran out")
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["unmute"])
-async def unmute(ctx: Context, user: User, reason: str = "", *, language):
+async def unmute(ctx: Context, user: User, reason: str = ""):
     '''Unmutes user'''
     if await infraction(ctx, type=InfractionTypes.Unmute, user=user, reason=reason):
         MUTED = list(ctx.cache.groups.get(Groups.MUTED, [None]))
         if MUTED:
             await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, MUTED[0], reason=f"Unmuted by {ctx.user.username}")
+        else:
+            await ctx.bot.modify_guild_member(ctx.guild_id, user.id, mute=None, deaf=None, communication_disabled_until=None, reason=f"Unmuted by {ctx.user.username}")
 
 @register(group=Groups.ADMIN, main=infraction, aliases=["unban"])
 async def unban(ctx: Context, user: User, reason: str = "", *, language):
