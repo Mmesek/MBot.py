@@ -255,7 +255,7 @@ async def list_(ctx: Context, user: User=None):
                 duration=tr("commands.infractions.for_duration", language, 
                         duration=secondsToText(int(infraction.duration.total_seconds()), language)) 
                         if infraction.duration else "",
-                active="~~" if (infraction.expires_at and infraction.expires_at <= datetime.utcnow()) else ""
+                active="~~" if (infraction.expires_at and infraction.expires_at <= datetime.now(tz=timezone.utc)) else ""
             )
         )
         if (not infraction.expires_at or infraction.expires_at >= datetime.utcnow()) and infraction.type not in {
