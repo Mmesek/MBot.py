@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import sqlalchemy as sa
 from mlib.database import Base, ID, Timestamp
 
-from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove, Discord_Paths
+from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove, Discord_Paths, Guild_Member_Update
 from MFramework.commands.components import LinkButton, Row
 from MFramework.utils.log import Log
 from MFramework.database.alchemy.types import Permissions
@@ -576,6 +576,12 @@ class Guild_Ban_Remove(Infraction_Event):
         reason, moderator = await self.get_ban_data(data, InfractionTypes.Unban, 23)
         if reason is not False:
             await super().log(data, type="unbanned", reason=reason, by_user=moderator)
+
+class Guild_Member_Update(Infraction_Event):
+    async def log(self, data: Guild_Member_Update):
+        if data.communication_disabled_until:
+            reason, moderator = await self.get_ban_data(data, InfractionTypes.Timeout, 24)
+            await super().log(data, type="timeouted", reason=reason, by_user=moderator)
 
 class Auto_Mod(Infraction):
     pass
