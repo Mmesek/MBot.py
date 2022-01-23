@@ -1,16 +1,5 @@
 from MFramework import onDispatch, Bot, Message
 
-import re
-EMOJI = re.compile(r":\w+:")
-@onDispatch(priority=4)
-async def message_create(self: Bot, data: Message):
-    if not data.is_empty:
-        if any(i.id == self.user_id for i in data.mentions):
-            await self.trigger_typing_indicator(data.channel_id)
-        from .actions import responder
-        for emoji in set(emoji.lower() for emoji in EMOJI.findall(data.content)):
-            await responder(self, data, emoji)
-
 @onDispatch
 async def direct_message_create(self: Bot, data: Message):
     await self.cache[self.primary_guild].logging["direct_message"](data)

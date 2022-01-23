@@ -1,5 +1,6 @@
+import re
+
 from MFramework import *
-from ..commands_slash.infractions import InfractionTypes
 
 async def responder(ctx: Bot, msg: Message, emoji: str):
     emoji = ctx.cache[msg.guild_id].custom_emojis.get(emoji.lower().strip(':'))
@@ -7,6 +8,18 @@ async def responder(ctx: Bot, msg: Message, emoji: str):
         await msg.reply(emoji)
     elif type(emoji) is tuple:
         await msg.reply(file=emoji[1], filename=emoji[0])
+
+
+EMOJI = re.compile(r":\w+:")
+@onDispatch(priority=4)
+async def message_create(self: Bot, data: Message):
+    if not data.is_empty:
+        if any(i.id == self.user_id for i in data.mentions):
+            await self.trigger_typing_indicator(data.channel_id)
+        from .actions import responder
+        for emoji in set(emoji.lower() for emoji in EMOJI.findall(data.content)):
+            await responder(self, data, emoji)
+
 
 from MFramework.utils.log import Message as LogMessage
 class Message_Replay_QnA(LogMessage):
@@ -100,7 +113,7 @@ async def deduplicate_across_channels(self: Bot, data: Message) -> bool:
             return True
     return False
 
-import re
+
 URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
 @onDispatch(event="message_create", priority=4)
 async def remove_links(self: Bot, data: Message) -> bool:
@@ -125,6 +138,7 @@ async def remove_links(self: Bot, data: Message) -> bool:
             except:
                 pass
             await self.remove_guild_member(data.guild_id, data.author.id, "Hijacked account")
+            from ..commands_slash.infractions import InfractionTypes
             await self.cache[data.guild_id].logging["infraction"](
                 guild_id=data.guild_id,
                 channel_id=data.channel_id,
@@ -179,15 +193,9 @@ async def roll_dice(self: Bot, data: Message, updated: bool = False):
         v = random().randint(1, 6) if not ILLEGAL_ACTIONS.findall(reg[0]) else 0
         await self.create_reaction(data.channel_id, data.id, dices[v])
 
-@onDispatch(event="message_create")
-async def handle_level(self: Bot, data: Message):
-    if data.channel_id not in self.cache[data.guild_id].disabled_channels and not any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles):
-        from ..utils import levels
-        await levels.exp(self, data)
-
 
 TIME_PATTERN = re.compile(r"(?P<Hour>\d\d?) ?(:|\.)? ?(?P<Minute>\d\d?)? ?(?P<Daytime>AM|PM)? ?(?P<LateMinute>\d\d?)? ?(?P<Timezone>\w+)")
-@onDispatch(event="message_create")
+#@onDispatch(event="message_create")
 async def check_timezone(self: Bot, data: Message):
     match = TIME_PATTERN.search(data.content)
     if not match:

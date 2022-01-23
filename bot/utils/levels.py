@@ -93,17 +93,3 @@ def task_check_activity():
             user.TopActivityPeriod += 1
             #await self.remove_guild_member_role(user.GuildID, user.UserID, activityRole.RoleID, "Activity Role Cleanup")
     s.commit()
-
-async def exp(self, data):
-    last = self.cache[data.guild_id].cooldowns.has(data.guild_id, data.author.id, "ChatExp")
-    if not last and (len(set(data.content.split(' '))) >= 2):
-        from ..database import models, log, types
-        session = self.db.sql.session()
-        user = models.User.fetch_or_add(session, id=data.author.id)
-        #server = models.Server.fetch_or_add(session, id=data.guild_id)
-        log.Statistic.increment(session, data.guild_id, data.author.id, types.Statistic.Chat)
-        self.cache[data.guild_id].cooldowns.store(data.guild_id, data.author.id, "ChatExp")
-        #await handle_exp(self, data, e)
-        from MFramework.database.alchemy.types import Flags
-        if self.cache[data.guild_id].is_tracking(Flags.Activity):
-            self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(' '))))
