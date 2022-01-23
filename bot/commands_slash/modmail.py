@@ -4,6 +4,14 @@ from MFramework import register, Groups, Context, UserID, Snowflake, onDispatch,
 from MFramework.utils.log import Message as MessageLog
 from MFramework.commands.components import Select, Select_Option
 
+@onDispatch
+async def direct_message_create(self: Bot, data: Message):
+    await self.cache[self.primary_guild].logging["direct_message"](data)
+    if data.channel_id not in self.cache[0]:
+        from MFramework.database.cache_internal.models import Collection
+        self.cache[data.guild_id][data.channel_id] = Collection()
+    self.cache[data.guild_id][data.channel_id].store(data)
+
 @register(group=Groups.MODERATOR)
 async def dm(ctx: Context, user: UserID, message: str, *, language):
     '''
