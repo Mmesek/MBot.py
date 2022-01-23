@@ -227,11 +227,11 @@ async def story(ctx: Context):
     while True:
         with ctx.db.sql.session.begin() as s:
             StoryStats.incr(s, chapter)
+        if chapter == "end":
+            break
         options = story.get(chapter, None)
         if not options:
             return f"Couldn't find any matching option for your response. Contact <@187924023424974859> to check for chapter {chapter}"#f"There is no option matching your response mate, check the json for {chapter}"
-        if chapter == "end":
-            break
         if option:
             pamphlet = options.get(option, None)
         else:
@@ -283,3 +283,109 @@ async def story(ctx: Context):
         log.Statistic.increment(session, ctx.guild_id, 0, types.Statistic.Story_End)
 
     await ctx.bot.create_message(ctx.channel_id, "Curtain falls... Hope you have enjoyed this story!")
+
+
+rewards = {
+    "Twig": (70, 80),
+    "Coal": (60, 70),
+    "Socks": (40, 50),
+    "Milk and Cookies": (35, 33),
+    "Empty Bottle": (25, 30),
+    "Santa Claus Hat": (25, 25),
+    "Christmas Carols": (25, 22),
+    "Sugar Cane": (20, 17),
+    "Candy": (20, 17),
+    "Chocolate": (15, 15),
+    "Fairy Tales": (15, 20),
+    "Mistletoe": (10, 5),
+    "Eggnog": (5, 10),
+    "Key": (1, 1),
+}
+
+from MFramework import Enum
+class PresentType(Enum):
+    Gold = "Gold"
+    Green = "Green"
+
+@register(group=Groups.GLOBAL, main=christmas)
+@cooldown(minutes=1, logic=CacheCooldown)
+async def open(ctx: Context, type: PresentType):
+    '''
+    Open a present!
+    Params
+    ------
+    type:
+        type of present you want to open
+    '''
+    pass
+
+@register(group=Groups.SYSTEM)
+async def csummary(ctx: Context, *, language):
+    '''
+    Summary of event
+    '''
+    s = ctx.db.sql.session()
+    inv = {}
+    for name in ["Sent Present", "Stolen Presents", "Thrown Snowball", "Splashed Snowball", "Missed Snowball"]:
+        item = db.items.Item.by_name(s, name)
+        inventories = s.query(db.items.Inventory).filter(db.items.Inventory.item_id == item.id, db.items.Inventory.quantity > 0).order_by(db.items.Inventory.quantity.desc()).all()
+        inventories = list(filter(lambda x: x.user_id in ctx.cache.members, inventories))
+        inv[name] = inventories
+    
+    for snowball in inv["Thrown Snowball"]:
+        i = next(filter(lambda x: x.user_id == snowball.user_id, inv["Splashed Snowball"]), None)
+        snowball.quantity -= i.quantity if i else 0
+        i = next(filter(lambda x: x.user_id == snowball.user_id, inv["Missed Snowball"]), None)
+        snowball.quantity -= i.quantity if i else 0
+    
+    thrown_snowballs = sorted(inv["Thrown Snowball"], key=lambda x: x.quantity, reverse=True)
+    presents_gifted = sorted(inv["Sent Present"], key=lambda x: x.quantity, reverse=True)
+    presents_stolen = sorted(inv["Stolen Presents"], key=lambda x: x.quantity, reverse=True)
+    mostly_hit = sorted(inv["Splashed Snowball"], key=lambda x: x.quantity, reverse=True)
+    most_misses = sorted(inv["Missed Snowball"], key=lambda x: x.quantity, reverse=True)
+    robin = [i for i in presents_gifted if any(i.user_id == _.user_id for _ in presents_stolen)]
+    r = []
+    for u in robin:
+        r.append(
+            (u.quantity - next(filter(lambda x: x.user_id == u.user_id, presents_stolen)).quantity,
+            u.user_id)
+        )
+    robin = sorted(r, key=lambda x: x[0], reverse=True)
+    e = Embed()
+    raw_boards = {
+        "Sharpshooter": thrown_snowballs,
+        "Santa Claus": presents_gifted,
+        "Grinch": presents_stolen,
+        "Most Valuable Target": mostly_hit,
+        "Drunkest Thrower": most_misses,
+    }
+    boards = {
+        "Sharpshooter": [],
+        "Most Valuable Target": [],
+        "Drunkest Thrower": [],
+        "Santa Claus": [],
+        "Grinch": [],
+        "Robin Hood": []
+    }
+    tops = []
+    for board in raw_boards:
+        x = 0
+        for u in raw_boards[board]:
+            if u.user_id in tops:
+                continue
+            if any(u.user_id == _[1] for _ in robin[:1]):
+                continue
+            x += 1
+            boards[board].append(f"{u.quantity} - {ctx.cache.members.get(int(u.user_id)).user.username}")
+            tops.append(u.user_id)
+            if x == 1:
+                break
+    for u in robin[:1]:
+        boards["Robin Hood"].append(f"{u[0]} - {ctx.cache.members.get(int(u[1])).user.username}")
+    for board in boards:
+        e.addField(board, "\n".join(boards[board]), True)
+    e.setColor(6725829)
+    e.setTitle("Christmas 2021 Event Summary")
+    e.setDescription("**Thanks for Participating!**")
+    e.addField("Leaderboard Calculation Rules", "- Sharpshooter is calculated based on hits ❄ without taking damage or missing shots\n- Robin Hood is based on Gifted <:gift_gold:917012628310724659> minus Stolen <:gift_rotten:917012629518684230> presents\n- One person can be only on one board based on `Robin Hood > Sharpshooter > Santa Claus > Grinch > Most Valuable Target > Drunk` order")
+    await ctx.send(embeds=[e])
