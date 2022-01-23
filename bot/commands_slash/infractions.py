@@ -531,7 +531,7 @@ class Infraction_Event(Infraction):
             string = f'[<@{data.user.id}> | {data.user.username}#{data.user.discriminator}] has been {type}'
         if reason and reason == "Too many infractions":
             s = self.bot.db.sql.session()
-            infractions = db_Infraction.filter(s, server_id=self.guild_id, user_id=data.user.id, active=True).all()
+            infractions = db_Infraction.filter(s, server_id=self.guild_id, user_id=data.user.id).all()
             if infractions:
                 string += " for:\n" + "\n".join([f"- {infraction.reason}" for infraction in infractions])
             else:
