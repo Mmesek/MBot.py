@@ -33,7 +33,7 @@ async def exp(self: Bot, data: Message):
     session = self.db.sql.session()
     from ..database import models, types, log
     user = models.User.fetch_or_add(session, id=data.author.id)
-    exp = User_Experience.fetch_or_add(session, user_id=data.author.id, server_id=data.author.id)
+    exp = User_Experience.fetch_or_add(session, user_id=data.author.id, server_id=data.guild_id)
 
     role_boosts = 0
     for role in data.member.roles:
@@ -45,12 +45,13 @@ async def exp(self: Bot, data: Message):
     from MFramework.database import alchemy as db
     boost = user.get_setting(db.types.Setting.Exp) or 1.0
     exp.value += rate * boost
+    session.commit()
     self.cache[data.guild_id].cooldowns.store(data.guild_id, data.author.id, "ChatExp")
 
     previous_level = None
     level_up = None
 
-    for role, req in self.cache[data.guild_id].level_roles.items():
+    for role, req in self.cache[data.guild_id].level_roles:
         if role in data.member.roles:
             if exp.value < req:
                 await self.remove_guild_member_role(data.guild_id, data.author.id, role, "Level Role")
