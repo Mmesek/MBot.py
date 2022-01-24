@@ -1,3 +1,5 @@
+import functools
+
 from datetime import datetime, timezone, timedelta
 
 from MFramework import Context, User, Groups, register, Event, EventBetween, Embed, Channel_Types
@@ -15,7 +17,24 @@ async def christmas(ctx: Context):
     '''Christmas Event commands'''
     pass
 
-@register(group=Groups.GLOBAL, main=christmas)
+def inner(f, main: object, should_register: bool = True):
+    @functools.wraps(f)
+    def wrapped(**kwargs):
+        return f(**kwargs)
+    if should_register:
+        register(group=Groups.GLOBAL, main=main)(Event(month=12)(wrapped))
+    return wrapped
+
+@register(group=Groups.GLOBAL)
+@Event(month=12)
+def christmas(cls=None, *, should_register: bool=True):
+    '''Christmas Event commands'''
+    i = functools.partial(inner, main=christmas, should_register=should_register)
+    if cls:
+        return i(cls)
+    return i
+
+@christmas
 @cooldown(hours=2, logic=CacheCooldown)
 async def gift(ctx: Context, user: User, *, language) -> str:
     '''Send specified user a gift'''
@@ -60,7 +79,7 @@ async def gift(ctx: Context, user: User, *, language) -> str:
     else:
         return _t('remaining_cooldown', language, cooldown=timedelta(hours=2) - (now - last_gift.Timestamp))
 
-@register(group=Groups.GLOBAL, main=christmas)
+@christmas
 @cooldown(hours=3, logic=CacheCooldown)
 @Chance(50, "You've failed!")
 async def steal(ctx: Context, target: User) -> str:
@@ -94,7 +113,7 @@ async def steal(ctx: Context, target: User) -> str:
     s.commit()
     return "Congratulations Mr Grinch! You've managed to steal a present! <:rotten_gift:917012629518684230>"
 
-@register(group=Groups.GLOBAL, main=christmas)
+@christmas
 async def cookie(ctx: Context, user: User, *, language) -> str:
     '''Send specified user a cookie'''
     if user.id == ctx.user.id:
@@ -141,7 +160,7 @@ async def advent(ctx: Context, *, language) -> str:
     else:
         return _t('advent_already_claimed', language)
 
-@register(group=Groups.GLOBAL, main=christmas, private_response=True)
+@christmas
 async def hat(ctx: Context, user: User):
     '''Adds Santa's hat onto user's avatar'''
     await ctx.deferred()
@@ -307,7 +326,7 @@ class PresentType(Enum):
     Gold = "Gold"
     Green = "Green"
 
-@register(group=Groups.GLOBAL, main=christmas)
+@christmas
 @cooldown(minutes=1, logic=CacheCooldown)
 async def open(ctx: Context, type: PresentType):
     '''
@@ -319,7 +338,7 @@ async def open(ctx: Context, type: PresentType):
     '''
     pass
 
-@register(group=Groups.SYSTEM)
+@register(group=Groups.SYSTEM, interaction=False)
 async def csummary(ctx: Context, *, language):
     '''
     Summary of event
