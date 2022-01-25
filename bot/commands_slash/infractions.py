@@ -487,7 +487,9 @@ class Infraction(Log):
     } #HACK
     async def log(self, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, moderator: User, user_id: Snowflake, reason: str, type: InfractionTypes, duration: int=0, attachments: List[Attachment]=None) -> Message:
         from MFramework import Discord_Paths
-        string = f'{moderator.username} [{self._types.get(type.name.lower(), type.name)}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}>) '
+        channel = self.bot.cache[guild_id].channels.get(channel_id)
+        channel_name = channel.name if channel else channel_id
+        string = f'{moderator.username} [{self._types.get(type.name.lower(), type.name)}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)} "{channel_name}">) '
         u = f'[<@{user_id}>'
         try:
             user = self.bot.cache[guild_id].members[user_id].user
