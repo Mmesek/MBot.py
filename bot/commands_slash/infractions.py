@@ -193,7 +193,7 @@ async def infraction(ctx: Context, *, type: InfractionTypes, user: User=None, re
     
     if active and type not in {InfractionTypes.Mute, InfractionTypes.Kick, InfractionTypes.Ban}:
         return await auto_moderation(ctx, session, user, type, infractions)
-    elif type in {InfractionTypes.Unban, InfractionTypes.Unmute, InfractionTypes.DM_Unmute}:
+    elif active or type in {InfractionTypes.Unban, InfractionTypes.Unmute, InfractionTypes.DM_Unmute}:
         return True
 
 async def auto_moderation(ctx: Context, session, user: User, type: InfractionTypes, infractions: List[Infraction]=[]):
