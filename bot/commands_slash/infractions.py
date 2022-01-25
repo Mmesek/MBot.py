@@ -489,7 +489,7 @@ class Infraction(Log):
         from MFramework import Discord_Paths
         channel = self.bot.cache[guild_id].channels.get(channel_id)
         channel_name = channel.name if channel else channel_id
-        string = f'{moderator.username} [{self._types.get(type.name.lower(), type.name)}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)} "{channel_name}">) '
+        string = f'{moderator.username} [{self._types.get(type.name.lower(), type.name)}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}> "{channel_name}") '
         u = f'[<@{user_id}>'
         try:
             user = self.bot.cache[guild_id].members[user_id].user
