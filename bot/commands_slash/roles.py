@@ -1,6 +1,6 @@
 from typing import List
 import enum
-from MFramework import register, Groups, Context, Snowflake, ChannelID, RoleID, Role, Component_Types, Button_Styles, Select_Option, Emoji
+from MFramework import register, Groups, Context, Snowflake, ChannelID, RoleID, Role, Component_Types, Button_Styles, Select_Option, Emoji, Channel
 from MFramework.commands.components import Select, Option, Row, Button
 
 @register(group=Groups.MODERATOR)
@@ -391,19 +391,90 @@ class RoleTypes:
     OR = "OR"
     COMBINED = "COMBINED"
 
-#@register(group=Groups.ADMIN, main=role)
-async def level(ctx: Context, role: RoleID, req_exp: int= 0, req_voice: int= 0, type: RoleTypes = RoleTypes.AND, stacked: bool=False, *, language):
-    '''Management of level roles
+@register(group=Groups.ADMIN, main=role)
+async def level():
+    '''Management of Level roles'''
+    pass
+
+@register(group=Groups.ADMIN, main=level, private_response=True)
+async def create(ctx: Context, role: Role, exp: float = 0) -> str:
+    #, req_voice: int= 0, type: RoleTypes = RoleTypes.AND, stacked: bool=False) -> str:
+    '''Create/Update level role
 
     Params
     ------
     role:
         Role which should be awarded for reaching these values
-    req_exp:
+    exp:
         Chat exp required to gain this role
     req_voice:
         Voice exp required to gain this role
     type:
         Whether both, either or in total exp should award this role
     '''
-    pass
+    from MFramework.database.alchemy import Role, types
+    session = ctx.db.sql.session()
+    r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
+    r.add_setting(types.Setting.Level, exp)
+    session.commit()
+    ctx.cache.level_roles.append((r.id, exp))
+    ctx.cache.level_roles.sort(key=lambda x: x[1])
+    return f"Level {role.name} added successfully"
+
+@register(group=Groups.ADMIN, main=level, private_response=True)
+async def list_(ctx: Context) -> str:
+    '''Shows list of current level roles'''
+    return "\n".join(f"{getattr(ctx.cache.roles.get(i[0]), 'name', None)} - {i[1]}" for i in ctx.cache.level_roles) or "None set"
+
+@register(group=Groups.ADMIN, main=level, private_response=True)
+async def remove(ctx: Context, role: Role) -> str:
+    '''
+    Removes level role
+    Params
+    ------
+    role:
+        role to remove
+    '''
+    from MFramework.database.alchemy import Role, types
+    session = ctx.db.sql.session()
+    r = session.query(Role).filter(Role.server_id==ctx.guild_id, Role.id==role.id).first()
+    if r:
+        ctx.cache.level_roles.remove((r.id, r.get_setting(types.Setting.Level)))
+        ctx.cache.level_roles.sort(key=lambda x: x[1])
+        r.remove_setting(types.Setting.Level)
+        session.commit()
+        return f"Level {role.name} removed successfully"
+    return f"Level role {role.name} doesn't exist!"
+
+@register(group=Groups.ADMIN, main=level, private_response=True)
+async def rates(ctx: Context, rate: float, channel: Channel = None, role: Role = None) -> str:
+    '''
+    Manage XP Rate gains
+    Params
+    ------
+    rate:
+        XP Rate Modifier
+    channel:
+        Channel to modify. Formula: CurrentMultipler = DefaultRate * ChannelRate
+    role:
+        Role to modify. Formula: Rate = CurrentMultipler + sum(OwnedRoleRates)
+    '''
+    from MFramework.database.alchemy import Role, Channel, types
+    session = ctx.db.sql.session()
+    result = []
+
+    if channel:
+        c = Channel.fetch_or_add(session, server_id=ctx.guild_id, id=channel.id)
+        c.add_setting(types.Setting.Exp, rate)
+        ctx.cache.exp_rates[channel.id] = rate
+        result.append(f"New rate for {channel.name}: {rate}")
+
+    if role:
+        r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
+        r.add_setting(types.Setting.Exp, rate)
+        ctx.cache.role_rates.append((role.id, rate))
+        ctx.cache.role_rates.sort(key=lambda x: x[1])
+        result.append(f"New rate for {role.name}: {rate}")
+
+    session.commit()
+    return "\n".join(result)
