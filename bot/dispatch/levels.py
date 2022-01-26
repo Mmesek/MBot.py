@@ -20,7 +20,7 @@ class User_Experience(TimestampUpdate, Base):
 @onDispatch(event="message_create")
 async def exp(self: Bot, data: Message):
     if (
-        data.channel_id in self.cache[data.guild_id].disabled_channels 
+        data.channel_id in self.cache[data.guild_id].disabled_channels
         or any(r in data.member.roles for r in self.cache[data.guild_id].disabled_roles)
         or len(set(data.content.split(' '))) < 2
     ):
@@ -66,7 +66,70 @@ async def exp(self: Bot, data: Message):
         await self.add_guild_member_role(data.guild_id, data.author.id, level_up, "Level Role")
     if previous_level:
         await self.remove_guild_member_role(data.guild_id, data.author.id, previous_level, "Level Role")
-        
+
     log.Statistic.increment(session, data.guild_id, data.author.id, types.Statistic.Chat)
     if self.cache[data.guild_id].is_tracking(db.types.Flags.Activity):
         self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(' '))))
+
+from MFramework import register, Groups, Context, User
+
+@register(group=Groups.ADMIN)
+async def xp(ctx: Context):
+    '''Management of user XP'''
+    pass
+
+@register(group=Groups.ADMIN, main=xp)
+async def add(ctx: Context, user: User, xp: float) -> str:
+    '''
+    Add xp to user
+    Params
+    ------
+    user:
+        User that recieves XP
+    xp:
+        XP to add
+    '''
+    from ..database import models
+    session = ctx.db.sql.session()
+    _user = models.User.fetch_or_add(session, id=user.id)
+    exp = User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
+    exp.value += xp
+    session.commit()
+    return f"Added {xp} XP to user {user.username}"
+
+@register(group=Groups.ADMIN, main=xp)
+async def remove(ctx: Context, user: User, xp: float) -> str:
+    '''
+    Remove xp from user
+    Params
+    ------
+    user:
+        Affected User
+    xp:
+        XP to remove
+    '''
+    from ..database import models
+    session = ctx.db.sql.session()
+    _user = models.User.fetch_or_add(session, id=user.id)
+    exp = User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
+    exp.value -= xp
+    session.commit()
+    return f"Removed {xp} XP from user {user.username}"
+
+@register(group=Groups.ADMIN, main=xp)
+async def rate(ctx: Context, user: User, rate: float) -> str:
+    '''
+    Modify User's XP gain
+    Params
+    ------
+    user:
+        User whose gain should be modified
+    rate:
+        New Rate Modifier. Formula: CurrentRate * UserRate
+    '''
+    from ..database import models, types
+    session = ctx.db.sql.session()
+    _user = models.User.fetch_or_add(session, id=user.id)
+    _user.add_setting(types.Setting.Exp, rate)
+    session.commit()
+    return f"New rate for {user.username}: {rate}"
