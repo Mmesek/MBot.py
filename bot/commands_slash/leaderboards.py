@@ -357,7 +357,7 @@ class LeaderboardPosition(Leaderboard):
 @register(group=Groups.GLOBAL, main=leaderboard)
 async def levels(ctx: Context, limit: int = 10) -> Embed:
     '''Shows levels leaderboard'''
-    from ..dispatch.levels import User_Experience
+    from ..dispatch.xp import User_Experience
     session = ctx.db.sql.session()
     entries = session.query(User_Experience).filter(User_Experience.server_id == ctx.guild_id).order_by(User_Experience.value.desc()).limit(250).all()
     if not any(ctx.user_id == x.user_id for x in entries):
