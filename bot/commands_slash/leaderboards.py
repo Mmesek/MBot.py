@@ -344,3 +344,26 @@ def format_leaderboard(
             rank_str = f"__{rank_str}__"
         _r.append(rank_str)
     return _r 
+
+class NoValueEntry(Leaderboard_Entry):
+    def __str__(self) -> str:
+        return f"`{self.name}`"
+
+class LeaderboardPosition(Leaderboard):
+    @property
+    def user_stats(self) -> int:
+        return f"Estimated Position: ~{self._user_position}"
+
+@register(group=Groups.GLOBAL, main=leaderboard)
+async def levels(ctx: Context, limit: int = 10) -> Embed:
+    '''Shows levels leaderboard'''
+    from ..dispatch.levels import User_Experience
+    session = ctx.db.sql.session()
+    entries = session.query(User_Experience).filter(User_Experience.server_id == ctx.guild_id).order_by(User_Experience.value.desc()).limit(250).all()
+    if not any(ctx.user_id == x.user_id for x in entries):
+        u = session.query(User_Experience).filter(User_Experience.server_id == ctx.guild_id, User_Experience.user_id == ctx.user_id).first()
+        if u:
+            entries.append(u)
+    r = set(NoValueEntry(ctx, x.user_id, x.value) for x in entries)
+    leaderboard = LeaderboardPosition(ctx, ctx.user_id, r, limit, skip_invalid=True)
+    return leaderboard.as_embed()
