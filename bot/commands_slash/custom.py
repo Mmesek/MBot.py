@@ -156,12 +156,12 @@ async def loadout(ctx: Context) -> Embed:
 
     return embed
 
-@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=False)
-async def when(ctx: Context, arg: str = None) -> str:
+@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=False, only_interaction=True)
+async def when(ctx: Context) -> str:
     '''
     Shows remaining delta to release
     '''
-    if arg:
+    if False:
         try:
             with open("data/bad_words.txt", encoding="utf-8") as word_file:
                 bad_words = word_file.read().split("\\n")
@@ -181,7 +181,7 @@ async def when(ctx: Context, arg: str = None) -> str:
         await msg.delete()
         return
 
-    date = datetime(2022, 2, 4, 19)
+    date = datetime(2022, 2, 4, 1)
     timestamp = int(date.timestamp())
     delta = date - datetime.now()
     if delta.total_seconds() < 0:
@@ -199,9 +199,9 @@ async def when(ctx: Context, arg: str = None) -> str:
         0.075: f"{delta.seconds}s",
         0.075: f"{delta.days / 2} * 2",
         0.075: f"{delta.days / 3} + {delta.days / 3} * 2 + 2 * x",
-        0.4: f"<t:{timestamp}:R>",
-        0.5: f"*Around* `{delta.days}` days *(ESTIMATED)* to <t:{timestamp}:D>",
-        1: f"Remaining around `{delta}` (estimated, according to Steam day which means it's *NOT OFFICIALLY CONFIRMED* window) until <t:{timestamp}:D> which is <t:{timestamp}:R>"
+        0.1: f"<t:{timestamp}:R>",
+        0.1: f"Around `{delta.days}` days to <t:{timestamp}:D>",
+        1: f"Remaining `{delta}` until <t:{timestamp}:D> which is <t:{timestamp}:R>"
     }
     return random().choices(list(responses.values()), list(responses.keys()))[0]
 
