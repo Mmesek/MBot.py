@@ -5,7 +5,7 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
     _last = self.cache[data.guild_id].last_join
     from datetime import timedelta
     if _last and abs(_last.as_date - data.user.id.as_date) < timedelta(days=1):
-        from ..database import types
+        from ..commands_slash.infractions import InfractionTypes
         _ = self.cache[data.guild_id].logging.get("auto_mod", None)
         if _:
             await _(
@@ -16,11 +16,11 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
                 user_id=data.user.id,
                 reason="Possible Raid",
                 duration=None,
-                type=types.Infraction.Kick
+                type=InfractionTypes.Kick
             )
             try:
                 r = await _.log_dm(
-                    type=types.Infraction.Kick, 
+                    type=InfractionTypes.Kick, 
                     guild_id=data.guild_id,
                     user_id=data.user.id,
                     reason="Possible Raid",
