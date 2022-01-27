@@ -144,7 +144,7 @@ async def add_rss(ctx: Context, name: str, url: str, feed_language: str='en') ->
     ctx.db.sql.add(r)
     return "RSS Source added succesfully"
 
-@register(group=Groups.NITRO, guild_only=True)
+@register(group=Groups.NITRO, guild_only=True, private_response=True)
 async def nitro(ctx: Context, hex_color: str=None, name: str=None, emoji: str = None) -> str:
     '''
     Create self role. Only one per booster
