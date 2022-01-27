@@ -228,4 +228,5 @@ async def ghost_ping(self: Bot, data: Message_Delete):
     msg: Message = self.cache[data.guild_id].messages[f"{data.guild_id}.{data.channel_id}.{data.id}"]
     if msg:
         mentions = ", ".join([f"<@{user.id}>" for user in msg.mentions])
-        await self.create_message(data.channel_id, f"Looking for a Ping? <:ping:517493248529530890> Detected Ghostping of {mentions} by <@{msg.author.id}>", allowed_mentions=None)
+        if mentions:
+            await self.create_message(data.channel_id, f"Looking for a Ping? <:ping:517493248529530890> Detected Ghostping of {mentions} by <@{msg.author.id}>", allowed_mentions=None)
