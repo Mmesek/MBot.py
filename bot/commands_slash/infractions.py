@@ -421,14 +421,16 @@ async def report(ctx: Context, msg: str = None):
     reported_to = 0
     _msg = await ctx.reply("I'm on my way to notify moderators!")
 
-    embeds = [Embed().setTitle(f"Report made by {ctx.data.author.username}").setDescription(msg).setColor("#C29D60").setAuthor(str(ctx.data.author), icon_url=ctx.data.author.get_avatar()).setUrl(ctx.data.message_link)]
+    link = Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.data.id)
+    embeds = [Embed().setTitle(f"Report made by {ctx.data.author.username}").setDescription(msg).setColor("#C29D60").setAuthor(str(ctx.data.author), icon_url=ctx.data.author.get_avatar()).setUrl(link)]
     if ctx.data.referenced_message:
         ref = ctx.data.referenced_message
-        e = Embed().setTitle(f"Referenced Message from {ref.author.username}").setDescription(ref.content).setColor("#a52f37").setAuthor(str(ref.author), icon_url=ref.author.get_avatar()).setUrl(ref.message_link)
+        ref_url = Discord_Paths.MessageLink.link.format(guild_id=ref.guild_id, channel_id=ref.channel_id, message_id=ref.id)
+        e = Embed().setTitle(f"Referenced Message from {ref.author.username}").setDescription(ref.content).setColor("#a52f37").setAuthor(str(ref.author), icon_url=ref.author.get_avatar()).setUrl(ref_url)
         if ref.attachments:
             e.addField("Attachments", "\n".join([f"[{i.filename}.{i.content_type.split('/')[-1]}]({i.url})" for i in ref.attachments]))
         embeds.append(e)
-    components = [Row(LinkButton(f"Jump to Message", Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.data.id)))]
+    components = [Row(LinkButton(f"Jump to Message", link))]
 
     import time
     start = time.time()
