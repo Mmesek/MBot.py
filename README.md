@@ -15,6 +15,8 @@ Features:
 - [Giveaways](bot/slash/giveaways.py)
 - [Reaction](bot/dispatch/reactions.py)/[Presence](bot/dispatch/dispatch.py) [Roles](bot/systems/roles.py)
 - Auto [Moderation](bot/dispatch/actions.py)
+- [Ghostping](bot/dispatch/actions.py) detection
+- Spoiler *[only](bot/dispatch/actions.py)* channel
 - [Antiraid](bot/dispatch/guild.py) system (autokick)
 - Database "[Stash](bot/slash/database.py)" for memes/rules etc
 - [Custom role](bot/slash/database.py) for Nitro Users
