@@ -101,3 +101,14 @@ async def role_icon(ctx: Context, role: Snowflake, emoji: str):
         emoji = {"icon": "","unicode_emoji": emoji}
     await ctx.bot.modify_guild_role(guild_id=ctx.guild_id, role_id=role, **emoji)
     return "Icon changed"
+
+@register(group=Groups.ADMIN, interaction=False)
+async def nick(ctx: Context, nick: str):
+    '''
+    Changes bot nickname
+    Params
+    ------
+    nick:
+        New nickname
+    '''
+    await ctx.bot.modify_current_user_nick(ctx.guild_id, nick, reason=f"Request made by {ctx.user.username}")
