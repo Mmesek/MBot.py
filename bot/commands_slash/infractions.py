@@ -485,7 +485,8 @@ class Infraction(Log):
         "tempban":"temporarily banned",
         "ban": "banned",
         "unban": "unbanned",
-        "unmute": "unmuted"
+        "unmute": "unmuted",
+        "timeout": "timed out"
     } #HACK
     async def log(self, guild_id: Snowflake, channel_id: Snowflake, message_id: Snowflake, moderator: User, user_id: Snowflake, reason: str, type: InfractionTypes, duration: int=0, attachments: List[Attachment]=None) -> Message:
         from MFramework import Discord_Paths
@@ -587,7 +588,7 @@ class Guild_Member_Update(Infraction_Event):
     async def log(self, data: Guild_Member_Update):
         if data.communication_disabled_until:
             reason, moderator = await self.get_ban_data(data, InfractionTypes.Timeout, 24)
-            await super().log(data, type="timeouted", reason=reason, by_user=moderator)
+            await super().log(data, type="timed out", reason=reason, by_user=moderator)
 
 class Auto_Mod(Infraction):
     pass
