@@ -395,10 +395,13 @@ async def unmute(ctx: Context, user: User, reason: str = ""):
             await ctx.bot.modify_guild_member(ctx.guild_id, user.id, mute=None, deaf=None, communication_disabled_until=None, reason=f"Unmuted by {ctx.user.username}")
 
 @register(group=Groups.ADMIN, main=infraction, aliases=["unban"])
-async def unban(ctx: Context, user: User, reason: str = "", *, language):
+async def unban(ctx: Context, user: User, reason: str = "") -> str:
     '''Unbans user'''
     if await infraction(ctx, type=InfractionTypes.Unban, user=user, reason=reason):
-        await ctx.bot.remove_guild_ban(ctx.guild_id, user.id, reason=f"Unbanned by {ctx.user.username}")
+        try:
+            await ctx.bot.remove_guild_ban(ctx.guild_id, user.id, reason=f"Unbanned by {ctx.user.username}")
+        except:
+            return "User is probably not banned"
 
 from MFramework import Presence_Update, onDispatch, Bot
 
