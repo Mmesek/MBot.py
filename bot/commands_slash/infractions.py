@@ -528,7 +528,7 @@ class Infraction(Log):
 
 class Infraction_Event(Infraction):
     username = "Infraction Event Log"
-    async def log(self, data: Union[Guild_Ban_Add, Guild_Ban_Remove], type: str, reason: str="", by_user: str="") -> Message:
+    async def log(self, data: Union[Guild_Ban_Add, Guild_Ban_Remove, Guild_Member_Update], type: str, reason: str="", by_user: str="") -> Message:
         if by_user != '':
             try:
                 by_user = self.bot.cache[data.guild_id].members[int(by_user)].user.username
@@ -546,6 +546,8 @@ class Infraction_Event(Infraction):
                 string += f' for "{reason}"'
         elif reason != '' and reason != 'Unspecified':
             string += f' for "{reason}"'
+        if type == "timed out":
+            string += f" until <t:{int(data.communication_disabled_until.timestamp())}>"
         await self._log(string)
 
     async def get_ban_data(self, data: Union[Guild_Ban_Add, Guild_Ban_Remove], type: InfractionTypes, audit_type: str) -> Tuple[bool, bool]:
