@@ -189,7 +189,8 @@
             "Unban": "Unban",
             "Temp_Mute":"Tempmute",
             "Temp_Ban":"Tempban",
-            "Kick":"Kick"
+            "Kick":"Kick",
+            "Timeout":"Timeout"
         },
         "for_duration": "for %{duration}",
         "active": "🟢",

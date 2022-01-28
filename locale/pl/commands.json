@@ -191,7 +191,8 @@
             "Unban": "Odbanowanie",
             "Temp_Mute":"Tymczasowe Wyciszenie",
             "Temp_Ban":"Tymczasowy Ban",
-            "Kick":"Wyrzucenie"
+            "Kick":"Wyrzucenie",
+            "Timeout":"Przerwa"
         },
         "for_duration": "na %{duration}",
         "active": "🟢",
