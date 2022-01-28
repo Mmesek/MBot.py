@@ -574,6 +574,8 @@ class Infraction_Event(Infraction):
                 duration = None
                 if type is InfractionTypes.Timeout:
                     duration = data.communication_disabled_until - datetime.now(tz=timezone.utc)
+                    if duration.total_seconds() < 0:
+                        return False, False
                 u.add_infraction(data.guild_id, moderator, type, reason, duration)
                 s.commit()
             return reason, moderator
@@ -594,7 +596,7 @@ class Guild_Ban_Remove(Infraction_Event):
 
 class Timeout_Event(Infraction_Event):
     async def log(self, data: Guild_Member_Update):
-        if data.communication_disabled_until:
+        if data.communication_disabled_until and data.communication_disabled_until > datetime.now(timezone.utc):
             reason, moderator = await self.get_ban_data(data, InfractionTypes.Timeout, 24)
             await super().log(data, type="timed out", reason=reason, by_user=moderator)
 
