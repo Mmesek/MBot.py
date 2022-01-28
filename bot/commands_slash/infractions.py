@@ -550,7 +550,7 @@ class Infraction_Event(Infraction):
             string += f" until <t:{int(data.communication_disabled_until.timestamp())}>"
         await self._log(string)
 
-    async def get_ban_data(self, data: Union[Guild_Ban_Add, Guild_Ban_Remove], type: InfractionTypes, audit_type: str) -> Tuple[bool, bool]:
+    async def get_ban_data(self, data: Union[Guild_Ban_Add, Guild_Ban_Remove, Guild_Member_Update], type: InfractionTypes, audit_type: str) -> Tuple[bool, bool]:
         import asyncio
         await asyncio.sleep(3)
         audit = await self.bot.get_guild_audit_log(data.guild_id, action_type=audit_type)
@@ -571,7 +571,10 @@ class Infraction_Event(Infraction):
         if r is None:
             if reason and not "Massbanned by" in reason:
                 u = models.User.fetch_or_add(s, id=data.user.id)
-                u.add_infraction(data.guild_id, moderator, type, reason)
+                duration = None
+                if type is InfractionTypes.Timeout:
+                    duration = data.communication_disabled_until - datetime.now(tz=timezone.utc)
+                u.add_infraction(data.guild_id, moderator, type, reason, duration)
                 s.commit()
             return reason, moderator
         return False, False
@@ -589,11 +592,15 @@ class Guild_Ban_Remove(Infraction_Event):
         if reason is not False:
             await super().log(data, type="unbanned", reason=reason, by_user=moderator)
 
-class Guild_Member_Update(Infraction_Event):
+class Timeout_Event(Infraction_Event):
     async def log(self, data: Guild_Member_Update):
         if data.communication_disabled_until:
             reason, moderator = await self.get_ban_data(data, InfractionTypes.Timeout, 24)
             await super().log(data, type="timed out", reason=reason, by_user=moderator)
+
+@onDispatch
+async def guild_member_update(self: Bot, data: Guild_Member_Update):
+    await self.cache[data.guild_id].logging["timeout_event"](data)
 
 class Auto_Mod(Infraction):
     pass
