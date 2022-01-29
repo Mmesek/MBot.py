@@ -439,7 +439,7 @@ async def report(ctx: Context, msg: str = None):
     start = time.time()
     #for moderator in filter(lambda x: ctx.data.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
     for moderator in filter(lambda x: ctx.cache.cachedRoles(ctx.cache.members[x].roles).can_use(Groups.MODERATOR), ctx.cache.members):
-        if ctx.cache.members[moderator].user.bot or (ctx.cache.moderators[moderator] and ctx.cache.moderators[moderator].status not in ["online", "idle"]):
+        if ctx.cache.members[moderator].user.bot or (ctx.cache.moderators.get(moderator, None) and ctx.cache.moderators[moderator].status not in ["online", "idle"]):
             continue
 
         await ctx.cache.logging["report"].log_dm(moderator, embeds, components)
