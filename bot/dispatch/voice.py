@@ -44,9 +44,9 @@ async def _handle_voice_activity(self: Bot, data: Voice_State):
                 if channel != data.channel_id:  #Moved to another channel    
                     moved = True
                     await _user_left_voice_channel(self, data, channel, track_voice)
-                    if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
-                        await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
-                        self.cache[data.guild_id].dynamic_channels['channels'].remove(channel)
+                    #if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
+                    #    await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
+                    #    self.cache[data.guild_id].dynamic_channels['channels'].remove(channel)
                 else:  #Channel is same as before    
                     if track_voice:
                         if data.self_deaf or data.self_mute:  #User is now muted
@@ -97,11 +97,11 @@ async def _handle_voice_activity(self: Bot, data: Voice_State):
 
                 await _user_left_voice_channel(self, data, channel, track_voice)
 
-                if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
-                    await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
-                    self.cache[data.guild_id].dynamic_channels['channels'].remove(channel)
-                    v.pop(channel)
-                    return
+                #if channel in self.cache[data.guild_id].dynamic_channels['channels'] and v[channel] == {}:
+                #    await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
+                #    self.cache[data.guild_id].dynamic_channels['channels'].remove(channel)
+                #    v.pop(channel)
+                #    return
 
 
 @onDispatch
@@ -115,8 +115,8 @@ async def voice_state_update(ctx: Bot, state: Voice_State):
             state.channel_id = -1
         else:
             state.channel_id = 0
-    if state.channel_id in ctx.cache[state.guild_id].dynamic_channels:
-        state = await _handle_dynamic_channel(ctx, state)
+    #if state.channel_id in ctx.cache[state.guild_id].dynamic_channels:
+    #    state = await _handle_dynamic_channel(ctx, state)
     if ctx.cache[state.guild_id].voice_link:
         r = ctx.cache[state.guild_id].voice_link
         if state.channel_id and r not in state.member.roles:
