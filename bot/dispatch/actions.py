@@ -209,6 +209,7 @@ async def check_timezone(self: Bot, data: Message):
     daytime = match.group("Daytime")
 
 
+SPOILER_PATTERN = re.compile(r"\|\|.*?\|\|")
 @onDispatch(event="message_create")
 async def delete_non_spoilers(self: Bot, data: Message):
     if (
@@ -216,13 +217,11 @@ async def delete_non_spoilers(self: Bot, data: Message):
         and "delete" in self.cache[data.guild_id].channels.get(data.channel_id, Channel()).topic
         and (
             not all(attachment.filename.startswith("SPOILER") for attachment in data.attachments)
-            and (
-                (data.content and not data.content.startswith("||") and not data.content.endswith("||"))
-                or not data.content
-            )
+            or SPOILER_PATTERN.sub("", data.content)
         )
     ):
         await data.delete(reason="Message is not surrounded with spoilers")
+        return True
 
 
 @onDispatch(event="message_delete", priority=1)
