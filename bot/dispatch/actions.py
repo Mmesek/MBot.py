@@ -215,9 +215,11 @@ async def delete_non_spoilers(self: Bot, data: Message):
         "spoiler" in self.cache[data.guild_id].channels.get(data.channel_id, Channel()).name
         and "delete" in self.cache[data.guild_id].channels.get(data.channel_id, Channel()).topic
         and (
-            not data.content
-            and not all(attachment.filename.startswith("SPOILER") for attachment in data.attachments)
-            or (data.content and not data.content.startswith("||") and not data.content.endswith("||"))
+            not all(attachment.filename.startswith("SPOILER") for attachment in data.attachments)
+            and (
+                (data.content and not data.content.startswith("||") and not data.content.endswith("||"))
+                or not data.content
+            )
         )
     ):
         await data.delete(reason="Message is not surrounded with spoilers")
