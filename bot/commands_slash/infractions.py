@@ -425,7 +425,11 @@ async def report(ctx: Context, msg: str = None):
     _msg = await ctx.reply("I'm on my way to notify moderators!")
 
     link = Discord_Paths.MessageLink.link.format(guild_id=ctx.guild_id, channel_id=ctx.channel_id, message_id=ctx.data.id)
-    embeds = [Embed().setTitle(f"Report made by {ctx.data.author.username}").setDescription(msg).setColor("#C29D60").setAuthor(str(ctx.data.author), icon_url=ctx.data.author.get_avatar()).setUrl(link)]
+    embeds = []
+    e = Embed().setTitle(f"Report made by {ctx.data.author.username}").setColor("#C29D60").setAuthor(str(ctx.data.author), icon_url=ctx.data.author.get_avatar()).setUrl(link)
+    if msg:
+        e.setDescription(msg)
+    embeds.append(e)
     if ctx.data.referenced_message:
         ref = ctx.data.referenced_message
         ref_url = Discord_Paths.MessageLink.link.format(guild_id=ref.guild_id, channel_id=ref.channel_id, message_id=ref.id)
@@ -438,7 +442,7 @@ async def report(ctx: Context, msg: str = None):
     import time
     start = time.time()
     #for moderator in filter(lambda x: ctx.data.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
-    for moderator in filter(lambda x: ctx.cache.cachedRoles(ctx.cache.members[x].roles).can_use(Groups.MODERATOR), ctx.cache.members):
+    for moderator in list(filter(lambda x: ctx.cache.cachedRoles(ctx.cache.members[x].roles).can_use(Groups.MODERATOR), ctx.cache.members)):
         if ctx.cache.members[moderator].user.bot or (ctx.cache.moderators.get(moderator, None) and ctx.cache.moderators[moderator].status not in ["online", "idle"]):
             continue
 
@@ -447,7 +451,7 @@ async def report(ctx: Context, msg: str = None):
 
     end = time.time()
     if reported_to:
-        await _msg.edit(f"Notified {reported_to} Moderator(s) in {end-start:.2}s!")
+        await _msg.edit(f"Notified {reported_to} Moderator{'s' if reported_to > 1 else ''} in {end-start:.2}s!")
         await ctx.data.react(ctx.bot.emoji.get("success"))
     else:
         await _msg.edit(f"Couldn't find any moderator online, falling back to regular ping")
