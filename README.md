@@ -24,13 +24,15 @@ Features:
 - [Steam](bot/slash/steam.py) calculator
 - [Graphing](bot/slash/graphs.py) (things like member join over time histograph)
 - Auto dice roll in [RPG](bot/dispatch/actions.py) channels
+- [Dynamic](bot/dispatch/dynamic.py) Voice Channel generation
 - Miscellaneous commands for [random](bot/slash/rand.py) rolls (Dice roll, coinflip etc)
 - Various [converters](bot/slash/converters.py) (Like Morse Transaltor, Making text upsidedown or Currency Converter)
 - [Search](bot/slash/search.py)ing other APIs (Like Steam, UrbanDict or Word Definitions)
 - [Story](bot/slash/story.py) conversation executor (Reads json or yaml file with story flow and responds to user accordingly)
 
 Minigames:
-- [Hangman](bot/slash/random.py) game
+- [Hangman](bot/slash/rand.py) game
+- [Wordle](bot/slash/rand.py)
 - [Halloween](bot/events/Halloween)
 - Reaction [Hunt](bot/events/hunts.py) events
 - [Christmas](bot/events/Christmas)
