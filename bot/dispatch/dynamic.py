@@ -2,7 +2,7 @@ from datetime import timedelta
 from MFramework import onDispatch, Bot, Voice_State, Channel, Channel_Types, log
 
 
-DYNAMIC_NAME = "generate"
+DYNAMIC_NAME = "create"
 COOLDOWN_NAME = "dynamic_channel"
 COOLDOWN_DELTA = timedelta(minutes=15)
 
