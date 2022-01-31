@@ -397,7 +397,7 @@ async def level():
     pass
 
 @register(group=Groups.ADMIN, main=level, private_response=True)
-async def create(ctx: Context, role: Role, exp: float = 0) -> str:
+async def create(ctx: Context, role: Role, exp: int = 0) -> str:
     #, req_voice: int= 0, type: RoleTypes = RoleTypes.AND, stacked: bool=False) -> str:
     '''Create/Update level role
 
