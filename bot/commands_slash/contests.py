@@ -32,8 +32,8 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
         await ctx.reply(f"Most similiar Country: {_country[0].name}")
         await asyncio.sleep(5)
     session = ctx.db.sql.session()
-    if Contest_Entries.filter(session, id=ctx.user_id).all():
-        return "You've already sent your entry!"
+    #if Contest_Entries.filter(session, id=ctx.user_id).all():
+    #    return "You've already sent your entry!"
     if text and len(text.split(" ")) > 500:
         return "Sadly your entry is too long \=("
     if not text:
@@ -49,14 +49,18 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
             return "Sadly you didn't respond in time! Use the command again!"
         await msg.delete()
         text = msg.content
-    if attachment and not (attachment.endswith(".png") or attachment.endswith(".jpg") or attachment.endswith(".jpeg")):
+    if attachment and not attachment.startswith("http") and not (attachment.endswith(".png") or attachment.endswith(".jpg") or attachment.endswith(".jpeg")):
         return "Your URL should point directly to an image, not an album!"
-    if attachment2 and not (attachment2.endswith(".png") or attachment2.endswith(".jpg") or attachment2.endswith(".jpeg")):
+    if attachment2 and not attachment2.startswith("http") and not (attachment2.endswith(".png") or attachment2.endswith(".jpg") or attachment2.endswith(".jpeg")):
         return "Your URL should point directly to an image, not an album!"
     embeds = [Embed().setDescription(text).setImage(attachment).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar()).setColor("#060606")]
     if attachment2:
         embeds.append(Embed().setImage(attachment2).setColor("#ed1c24"))
-    msg = await ctx.bot.create_message(934134541487050762, embeds=embeds)
-    session.add(Contest_Entries(id=ctx.user_id, msg=msg.id, cc=_country[0].name))
-    session.commit()
+    entry = Contest_Entries.filter(session, id=ctx.user_id).first()
+    if entry:
+        await ctx.bot.edit_message(934134541487050762, entry.msg, embeds=embeds)
+    else:
+        msg = await ctx.bot.create_message(934134541487050762, embeds=embeds)
+        session.add(Contest_Entries(id=ctx.user_id, msg=msg.id, cc=_country[0].name))
+        session.commit()
     return "Entry Confirmed!"
