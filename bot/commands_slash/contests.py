@@ -17,7 +17,7 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
     country:
         Country where you live
     text:
-        Contest Entry (Up to 500 words) Leave empty, you can fill it in next message
+        Contest Entry (Up to 300 words) Leave empty, you can fill it in next message
     attachment:
         URL to a picture
     attachment_2:
@@ -34,15 +34,15 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
     session = ctx.db.sql.session()
     if Contest_Entries.filter(session, id=ctx.user_id).all():
         return "You've already sent your entry!"
-    if text and len(text.split(" ")) > 500:
+    if text and len(text.split(" ")) > 300:
         return "Sadly your entry is too long \=("
     if not text:
-        await ctx.reply("Send your entry here (Up to 500 words)")
+        await ctx.reply("Send your entry here (Up to 300 words)")
         try:
             msg = await ctx.bot.wait_for("message_create",
                             check = lambda x: 
                                 x.channel_id == ctx.channel_id and 
-                                x.content and len(x.content.split(" ")) <= 500 and
+                                x.content and len(x.content.split(" ")) <= 300 and
                                 x.author.id == ctx.user_id,
                             timeout = 600)
         except:
