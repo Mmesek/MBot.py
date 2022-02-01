@@ -147,7 +147,7 @@ class Direct_Message(MessageLog):
                 linked.setTitle("Referenced Message")
                 embeds.append(linked)
         try:
-            try:
+            if self.bot.cache[self.guild_id].dm_replies:
                 from MFramework.commands.components import Option, Row
                 dm_components = [
                     Row(
@@ -158,7 +158,7 @@ class Direct_Message(MessageLog):
                         )
                     )
                 ]
-            except:
+            else:
                 dm_components = None
             await self._log(content=content+f' <@!{msg.author.id}>', embeds=embeds, username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id, components=dm_components)
             await msg.react(self.bot.emoji['success'])
