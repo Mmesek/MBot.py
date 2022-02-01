@@ -44,7 +44,7 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
                                 x.channel_id == ctx.channel_id and 
                                 x.content and len(x.content.split(" ")) <= 500 and
                                 x.author.id == ctx.user_id,
-                            timeout = 3)
+                            timeout = 600)
         except:
             return "Sadly you didn't respond in time! Use the command again!"
         await msg.delete()
