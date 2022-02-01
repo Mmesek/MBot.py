@@ -147,16 +147,19 @@ class Direct_Message(MessageLog):
                 linked.setTitle("Referenced Message")
                 embeds.append(linked)
         try:
-            from MFramework.commands.components import Option, Row
-            dm_components = [
-                Row(
-                    CannedResponses(
-                        *[Option(label=k, value=k, description=v[:100]) for k, v in self.bot.cache[self.guild_id].dm_replies.items()][:25],
-                        custom_id=msg.channel_id,
-                        placeholder="Send Canned Response"
+            try:
+                from MFramework.commands.components import Option, Row
+                dm_components = [
+                    Row(
+                        CannedResponses(
+                            *[Option(label=k, value=k, description=v[:100]) for k, v in self.bot.cache[self.guild_id].dm_replies.items()][:25],
+                            custom_id=msg.channel_id,
+                            placeholder="Send Canned Response"
+                        )
                     )
-                )
-            ]
+                ]
+            except:
+                dm_components = None
             await self._log(content=content+f' <@!{msg.author.id}>', embeds=embeds, username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id, components=dm_components)
             await msg.react(self.bot.emoji['success'])
         except:
