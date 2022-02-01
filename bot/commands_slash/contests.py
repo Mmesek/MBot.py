@@ -58,9 +58,12 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
         embeds.append(Embed().setImage(attachment2).setColor("#ed1c24"))
     entry = Contest_Entries.filter(session, id=ctx.user_id).first()
     if entry:
-        await ctx.bot.edit_message(934134541487050762, entry.msg, embeds=embeds)
-    else:
-        msg = await ctx.bot.create_message(934134541487050762, embeds=embeds)
-        session.add(Contest_Entries(id=ctx.user_id, msg=msg.id, cc=_country[0].name))
-        session.commit()
+        try:
+            await ctx.bot.edit_message(934134541487050762, entry.msg, embeds=embeds)
+            return "Entry Edited!"
+        except:
+            pass
+    msg = await ctx.bot.create_message(934134541487050762, embeds=embeds)
+    session.add(Contest_Entries(id=ctx.user_id, msg=msg.id, cc=_country[0].name))
+    session.commit()
     return "Entry Confirmed!"
