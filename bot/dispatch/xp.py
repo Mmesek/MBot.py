@@ -38,9 +38,9 @@ async def exp(self: Bot, data: Message):
     role_boosts = 0
     for role in data.member.roles:
         if role in self.cache[data.guild_id].role_rates:
-            role_boosts += self.cache[data.guild_id].role_rates.get(role, 0)
+            role_boosts += self.cache[data.guild_id].role_rates.get(role, 0) or 0
 
-    rate = 1 * (self.cache[data.guild_id].exp_rates.get(data.channel_id, 1.0) + role_boosts)
+    rate = 1 * ((self.cache[data.guild_id].exp_rates.get(data.channel_id, 1.0) or 0) + role_boosts)
 
     from MFramework.database import alchemy as db
     boost = user.get_setting(db.types.Setting.Exp) or 1.0
