@@ -19,9 +19,9 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
     text:
         Contest Entry (Up to 500 words) Leave empty, you can fill it in next message
     attachment:
-        URL to a picture
+        DIRECT URL to a picture. Must end with either .png or .gif
     attachment_2:
-        URL to a picture 2
+        DIRECT URL to a picture 2. Must end with either .png or .gif
     '''
     import pycountry, asyncio
     try:
@@ -49,6 +49,10 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
             return "Sadly you didn't respond in time! Use the command again!"
         await msg.delete()
         text = msg.content
+    if attachment and not (attachment.endswith(".png") or attachment.endswith(".jpg") or attachment.endswith(".jpeg")):
+        return "Your URL should point directly to an image, not an album!"
+    if attachment2 and not (attachment2.endswith(".png") or attachment2.endswith(".jpg") or attachment2.endswith(".jpeg")):
+        return "Your URL should point directly to an image, not an album!"
     embeds = [Embed().setDescription(text).setImage(attachment).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar()).setColor("#060606")]
     if attachment2:
         embeds.append(Embed().setImage(attachment2).setColor("#ed1c24"))
