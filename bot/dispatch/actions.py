@@ -212,7 +212,9 @@ async def check_timezone(self: Bot, data: Message):
 SPOILER_PATTERN = re.compile(r"\|\|.*?\|\|")
 @onDispatch(event="message_create")
 async def delete_non_spoilers(self: Bot, data: Message):
-    if self.cache[data.guild_id].cachedRoles(data.member.roles).can_use(Groups.ADMIN):
+    if (self.cache[data.guild_id].cachedRoles(data.member.roles).can_use(Groups.ADMIN)
+        or self.cache[data.guild_id].guild.owner_id == data.author.id
+        ):
         return
     if (
         "spoiler" in self.cache[data.guild_id].channels.get(data.channel_id, Channel()).name
