@@ -350,11 +350,11 @@ async def review(ctx: Context, score: int, your_review: str) -> str:
         return "Make your review with up to 4 sentences"
     embed = Embed().setDescription(your_review).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar())
     if score >= 7:
-        color = "48B80F"
+        color = "#48B80F"
     elif score >= 4:
-        color = "FFB300"
+        color = "#FFB300"
     else:
-        color = "FF2929"
+        color = "#FF2929"
     embed.setColor(color)
     s.add(ReviewScores(user_id=ctx.user_id, score=score))
     s.commit()
