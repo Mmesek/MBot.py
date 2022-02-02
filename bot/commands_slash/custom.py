@@ -367,4 +367,5 @@ async def reviews(ctx: Context):
     Shows average Review score
     '''
     s = ctx.db.sql.session()
-    return s.query(sa.func.avg(ReviewScores.score)).first()
+    r = s.query(sa.func.avg(ReviewScores.score)).first()
+    return f"{r[0]:.2f}"
