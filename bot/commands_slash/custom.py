@@ -322,3 +322,49 @@ async def serverlist(ctx: Context) -> Embed:
         e.addFields(playlist, "\n".join(_servers))
     e.setFooter(f"Full or Private Servers: {full_servers}/{len(servers)}")
     return e
+
+import sqlalchemy as sa
+from mlib.database import Base
+
+class ReviewScores(Base):
+    user_id = sa.Column(sa.BigInteger, primary_key=True)
+    score = sa.Column(sa.Integer)
+
+@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
+async def review(ctx: Context, score: int, your_review: str) -> str:
+    '''
+    Leave a Review!
+    Params
+    ------
+    score:
+        Your Score. Value between 1 and 10
+    your_review:
+        3-4 sentences
+    '''
+    s = ctx.db.sql.session()
+    if s.query(ReviewScores).filter(ReviewScores.user_id == ctx.user_id).first():
+        return "You've already sent your review"
+    if score > 10 or score < 1:
+        return "Invalid score. Make sure it's between 1 and 10"
+    if len(your_review.split(".")) > 4 or len(your_review) > 200:
+        return "Make your review with up to 4 sentences"
+    embed = Embed().setDescription(your_review).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar())
+    if score >= 7:
+        color = "48B80F"
+    elif score >= 4:
+        color = "FFB300"
+    else:
+        color = "FF2929"
+    embed.setColor(color)
+    s.add(ReviewScores(user_id=ctx.user_id, score=score))
+    s.commit()
+    await ctx.bot.create_message(938473018500464700, embeds=[embed])
+    return "Thank you for your review!"
+
+@register(group=Groups.MODERATOR, guild=289739584546275339)
+async def reviews(ctx: Context):
+    '''
+    Shows average Review score
+    '''
+    s = ctx.db.sql.session()
+    return s.query(sa.func.avg(ReviewScores.score)).first()
