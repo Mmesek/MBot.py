@@ -17,12 +17,15 @@ async def cleanup_dynamic_channel(self: Bot, data: Voice_State):
     for user, channel in self.cache[data.guild_id].dynamic_channels.items():
         if channel not in v or not v[channel] or len(v[channel]) == 0:
             log.debug("Dynamic Channel %s is empty - Cleaning up", channel)
-            await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
+            try:
+                await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
+            except:
+                pass
             removed.add(user)
-            v.pop(channel)
+            v.pop(channel, None)
 
     for user in removed:
-        self.cache[data.guild_id].dynamic_channels.pop(user)
+        self.cache[data.guild_id].dynamic_channels.pop(user, None)
 
 
 @onDispatch(event='voice_state_update', priority=15)
