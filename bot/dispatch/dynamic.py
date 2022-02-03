@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 from MFramework import onDispatch, Bot, Voice_State, Channel, Channel_Types, log
 
@@ -11,9 +12,10 @@ async def cleanup_dynamic_channel(self: Bot, data: Voice_State):
     '''Deletes Dynamic channel if it's empty'''
     v = self.cache[data.guild_id].voice
     removed = set()
+    await asyncio.sleep(3)
 
     for user, channel in self.cache[data.guild_id].dynamic_channels.items():
-        if channel not in v or not v[channel]:
+        if channel not in v or not v[channel] or len(v[channel]) == 0:
             log.debug("Dynamic Channel %s is empty - Cleaning up", channel)
             await self.delete_close_channel(channel, "Deleting Empty Generated Channel")
             removed.add(user)
