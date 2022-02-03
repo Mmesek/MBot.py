@@ -172,7 +172,7 @@ async def when(ctx: Context) -> str:
             return "Hey, that's rude! <:pepe_mad:676181484238798868>"
 
     from random import SystemRandom as random
-    from datetime import datetime
+    from datetime import datetime, timezone
     if ctx.is_message:
         msg = await ctx.reply("New command is `/when`")
         import asyncio
@@ -181,9 +181,9 @@ async def when(ctx: Context) -> str:
         await msg.delete()
         return
 
-    date = datetime(2022, 2, 4, 1)
+    date = datetime(2022, 2, 4, tzinfo=timezone.utc)
     timestamp = int(date.timestamp())
-    delta = date - datetime.now()
+    delta = date - datetime.now(tz=timezone.utc)
     if delta.total_seconds() < 0:
         return "Released!"
 
