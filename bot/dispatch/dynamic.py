@@ -51,7 +51,7 @@ async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
     gc = self.cache[data.guild_id].dynamic_channels
     if gc:
         c = [int(self.cache[data.guild_id].channels.get(gc[u], Channel()).name.split(" ", 1)[0].strip("#")) for u in gc]
-        count = sorted(set(range(1, c[-1]+2)).difference(c))[0]
+        count = (sorted(set(range(1, c[-1]+2)).difference(c)) or [1])[0]
     else:
         count = 1
 
