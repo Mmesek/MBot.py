@@ -60,7 +60,7 @@ async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
     self.cache[data.guild_id].cooldowns.store(data.guild_id, data.user_id, COOLDOWN_NAME, expire=COOLDOWN_DELTA)
     new_channel = await self.create_guild_channel(
         guild_id=data.guild_id, 
-        name=f'#{count} {channel.name.split(":",1)[-1]}',
+        name=f'#{count} {channel.name.split(":",1)[-1] if ":" in channel.name else name}',
         type=Channel_Types.GUILD_VOICE.value, 
         bitrate=channel.bitrate, 
         user_limit=channel.user_limit, 
