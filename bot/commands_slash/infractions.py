@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import sqlalchemy as sa
 from mlib.database import Base, ID, Timestamp
 
-from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove, Discord_Paths, Guild_Member_Update
+from MFramework import register, Groups, Context, User, Embed, shortcut, Guild_Member, Snowflake, Message, Attachment, Guild_Ban_Add, Guild_Ban_Remove, Discord_Paths, Guild_Member_Update, Message_Reference
 from MFramework.commands.components import LinkButton, Row
 from MFramework.utils.log import Log
 from MFramework.database.alchemy.types import Permissions
@@ -455,7 +455,7 @@ async def report(ctx: Context, msg: str = None):
         await ctx.data.react(ctx.bot.emoji.get("success"))
     else:
         await _msg.edit(f"Couldn't find any moderator online, falling back to regular ping")
-        await ctx.bot.create_message(f"<@{496201383524171776}>, There is a report waiting!")
+        await ctx.bot.create_message(ctx.channel_id, f"<@{496201383524171776}>, There is a report waiting!", message_reference=ctx.data.message_reference or Message_Reference(message_id=ctx.data.id, channel_id=ctx.data.channel_id, guild_id=ctx.data.guild_id))
 
 class Report(Log):
     username = "User Report Log"
