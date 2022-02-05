@@ -42,3 +42,23 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
 @onDispatch
 async def guild_member_remove(self: Bot, data: Guild_Member_Remove):
     await self.db.influx.influxMember(data.guild_id, data.user.id, False)
+
+@onDispatch
+async def guild_member_add(self: Bot, data: Guild_Member_Add):
+    if data.guild_id != 289739584546275339:
+        return
+    channel = await self.create_dm(data.user.id)
+    welcome_message = '''
+Hey! Welcome to Dying Light server! I'm a **community**-made bot that forwards messages you send to me directly to __Server Moderation__ Team! 
+
+Feel free to message me whenever you have an issue, suggestion or really anything related to Discord **server**. 
+Please do not DM moderation directly for these matters.
+
+Note however, that currently __no member of server moderation or administration works for Techland__. 
+Only people with `_Techland` in their names *and* role Techland work there.
+
+However, If you need to reach Techland, either contact Community Manager <@210060521238560768> directly; send them an email to `support@techland.pl` or use their website https://support.techland.pl/
+
+Under any circumstances, do **not** DM or @ping ANY other Techland employees than <@210060521238560768> on server.
+'''
+    await self.create_message(channel.id, welcome_message)
