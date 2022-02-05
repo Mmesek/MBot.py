@@ -13,8 +13,9 @@ async def cleanup_dynamic_channel(self: Bot, data: Voice_State):
     v = self.cache[data.guild_id].voice
     removed = set()
     await asyncio.sleep(3)
+    c = self.cache[data.guild_id].dynamic_channels.copy()
 
-    for user, channel in self.cache[data.guild_id].dynamic_channels.items():
+    for user, channel in c.items():
         if channel not in v or not v[channel] or len(v[channel]) == 0:
             log.debug("Dynamic Channel %s is empty - Cleaning up", channel)
             try:
