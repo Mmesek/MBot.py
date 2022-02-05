@@ -43,8 +43,8 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
 async def guild_member_remove(self: Bot, data: Guild_Member_Remove):
     await self.db.influx.influxMember(data.guild_id, data.user.id, False)
 
-@onDispatch
-async def guild_member_add(self: Bot, data: Guild_Member_Add):
+@onDispatch(event='guild_member_add')
+async def initial_welcome_message(self: Bot, data: Guild_Member_Add):
     if data.guild_id != 289739584546275339:
         return
     welcome_message = '''
