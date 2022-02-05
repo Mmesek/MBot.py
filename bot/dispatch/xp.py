@@ -30,11 +30,6 @@ async def exp(self: Bot, data: Message):
     if last:
         return
 
-    session = self.db.sql.session()
-    from ..database import models, types, log
-    user = models.User.fetch_or_add(session, id=data.author.id)
-    exp = User_Experience.fetch_or_add(session, user_id=data.author.id, server_id=data.guild_id)
-
     role_boosts = 0
     for role in data.member.roles:
         if role in self.cache[data.guild_id].role_rates:
@@ -43,9 +38,11 @@ async def exp(self: Bot, data: Message):
     rate = 1 * ((self.cache[data.guild_id].exp_rates.get(data.channel_id, 1.0) or 0) + role_boosts)
 
     from MFramework.database import alchemy as db
-    boost = user.get_setting(db.types.Setting.Exp) or 1.0
-    exp.value += rate * boost
-    session.commit()
+
+    #user = models.User.fetch_or_add(session, id=data.author.id)
+    #boost = user.get_setting(db.types.Setting.Exp) or 1.0
+    # FIXME: Reenable user boost on SQL side?
+    exp = await self.db.supabase.increase_exp(data.guild_id, data.author.id, rate)# * boost)
     self.cache[data.guild_id].cooldowns.store(data.guild_id, data.author.id, "ChatExp")
 
     previous_level = None
@@ -53,10 +50,10 @@ async def exp(self: Bot, data: Message):
 
     for role, req in self.cache[data.guild_id].level_roles:
         if role in data.member.roles:
-            if exp.value < req:
+            if exp < req:
                 await self.remove_guild_member_role(data.guild_id, data.author.id, role, "Level Role")
             previous_level = role
-        if exp.value >= req:
+        if exp >= req:
             level_up = role
 
     if level_up == previous_level:
@@ -67,7 +64,10 @@ async def exp(self: Bot, data: Message):
     if previous_level:
         await self.remove_guild_member_role(data.guild_id, data.author.id, previous_level, "Level Role")
 
-    log.Statistic.increment(session, data.guild_id, data.author.id, types.Statistic.Chat)
+    from ..database import types, log
+    if self.cache[data.guild_id].is_tracking(types.Flags.Chat):
+        session = self.db.sql.session()
+        log.Statistic.increment(session, data.guild_id, data.author.id, types.Statistic.Chat)
     if self.cache[data.guild_id].is_tracking(db.types.Flags.Activity):
         self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(' '))))
 
@@ -89,13 +89,8 @@ async def add(ctx: Context, user: User, xp: float) -> str:
     xp:
         XP to add
     '''
-    from ..database import models
-    session = ctx.db.sql.session()
-    _user = models.User.fetch_or_add(session, id=user.id)
-    exp = User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
-    exp.value += xp
-    session.commit()
-    return f"Added {xp} XP to user {user.username}"
+    new = await ctx.db.supabase.increase_exp(ctx.guild_id, user.id, xp)
+    return f"Added {xp} XP for a total of {new} to user {user.username}"
 
 @register(group=Groups.ADMIN, main=xp)
 async def remove(ctx: Context, user: User, xp: float) -> str:
