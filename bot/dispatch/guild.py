@@ -48,17 +48,17 @@ async def initial_welcome_message(self: Bot, data: Guild_Member_Add):
     if data.guild_id != 289739584546275339:
         return
     welcome_message = '''
-Hey! Welcome to *the official Dying Light server*! I'm a **community**-made bot that forwards messages you send to me directly to __Server Moderation__ Team! 
+Hey! Welcome to *the official Dying Light Discord server*! I'm a **community**-made bot that forwards **ANY** message you send to me directly to the __Server Moderation__ Team! 
 
 Feel free to message me whenever you have an issue, suggestion or really anything related to the Discord **server**. 
-Please do not DM moderation directly for these matters.
+Please, do not DM moderation directly for these matters.
 
-Note however, that currently __no member of server moderation or administration works for Techland__. 
-Only people with `_Techland` in their names *and* role Techland work there.
+Note however, that currently __no member of the server moderation or administration works for Techland__. 
+Only people with `_Techland` in their names *and* with the Techland role work for Techland.
 
-However, If you need to reach Techland, either contact the Community Manager <@210060521238560768> directly; send them an email to `support@techland.pl` or use their website https://support.techland.pl/
+However, If you need to reach Techland, you can either directly contact the Community Manager, <@210060521238560768>, send them an email to `support@techland.pl` or use their website: https://support.techland.pl/
 
-Under any circumstances, do **not** DM or @ping ANY other Techland employees than <@210060521238560768> on server.
+Under any circumstances, do **not** DM or @ping ANY other Techland employee other than <@210060521238560768> on the server.
 '''
     try:
         channel = await self.create_dm(data.user.id)
