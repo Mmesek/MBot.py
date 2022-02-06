@@ -150,7 +150,7 @@ async def progress(ctx: Context) -> str:
     if next == 0:
         return "You have gained highest rank! Congratulations."
     required = next - last
-    remaining = next - exp.value
     gained = exp.value - last
-    progress = f"[{'#' * (gained // 2):-<50}] {gained / required:.1f}%".replace('.0', '')
+    percent = (gained / required) * 100
+    progress = f"[{'#' * int(percent / 2):-<50}] {percent:.1f}%".replace('.0', '')
     return progress
