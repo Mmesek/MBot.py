@@ -144,7 +144,7 @@ async def progress(ctx: Context) -> str:
     for x, (role, req) in enumerate(list(ctx.cache.level_roles)):
         if exp.value < req:
             if x > 0:
-                last = list(ctx.cache.level_roles)[x-1]
+                last = list(ctx.cache.level_roles)[x-1][1]
             next = req
             break
     if next == 0:
