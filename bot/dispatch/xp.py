@@ -128,3 +128,29 @@ async def rate(ctx: Context, user: User, rate: float) -> str:
     _user.add_setting(types.Setting.Exp, rate)
     session.commit()
     return f"New rate for {user.username}: {rate}"
+
+@register(group=Groups.GLOBAL, main=xp)
+async def progress(ctx: Context) -> str:
+    '''
+    Shows XP progress to next rank
+    '''
+    from ..database import models
+    session = ctx.db.sql.session()
+    _user = models.User.fetch_or_add(session, id=ctx.user_id)
+    exp = User_Experience.fetch_or_add(session, user_id=ctx.user_id, server_id=ctx.guild_id)
+    exp.value
+    last = 0
+    next = 0
+    for x, (role, req) in enumerate(list(ctx.cache.level_roles)):
+        if exp.value < req:
+            if x > 0:
+                last = list(ctx.cache.level_roles)[x-1]
+            next = req
+            break
+    if next == 0:
+        return "You have gained highest rank! Congratulations."
+    required = next - last
+    remaining = next - exp.value
+    gained = exp.value - last
+    progress = f"[{'#' * (gained // 2):-<50}] {gained / required:.1f}%".replace('.0', '')
+    return progress
