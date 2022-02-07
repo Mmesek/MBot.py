@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from enum import Enum
 
 from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author, Discord_Paths, Channel_Types
 from MFramework.commands.decorators import Chance
@@ -205,21 +206,36 @@ async def when(ctx: Context) -> str:
     }
     return random().choices(list(responses.values()), list(responses.keys()))[0]
 
-@register(group=Groups.GLOBAL, guild=289739584546275339, interaction=False)
-async def ayo(ctx: Context, captions: str="Farewell, we will tell people you went to Harran for Olympics"):
+class Characters(Enum):
+    Ayo = "Hakon_Betrayal"
+    Hakon = "HakonStory"
+
+from MFramework.commands.cooldowns import cooldown, CacheCooldown
+
+@register(group=Groups.GLOBAL, guild=289739584546275339)#, interaction=False)
+@cooldown(minutes=5, logic=CacheCooldown)
+async def truth(ctx: Context, character: Characters, captions: str=None):
     '''
-    Shows what happened with Ayo
+    Shows what happened with previous bot
     Params
     ------
+    character:
+        Who's story to show
     captions:
         text to place on image
     '''
-    if ctx.is_interaction:
+    if ctx.is_message:
         await ctx.deferred(True)
-        return "This command works only as regular `!` one as long as interactions don't support attachments, try again with `!ayo`"
+        return "This command works only as `/` one, try again with `/truth`"
     await ctx.deferred()
+    chars = {
+        Characters.Ayo: "Farewell, we will tell people you went to Harran for Olympics",
+        Characters.Hakon: "Hakon, visiting Ayo so soon?",
+    }
+    if not captions:
+        captions = chars.get(character)
     from PIL import Image, ImageDraw, ImageFont
-    img = Image.open('data/Hakon_Betrayal.png')
+    img = Image.open(f'data/{character.value}.png')
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("data/Roboto-Regular.ttf", size=65)
     from textwrap import wrap
@@ -228,10 +244,10 @@ async def ayo(ctx: Context, captions: str="Farewell, we will tell people you wen
     draw.multiline_text((10,y), "\n".join(captions), fill=(255,255,255), font=font, align='center', stroke_fill=(0,0,0), stroke_width=4)
     from mlib.colors import buffered_image
     img_str = buffered_image(img)
-    await ctx.reply(file=img_str, filename="WhatReallyHappened.png")
+    await ctx.reply("Sending...")
+    await ctx.bot.create_message(ctx.channel_id, file=img_str, filename="SPOILER_WhatReallyHappened.png")
 
 from MFramework import Guild_Member
-from MFramework.commands.cooldowns import cooldown, CacheCooldown
 @register(group=Groups.OWNER, guild=289739584546275339)
 @cooldown(minutes=5, logic=CacheCooldown)
 @Chance(10, "You missed")
