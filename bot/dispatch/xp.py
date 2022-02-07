@@ -152,7 +152,7 @@ async def progress(ctx: Context) -> Embed:
     required = next - last
     gained = exp.value - last
     percent = (gained / required) * 100
-    progress = f"`[{'🔴' * int(percent / 4):🟢<25}]` {percent:.1f}%".replace('.0', '')
+    progress = f"`[{'🔴' * int(percent / 5):🟢<20}]` {percent:.1f}%".replace('.0', '')
     e = (
         Embed()
         .setDescription(progress)
