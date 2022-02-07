@@ -2,7 +2,7 @@ import sqlalchemy as sa
 
 from mlib.database import Base, TimestampUpdate
 
-from MFramework import Bot, Message, onDispatch
+from MFramework import Bot, Message, onDispatch, Embed
 from MFramework.database.alchemy.mixins import Snowflake
 
 class User_Experience(TimestampUpdate, Base):
@@ -129,8 +129,8 @@ async def rate(ctx: Context, user: User, rate: float) -> str:
     session.commit()
     return f"New rate for {user.username}: {rate}"
 
-@register(group=Groups.GLOBAL, main=xp)
-async def progress(ctx: Context) -> str:
+@register(group=Groups.GLOBAL, main=xp, private_response=True)
+async def progress(ctx: Context) -> Embed:
     '''
     Shows XP progress to next rank
     '''
@@ -152,5 +152,11 @@ async def progress(ctx: Context) -> str:
     required = next - last
     gained = exp.value - last
     percent = (gained / required) * 100
-    progress = f"[{'#' * int(percent / 2):-<50}] {percent:.1f}%".replace('.0', '')
-    return progress
+    progress = f"`[{'🔴' * int(percent / 4):🟢<25}]` {percent:.1f}%".replace('.0', '')
+    e = (
+        Embed()
+        .setDescription(progress)
+        .setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar())
+        .setColor("#8c6cff")
+    )
+    return e
