@@ -64,7 +64,7 @@ async def remove(ctx: Context, type: db.types.Snippet, name: str, *, user: User=
     return "Deleted Succesfully"
 
 @register(group=Groups.GLOBAL)
-async def stashed(ctx: Context, type: db.types.Snippet, name: str=None, search_content: bool=False) -> Embed:
+async def stashed(ctx: Context, type: db.types.Snippet, name: str=None, search_content: bool=False, detailed: bool = False, show_all: bool = True) -> Embed:
     '''
     Stashed snippet to fetch
     Params
@@ -78,22 +78,33 @@ async def stashed(ctx: Context, type: db.types.Snippet, name: str=None, search_c
     '''
     s = ctx.db.sql.session()
     r = db.Snippet.filter(s, server_id=ctx.guild_id, type=type)
+    if "," in name:
+        names = [i.strip() for i in name.split(",")]
+    elif " " in name:
+        names = [i.strip() for i in name.split(" ")]
+    else:
+        names = [name]
+    results = []
     if name and not search_content:
-        r = r.filter(db.Snippet.name == name)
+        r = r.filter(db.Snippet.name.in_(names))
     elif name:
         r = r.filter(db.Snippet.content.match(name))
     snippets = r.all()
-    embed = Embed()
-    desc = []
-    for snippet in filter(lambda x: (x.group or Groups.GLOBAL) >= ctx.permission_group, snippets):
-        if not name:
-            desc.append(f"[<t:{int(snippet.timestamp.timestamp())}:d>] {snippet.name} by <@{snippet.user_id}>")
-        else:
-            embed.addField(snippet.name, f"` Trigger`: {snippet.trigger}\n` Content`: {snippet.content}\n`   Group`: {snippet.group}\n`Cooldown`: {snippet.cooldown}\n`    Role`: {snippet.role_id}")
-    if desc:
-        embed.setDescription('\n'.join(desc))
-    embed.addField("Total", str(len(snippets)))
-    return embed
+    results.extend(snippets)
+    if detailed:
+        embed = Embed()
+        desc = []
+        for snippet in filter(lambda x: (x.group or Groups.GLOBAL) >= ctx.permission_group, snippets):
+            if not name:
+                desc.append(f"[<t:{int(snippet.timestamp.timestamp())}:d>] {snippet.name} by <@{snippet.user_id}>")
+            else:
+                embed.addField(snippet.name, f"` Trigger`: {snippet.trigger}\n` Content`: {snippet.content}\n`   Group`: {snippet.group}\n`Cooldown`: {snippet.cooldown}\n`    Role`: {snippet.role_id}")
+        if desc:
+            embed.setDescription('\n'.join(desc))
+        embed.addField("Total", str(len(snippets)))
+        return embed
+    if results:
+        return "\n> ".join([''] + [f"**{i.name}**. {i.content}" for i in results if not i.group or ctx.permission_group.can_use(i.group)])
 
 
 def rebuild_cache(ctx: Context, s: db.Session=None, type: db.Snippet = None):
