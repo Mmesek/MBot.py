@@ -442,12 +442,12 @@ async def report(ctx: Context, msg: str = None):
     import time
     start = time.time()
     #for moderator in filter(lambda x: ctx.data.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
-    for moderator in list(filter(lambda x: ctx.cache.cachedRoles(ctx.cache.members[x].roles).can_use(Groups.MODERATOR), ctx.cache.members)):
-        if ctx.cache.members[moderator].user.bot or (moderator not in ctx.cache.moderators or ctx.cache.moderators[moderator].status not in ["online", "idle"]):
-            continue
+    #for moderator in list(filter(lambda x: ctx.cache.cachedRoles(ctx.cache.members[x].roles).can_use(Groups.MODERATOR), ctx.cache.members)):
+    #    if ctx.cache.members[moderator].user.bot or (moderator not in ctx.cache.moderators or ctx.cache.moderators[moderator].status not in ["online", "idle"]):
+    #        continue
 
-        await ctx.cache.logging["report"].log_dm(moderator, embeds, components)
-        reported_to += 1
+    #    await ctx.cache.logging["report"].log_dm(moderator, embeds, components)
+    #    reported_to += 1
 
     end = time.time()
     if reported_to:
@@ -455,7 +455,7 @@ async def report(ctx: Context, msg: str = None):
         await ctx.data.react(ctx.bot.emoji.get("success"))
     else:
         await _msg.edit(f"Couldn't find any moderator online, falling back to regular ping")
-        await ctx.bot.create_message(ctx.channel_id, f"<@{496201383524171776}>, There is a report waiting!", message_reference=ctx.data.message_reference or Message_Reference(message_id=ctx.data.id, channel_id=ctx.data.channel_id, guild_id=ctx.data.guild_id))
+        await ctx.bot.create_message(ctx.channel_id, f"<@{496201383524171776}>, There is a report waiting!", message_reference=ctx.data.message_reference or Message_Reference(message_id=ctx.data.id, channel_id=ctx.data.channel_id, guild_id=ctx.data.guild_id), allowed_mentions=None)
 
 class Report(Log):
     username = "User Report Log"
