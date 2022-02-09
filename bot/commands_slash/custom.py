@@ -385,3 +385,11 @@ async def reviews(ctx: Context):
     s = ctx.db.sql.session()
     r = s.query(sa.func.avg(ReviewScores.score)).first()
     return f"{r[0]:.2f}"
+
+@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
+async def biomarker(ctx: Context) -> Embed:
+    '''
+    Shows your infection state
+    '''
+    from bot.dispatch.xp import progress
+    return await progress(ctx)
