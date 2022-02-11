@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 
 from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author, Discord_Paths, Channel_Types
@@ -387,9 +387,66 @@ async def reviews(ctx: Context):
     return f"{r[0]:.2f}"
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
-async def biomarker(ctx: Context) -> Embed:
+async def biomarker(ctx: Interaction) -> Embed:
     '''
     Shows your infection state
     '''
     from bot.dispatch.xp import progress
     return await progress(ctx)
+
+@register(group=Groups.GLOBAL, guild=289739584546275339)
+async def lfg(ctx: Context, platform: str, amount: str, when: str, progress: str, voice: bool, additional_description: str = None):
+    '''
+    Looking for a Group?
+    Params
+    ------
+    platform:
+        Platform you are looking for poeple to play on
+        Choices:
+            PC = PC
+            PlayStation 4 = Play Station 4
+            PlayStation 5 = Play Station 5
+            XBox One = XBox One
+            XBox S/X = XBox SX
+    amount:
+        How many players are you looking for?
+        Choices:
+            One = 1
+            Two = 2
+            Three = 3
+    when:
+        When do you want to play?
+        Choices:
+            Right Now = 0
+            In 5 minutes = 300
+            In an hour = 3600
+            in a day = 86400
+    progress:
+        Players with what progression you are looking for?
+        Choices:
+            Story Finished = Story Finished
+            Story not beaten = Story not beaten
+            New Game = New Game
+            Achievement Hunt = Achievement Hunt
+            Collectible Search = Searching for Collectibles
+            Chill = Chilling
+    voice:
+        Is a microphone required to play?
+    additional_description:
+        Anything else you would like to add?
+    '''
+    e = (
+        Embed()
+        .setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar())
+        .addField("Platform", platform, True)
+        .addField("Players needed", str(amount), True)
+        .addField("When?", f"<t:{int((datetime.now(tz=timezone.utc) + timedelta(seconds=int(when))).timestamp())}>", True)
+        .addField("Game Progress", progress, True)
+        .addField("Microphone", "Required" if voice else "Not necessary", True)
+        .setDescription(additional_description)
+    )
+    for channel_id in ctx.cache.voice:
+        if ctx.user_id in ctx.cache.voice[channel_id]:
+            e.addField("Voice Channel", f"<#{channel_id}>", True)
+            break
+    return e
