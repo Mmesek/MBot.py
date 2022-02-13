@@ -1,6 +1,7 @@
 from mlib.localization import check_translation, tr
 from MFramework import Context, Embed, register, Groups
 from MFramework.commands._utils import commands, command_shortcuts, commands_regex, COMPILED_REGEX, aliasList, reactions
+
 @register(group=Groups.GLOBAL, interaction=False)
 async def help(ctx: Context, command: str=None, *, language):
     '''Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage.
@@ -42,16 +43,16 @@ async def help(ctx: Context, command: str=None, *, language):
         try:
             alias = check_translation(f'commands.{cmd.name}.cmd_alias', language, list(aliasList.keys())[list(aliasList.values()).index(cmd.name)])
             if alias != '':
-                string += tr(f'commands.help.alias_message', language, alias=alias)
+                string += tr(f'commands.help.alias_message', language, alias=alias) + "\n"
         except:
             pass
     string += '\n'
     if string != '':
-        embed.addFields("Message commands", string)
+        embed.addFields("Message Commands", string)
     string = ""
     a = [i for i in allowed_commands]
     for cmd in filter(lambda x: x.interaction, allowed_commands):
-        if cmd.guild and cmd.guild != ctx.guild_id:
+        if cmd.guild:# and cmd.guild != ctx.guild_id:
             continue
         if ' ' in cmd.name or cmd.name.istitle():
             continue
@@ -60,5 +61,11 @@ async def help(ctx: Context, command: str=None, *, language):
         string += '\n'
     if string != '':
         embed.addFields("Slash Commands", string)
+    guild_commands = ""
+    for cmd in filter(lambda x: x.interaction and x.guild == ctx.guild_id and ' ' not in cmd.name and not cmd.name.istitle(), allowed_commands):
+        guild_commands += f"**/{cmd.name}**"
+        guild_commands += f" - {cmd.help.strip()}" + '\n'
+    if guild_commands:
+        embed.addFields("Server Slash Commands", guild_commands)
     embed.setColor(ctx.cache.color).setFooter(tr('commands.help.yourPerm', language, group=group))
     await ctx.reply(embeds=[embed])
