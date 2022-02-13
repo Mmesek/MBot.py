@@ -34,33 +34,6 @@ async def anagram(ctx: Context, *args, **kwargs):
     await ctx.reply(words[0])
 
 
-@register(group=Groups.GLOBAL, interaction=False)
-async def word(ctx: Context, word: str, letter_count: int) -> Embed:
-    '''Checks if provided word exists. Use * as wildcard character'''
-    dig = int(letter_count)
-    m = word.replace("*", "(.+?)")
-    import re
-    reg = re.compile(r"(?i)" + m)
-    res = []
-    words = load_words()
-    for _word in words:
-        if len(_word) == int(dig):
-            ree = reg.search(_word)
-            if ree != None:
-                res += [_word]
-    embed = Embed().setTitle("Words matching provided criteria: "+word+f" ({letter_count})")
-    field = ''
-    for word in res:
-        if len(field) + len(word) < 1024:
-            field += ' ' + word
-        else:
-            embed.addField("\u200b", field)
-            field = word
-    if field != '':
-        embed.addField('\u200b', field)
-    return embed
-
-
 @register(group=Groups.SYSTEM, interaction=False)
 async def today(ctx: Context, difference: str = None, *, language) -> Embed:
     '''Summary of what is today'''

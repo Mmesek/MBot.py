@@ -347,3 +347,31 @@ async def word(ctx: Context, search: str = None) -> Embed:
 
         embeds.append(embed)
     return embeds
+
+@register(group=Groups.GLOBAL, main=search)
+async def fuzzy_word(ctx: Context, word: str, letter_count: int = None) -> Embed:
+    '''
+    Returns list of words matching the query.
+    Params
+    ------
+    word:
+        Word to search. Use * as a wildcard character
+    letter_count:
+        Amount of letters word should have
+    '''
+    if not letter_count:
+        letter_count = len(word)
+    m = word.replace("*", "(.+?)")
+    import re
+    reg = re.compile(rf"(?i){m}")
+    res = []
+    with open('/usr/share/dict/words') as f:
+        words = [word.strip() for word in f]
+    for _word in words:
+        if len(_word) == int(letter_count):
+            ree = reg.search(_word)
+            if ree != None:
+                res += [_word]
+    embed = Embed().setTitle(f"Words matching provided criteria: {word} ({letter_count})")
+    embed.addFields(title="\u200b", text=", ".join(res))
+    return embed
