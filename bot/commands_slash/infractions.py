@@ -455,7 +455,7 @@ async def report(ctx: Context, msg: str = None):
         await ctx.data.react(ctx.bot.emoji.get("success"))
     else:
         await _msg.edit(f"Couldn't find any moderator online, falling back to regular ping")
-        await ctx.bot.create_message(ctx.channel_id, f"<@{496201383524171776}>, There is a report waiting!", message_reference=ctx.data.message_reference or Message_Reference(message_id=ctx.data.id, channel_id=ctx.data.channel_id, guild_id=ctx.data.guild_id), allowed_mentions=None)
+        await ctx.bot.create_message(ctx.channel_id, "<@&496201383524171776>, There is a report waiting!", message_reference=ctx.data.message_reference or Message_Reference(message_id=ctx.data.id, channel_id=ctx.data.channel_id, guild_id=ctx.data.guild_id), allowed_mentions=None)
 
 class Report(Log):
     username = "User Report Log"
