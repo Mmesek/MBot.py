@@ -286,3 +286,31 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
             attempts = f"```{attempts}```"
         await ctx.data.edit_followup(content=f"{attempts}\nRemaining attempts: {tries-r}")
     return f"Sadly you ran out of attempts! Correct word was: `{hidden}`"
+
+
+@register(group=Groups.GLOBAL, main=roll)
+async def quote(ctx: Context) -> str:
+    '''Sends random quote'''
+    from os import path
+    if not path.isfile("data/quotes.json"):
+        import requests
+        raw = requests.get("https://raw.githubusercontent.com/dwyl/quotes/master/quotes.json")
+        with open("data/quotes.json", "wb") as file:
+            file.write(raw.content)
+    with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
+        import json
+        q = json.load(file)
+    r = random.SystemRandom().randrange(len(q))
+    return '_'+q[r]["text"] + "_\n    ~" + q[r]["author"]
+
+
+@register(group=Groups.GLOBAL, main=roll)
+async def xkcdpassword(ctx: Context) -> str:
+    '''Generates random xkcd 936 styled password'''
+    import secrets
+    # On standard Linux systems, use a convenient dictionary file.
+    # Other platforms may need to provide their own word-list.
+    with open('/usr/share/dict/words') as f:
+        words = [word.strip() for word in f]
+        password = ' '.join(secrets.choice(words) for i in range(4))
+    return password

@@ -375,3 +375,85 @@ async def fuzzy_word(ctx: Context, word: str, letter_count: int = None) -> Embed
     embed = Embed().setTitle(f"Words matching provided criteria: {word} ({letter_count})")
     embed.addFields(title="\u200b", text=", ".join(res))
     return embed
+
+@register(group=Groups.GLOBAL, main=search)
+async def chord(ctx: Context, chords: str, all: bool = False) -> Embed:
+    '''
+    Shows guitar chord(s) diagram(s)
+    Params
+    ------
+        chords:
+            Chords to show. Separate multiple with space
+        all:
+            Whether to show all combinations or not
+    '''
+    import json
+    with open('data/chords.json','r',newline='',encoding='utf-8') as file:
+        _chords = json.load(file)
+    #_chords = {"Em": "022000", "C": "x32010", "A":"x02220", "G": "320033", "E": "022100", "D": "xx0232", "F": "x3321x", "Am": "x02210", "Dm": "xx0231"}
+    chords = chords.split(" ")
+    base_notes = "EADGBE"
+    e = Embed()
+    if all:
+        _all = []
+        for _chord in chords:
+            for x in range(7):
+                if x == 0:
+                    if _chord in chords:
+                        _all.append(f"{_chord}")
+                        for i in range(5):
+                            if _chord + f'_a{i+1}' in _chords:
+                                _all.append(f"{_chord}_a{i+1}")    
+                if _chord + f'_{x+1}' in _chords:
+                    _all.append(f"{_chord}_{x+1}")
+                    for i in range(5):
+                        if _chord + f'_{x+1}_a{i+1}' in _chords:
+                            _all.append(f"{_chord}_{x+1}_a{i+1}")
+        chords = _all
+    for _chord in chords:
+        text = "```\n"
+        try:
+            _c = _chords[_chord]
+        except:
+            return await ctx.reply(f"Chord {_chord} not found")
+        if len(_c) > 6:
+            c = _c[-6:]
+        for x, string in enumerate(c):
+            text += string if string == 'x' else base_notes[x]
+        text+='\n'
+        for fret in range(1,6):
+            for string in c:
+                if string == str(fret):
+                    text += 'O'
+                else:
+                    text += '|'
+            text += '\n'
+        text+= '```'
+        if len(_c) == 7 and _c[0] not in ['0', '1']:
+            #text += "\nStarting fret: " + _c[0:-6]
+            _chord += f' (Fret: {_c[0:-6]})'
+        e.addField(_chord, text, True)
+    return e
+
+@register(group=Groups.GLOBAL, main=search)
+async def tuning(ctx: Context, tuning: str = None) -> str:
+    '''
+    Shows chords on frets for specified tuning
+    Params
+    ------
+        tuning:
+            Base tuning. Example: EBGDAE
+    '''
+    base = ["A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"]
+    if not tuning:
+        tuning = ["E", "B", "G", "D", "A", "E"]
+    else:
+        tuning = [i.upper() for i in (tuning.split() if " " in tuning else tuning)]
+    final = ""
+    for note in tuning:
+        n = base.index(note)
+        final += '\n' + ' | '.join([i + ' ' if len(i) == 1 else i for i in base[n:] + base[:n+1]])
+    fret_numbers = ""
+    fret_numbers += ' | '.join([str(i)+' ' if len(str(i)) == 1 else str(i) for i in range(len(base)+1)])
+    separator = '-' * len(fret_numbers)
+    return f"```md\n{fret_numbers}\n{separator}{final}```"
