@@ -386,7 +386,7 @@ async def reviews(ctx: Context):
     r = s.query(sa.func.avg(ReviewScores.score)).first()
     return f"{r[0]:.2f}"
 
-@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
+@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True, only_interaction=True)
 async def biomarker(ctx: Interaction) -> Embed:
     '''
     Shows your infection state
@@ -443,8 +443,9 @@ async def lfg(ctx: Context, platform: str, amount: str, when: str, progress: str
         .addField("When?", f"<t:{int((datetime.now(tz=timezone.utc) + timedelta(seconds=int(when))).timestamp())}>", True)
         .addField("Game Progress", progress, True)
         .addField("Microphone", "Required" if voice else "Not necessary", True)
-        .setDescription(additional_description)
     )
+    if additional_description:
+        e.setDescription(additional_description)
     for channel_id in ctx.cache.voice:
         if ctx.user_id in ctx.cache.voice[channel_id]:
             e.addField("Voice Channel", f"<#{channel_id}>", True)

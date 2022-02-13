@@ -129,7 +129,7 @@ async def rate(ctx: Context, user: User, rate: float) -> str:
     session.commit()
     return f"New rate for {user.username}: {rate}"
 
-@register(group=Groups.GLOBAL, main=xp, private_response=True)
+@register(group=Groups.GLOBAL, main=xp, private_response=True, only_interaction=True)
 async def progress(ctx: Context) -> Embed:
     '''
     Shows XP progress to next rank
