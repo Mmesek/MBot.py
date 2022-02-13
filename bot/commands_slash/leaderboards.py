@@ -279,7 +279,7 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID=None, limit: 
     return [leaderboard.as_embed(f"{event.value}'s Leaderboard")]
 
 @Event(month=12)
-@register(group=Groups.GLOBAL, interaction=False)#main=leaderboard)
+@register(group=Groups.GLOBAL, main=leaderboard, interaction=False)
 async def aoc(ctx: Context, year:int=None) -> Embed:
     '''Shows Advent of Code leaderboard'''
     import requests
