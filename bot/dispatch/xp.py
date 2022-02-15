@@ -112,7 +112,7 @@ async def remove(ctx: Context, user: User, xp: float) -> str:
     return f"Removed {xp} XP from user {user.username}"
 
 @register(group=Groups.ADMIN, main=xp)
-async def rate(ctx: Context, rate: float, user: User, channel: Channel = None, role: Role = None, server: bool = False) -> str:
+async def rate(ctx: Context, rate: float, channel: Channel = None, role: Role = None, user: User = None, server: bool = False) -> str:
     '''
     Manage XP Rate gains
     Params
@@ -129,33 +129,37 @@ async def rate(ctx: Context, rate: float, user: User, channel: Channel = None, r
         Whether this should affect server instead. Formula: Rate = Rate * ServerRate
     '''
     from MFramework.database.alchemy import Role, Channel, Server, types
-    from ..database import models, types
     session = ctx.db.sql.session()
     result = []
 
     if channel:
         c = Channel.fetch_or_add(session, server_id=ctx.guild_id, id=channel.id)
+        previous = c.get_setting(types.Setting.Exp) or 1.0
         c.add_setting(types.Setting.Exp, rate)
         ctx.cache.exp_rates[channel.id] = rate
-        result.append(f"New rate for [Channel] {channel.name}: {rate}")
+        result.append(("Channel", channel.name, rate, previous))
     if role:
         r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
+        previous = r.get_setting(types.Setting.Exp) or 1.0
         r.add_setting(types.Setting.Exp, rate)
         ctx.cache.role_rates.append((role.id, rate))
         ctx.cache.role_rates.sort(key=lambda x: x[1])
-        result.append(f"New rate for [Role] {role.name}: {rate}")
+        result.append(("Role", role.name, rate, previous))
     if user:
+        from ..database import models
         _user = models.User.fetch_or_add(session, id=user.id)
+        previous = _user.get_setting(types.Setting.Exp) or 1.0
         _user.add_setting(types.Setting.Exp, rate)
-        result.append(f"New rate for [User] {user.username}: {rate}")
+        result.append(("User", user.username, rate, previous))
     if server:
         s = Server.fetch_or_add(session, id=ctx.guild_id)
+        previous = s.get_setting(types.Setting.Exp) or 1.0
         s.add_setting(types.Setting.Exp, rate)
         ctx.cache.server_exp_rate = rate
-        result.append(f"New rate for [Server] {ctx.cache.guild.name}: {rate}")
+        result.append(("Server", ctx.cache.guild.name, rate, previous))
 
     session.commit()
-    return "\n".join(result)
+    return "\n".join(["Rate for [{}] {} changed: {}->{}".format(*i) for i in result]) or "Nothing selected"
 
 @register(group=Groups.GLOBAL, main=xp, private_response=True, only_interaction=True)
 async def progress(ctx: Context) -> Embed:
