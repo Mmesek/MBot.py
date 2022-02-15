@@ -27,10 +27,9 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     dates = []
     dates.append(("On Discord since", member.user.id.styled_date()))
     if member:
-        import time
-        dates.append(("Joined Server at", f"<t:{int(time.mktime(member.joined_at.timetuple()))}>"))
+        dates.append(("Joined Server at", f"<t:{int(member.joined_at.timestamp())}>"))
         try:
-            dates.append(("Booster since", f"<t:{int(time.mktime(member.premium_since.timetuple()))}>"))
+            dates.append(("Booster since", f"<t:{int(member.premium_since.timestamp())}>"))
         except:
             pass
     embed.addField("Dates", '\n'.join(format_values(dates)))
@@ -270,10 +269,9 @@ async def created(ctx: Context, snowflake: Snowflake) -> Embed:
         names.append(("User", f"<@{snowflake}>"))
     names.append(("On Discord since", snowflake.styled_date()))
     if _member:
-        import time
-        names.append(("Joined Server at", f"<t:{int(time.mktime(_member.joined_at.timetuple()))}>"))
+        names.append(("Joined Server at", f"<t:{int(_member.joined_at.timestamp())}>"))
         try:
-            names.append(("Booster since", f"<t:{int(time.mktime(_member.premium_since.timetuple()))}>"))
+            names.append(("Booster since", f"<t:{int(_member.premium_since.timestamp())}>"))
         except:
             pass
     embed = Embed()
