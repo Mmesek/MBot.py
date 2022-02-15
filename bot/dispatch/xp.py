@@ -162,15 +162,19 @@ async def rate(ctx: Context, rate: float, channel: Channel = None, role: Role = 
     return "\n".join(["Rate for [{}] {} changed: {}->{}".format(*i) for i in result]) or "Nothing selected"
 
 @register(group=Groups.GLOBAL, main=xp, private_response=True, only_interaction=True)
-async def progress(ctx: Context) -> Embed:
+async def progress(ctx: Context, user: User = None) -> Embed:
     '''
     Shows XP progress to next rank
+    Params
+    ------
+    user:
+        User's XP progress to show
     '''
+    user_id = ctx.user_id if not user else user.id
     from ..database import models
     session = ctx.db.sql.session()
-    _user = models.User.fetch_or_add(session, id=ctx.user_id)
-    exp = User_Experience.fetch_or_add(session, user_id=ctx.user_id, server_id=ctx.guild_id)
-    exp.value
+    _user = models.User.fetch_or_add(session, id=user_id)
+    exp = User_Experience.fetch_or_add(session, user_id=user_id, server_id=ctx.guild_id)
     last = 0
     next = 0
     for x, (role, req) in enumerate(list(ctx.cache.level_roles)):
@@ -191,4 +195,7 @@ async def progress(ctx: Context) -> Embed:
         .setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar())
         .setColor("#8c6cff")
     )
+    if ctx.permission_group.can_use(Groups.MODERATOR) and user:
+        e.addField("Current XP", str(exp.value), True)
+        e.addField("Remaining XP", str(next - exp.value), True)
     return e
