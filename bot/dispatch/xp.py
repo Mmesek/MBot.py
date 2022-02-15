@@ -2,7 +2,7 @@ import sqlalchemy as sa
 
 from mlib.database import Base, TimestampUpdate
 
-from MFramework import Bot, Message, onDispatch, Embed
+from MFramework import Bot, Message, onDispatch, Embed, Channel, Role
 from MFramework.database.alchemy.mixins import Snowflake
 
 class User_Experience(TimestampUpdate, Base):
@@ -112,22 +112,50 @@ async def remove(ctx: Context, user: User, xp: float) -> str:
     return f"Removed {xp} XP from user {user.username}"
 
 @register(group=Groups.ADMIN, main=xp)
-async def rate(ctx: Context, user: User, rate: float) -> str:
+async def rate(ctx: Context, rate: float, user: User, channel: Channel = None, role: Role = None, server: bool = False) -> str:
     '''
-    Modify User's XP gain
+    Manage XP Rate gains
     Params
     ------
-    user:
-        User whose gain should be modified
     rate:
-        New Rate Modifier. Formula: CurrentRate * UserRate
+        XP Rate Modifier
+    channel:
+        Channel to modify. Formula: CurrentMultipler = DefaultRate * ChannelRate
+    role:
+        Role to modify. Formula: Rate = CurrentMultipler + sum(OwnedRoleRates)
+    user:
+        User whose gain should be modified. Formula: FinalRate = Rate * UserRate
+    server:
+        Whether this should affect server instead. Formula: Rate = Rate * ServerRate
     '''
+    from MFramework.database.alchemy import Role, Channel, Server, types
     from ..database import models, types
     session = ctx.db.sql.session()
-    _user = models.User.fetch_or_add(session, id=user.id)
-    _user.add_setting(types.Setting.Exp, rate)
+    result = []
+
+    if channel:
+        c = Channel.fetch_or_add(session, server_id=ctx.guild_id, id=channel.id)
+        c.add_setting(types.Setting.Exp, rate)
+        ctx.cache.exp_rates[channel.id] = rate
+        result.append(f"New rate for [Channel] {channel.name}: {rate}")
+    if role:
+        r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
+        r.add_setting(types.Setting.Exp, rate)
+        ctx.cache.role_rates.append((role.id, rate))
+        ctx.cache.role_rates.sort(key=lambda x: x[1])
+        result.append(f"New rate for [Role] {role.name}: {rate}")
+    if user:
+        _user = models.User.fetch_or_add(session, id=user.id)
+        _user.add_setting(types.Setting.Exp, rate)
+        result.append(f"New rate for [User] {user.username}: {rate}")
+    if server:
+        s = Server.fetch_or_add(session, id=ctx.guild_id)
+        s.add_setting(types.Setting.Exp, rate)
+        ctx.cache.server_exp_rate = rate
+        result.append(f"New rate for [Server] {ctx.cache.guild.name}: {rate}")
+
     session.commit()
-    return f"New rate for {user.username}: {rate}"
+    return "\n".join(result)
 
 @register(group=Groups.GLOBAL, main=xp, private_response=True, only_interaction=True)
 async def progress(ctx: Context) -> Embed:

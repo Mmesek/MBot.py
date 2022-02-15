@@ -445,36 +445,3 @@ async def remove(ctx: Context, role: Role) -> str:
         session.commit()
         return f"Level {role.name} removed successfully"
     return f"Level role {role.name} doesn't exist!"
-
-@register(group=Groups.ADMIN, main=level, private_response=True)
-async def rates(ctx: Context, rate: float, channel: Channel = None, role: Role = None) -> str:
-    '''
-    Manage XP Rate gains
-    Params
-    ------
-    rate:
-        XP Rate Modifier
-    channel:
-        Channel to modify. Formula: CurrentMultipler = DefaultRate * ChannelRate
-    role:
-        Role to modify. Formula: Rate = CurrentMultipler + sum(OwnedRoleRates)
-    '''
-    from MFramework.database.alchemy import Role, Channel, types
-    session = ctx.db.sql.session()
-    result = []
-
-    if channel:
-        c = Channel.fetch_or_add(session, server_id=ctx.guild_id, id=channel.id)
-        c.add_setting(types.Setting.Exp, rate)
-        ctx.cache.exp_rates[channel.id] = rate
-        result.append(f"New rate for {channel.name}: {rate}")
-
-    if role:
-        r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
-        r.add_setting(types.Setting.Exp, rate)
-        ctx.cache.role_rates.append((role.id, rate))
-        ctx.cache.role_rates.sort(key=lambda x: x[1])
-        result.append(f"New rate for {role.name}: {rate}")
-
-    session.commit()
-    return "\n".join(result)
