@@ -35,9 +35,9 @@ async def exp(self: Bot, data: Message):
         if role in self.cache[data.guild_id].role_rates:
             role_boosts += self.cache[data.guild_id].role_rates.get(role, 0) or 0
 
-    rate = 1 * ((self.cache[data.guild_id].exp_rates.get(data.channel_id, 1.0) or 0) + role_boosts)
+    rate = 1 * (((self.cache[data.guild_id].exp_rates.get(data.channel_id, 1.0) or 0) + role_boosts) * self.cache[data.guild_id].server_exp_rate)
 
-    from MFramework.database import alchemy as db
+    #from MFramework.database import alchemy as db
 
     #user = models.User.fetch_or_add(session, id=data.author.id)
     #boost = user.get_setting(db.types.Setting.Exp) or 1.0
@@ -68,7 +68,7 @@ async def exp(self: Bot, data: Message):
     if self.cache[data.guild_id].is_tracking(types.Flags.Chat):
         session = self.db.sql.session()
         log.Statistic.increment(session, data.guild_id, data.author.id, types.Statistic.Chat)
-    if self.cache[data.guild_id].is_tracking(db.types.Flags.Activity):
+    if self.cache[data.guild_id].is_tracking(types.Flags.Activity):
         self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(' '))))
 
 from MFramework import register, Groups, Context, User
