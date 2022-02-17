@@ -122,6 +122,17 @@ async def say(ctx: Context,
     except Exception as ex:
         await ctx.reply(f"Exception occured: {ex}")
 
+@register(group=Groups.MODERATOR, auto_defer=False)
+async def say_long(ctx: Context):
+    '''Shows Modal to send a multilined message as a bot'''
+    return Say(Row(TextInput("Message")))
+
+from MFramework.commands.components import Modal, TextInput, Row
+class Say(Modal):
+    @classmethod
+    async def execute(cls, ctx: 'Context', data: str, inputs: dict):
+        return await say(ctx, inputs.get('message'))
+
 @register(group=Groups.MODERATOR, private_response=True)
 async def react(ctx: Context, reaction: str, message_id: Snowflake, channel: ChannelID=None, *, language):
     '''
