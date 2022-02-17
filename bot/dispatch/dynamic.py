@@ -2,7 +2,7 @@ import asyncio
 from datetime import timedelta
 from MFramework import onDispatch, Bot, Voice_State, Channel, Channel_Types, log
 
-
+CHANNEL_LIMIT = 40
 DYNAMIC_NAME = "create"
 COOLDOWN_NAME = "dynamic_channel"
 COOLDOWN_DELTA = timedelta(minutes=15)
@@ -39,6 +39,7 @@ async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
     if (
         self.cache[data.guild_id].dynamic_channels.get(data.user_id, None) in self.cache[data.guild_id].voice
         or self.cache[data.guild_id].cooldowns.get(data.guild_id, data.user_id, COOLDOWN_NAME)
+        or len(self.cache[data.guild_id].dynamic_channels) >= CHANNEL_LIMIT
     ):
         log.debug("User %s has existing cooldown or already generated channel. Moving or Disconnecting", data.user_id)
         gc = self.cache[data.guild_id].dynamic_channels.get(data.user_id, None)
