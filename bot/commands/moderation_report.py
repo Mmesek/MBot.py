@@ -19,9 +19,13 @@ async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *ar
         next_month = datetime(now.year, month + 1, 1) # Possible issue with December
     if guild_id == 0:
         guild_id = ctx.guild_id
-    infractions = s.query(db.log.Infraction).filter(db.log.Infraction.server_id == int(guild_id), db.log.Infraction.timestamp >= last_month, db.log.Infraction.timestamp < next_month).all()
+    if month == 0:
+        infractions = s.query(db.log.Infraction).filter(db.log.Infraction.server_id == int(guild_id)).all()
+        table = ["Infractions", "Commands Used"] 
+    else:
+        infractions = s.query(db.log.Infraction).filter(db.log.Infraction.server_id == int(guild_id), db.log.Infraction.timestamp >= last_month, db.log.Infraction.timestamp < next_month).all()
     moderators = {}
-    table = ["Warn", "Temp_Mute", "Mute", "Unmute",
+    table = ["Infractions", "Warn", "Temp_Mute", "Mute", "Unmute",
         "Kick", "Temp_Ban", "Ban", "Unban", "Commands Used"] #, "chat", "voice"]
     uids = {}
     for infraction in infractions:
@@ -37,6 +41,7 @@ async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *ar
             moderators[uname] = {i:0 for i in table}
         try:
             moderators[uname][infraction.type.name] += 1
+            moderators[uname]["Infractions"] += 1
         except:
             pass
     commands_used = ctx.db.influx.get_command_usage(guild_id)
@@ -56,6 +61,7 @@ async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *ar
     buffered = StringIO()
 
     data = pd.DataFrame.from_dict(moderators, orient='index', columns=table)
+    data.sort_values(by="Infractions")
     data.to_csv(buffered)
 
     img_str = 'moderator'+buffered.getvalue()
