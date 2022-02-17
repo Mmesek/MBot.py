@@ -1,3 +1,4 @@
+import asyncio
 import sqlalchemy as sa
 from mlib.database import Base
 
@@ -67,3 +68,82 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
     session.add(Contest_Entries(id=ctx.user_id, msg=msg.id, cc=_country[0].name))
     session.commit()
     return "Entry Confirmed!"
+
+@register(group=Groups.SYSTEM, interaction=False)
+async def msi_entries(ctx: Context, *, language):
+    '''
+    Description to use with help command
+    Params
+    ------
+    :
+        description
+    '''
+    msgs = [await ctx.bot.get_channel_message(934134541487050762, 940276323442655262)]
+    for i in range(16):
+        msgs.extend(await ctx.bot.get_channel_messages(934134541487050762, limit=100, before=msgs[-1].id))
+        await asyncio.sleep(0.03)
+    msgs.reverse()
+    text = ''
+    session = ctx.bot.db.sql.session()
+    for msg in msgs:
+        if msg.author.id != 572532846678376459:
+            text += f"{msg.author} | {msg.author.id}" + "\n"
+            text += msg.content + "\n"
+            for attachment in msg.attachments:
+                text += attachment.url + "\n"
+        for embed in msg.embeds:
+            if embed.author:
+                ce = Contest_Entries.filter(session, msg=msg.id).first()
+                if ce:
+                    text += f"{embed.author.name} | {ce.id} [{ce.cc}]" + "\n"
+            if embed.description:
+                text += embed.description + "\n"
+            if embed.image:
+                text += embed.image.url + "\n"
+        text += "\n---\n"
+    with open('entries.txt','w',newline='',encoding='utf-8') as file:
+        file.write(text)
+
+@register(group=Groups.SYSTEM, interaction=False)
+async def msi_activity(ctx: Context, *, language):
+    '''
+    Description to use with help command
+    Params
+    ------
+    :
+        description
+    '''
+    msgs = [await ctx.bot.get_channel_message(934134541487050762, 940276323442655262)]
+    for i in range(16):
+        msgs.extend(await ctx.bot.get_channel_messages(934134541487050762, limit=100, before=msgs[-1].id))
+        await asyncio.sleep(0.03)
+    msgs.reverse()
+    users = []
+    session = ctx.bot.db.sql.session()
+    for msg in msgs:
+        if msg.author.id != 572532846678376459:
+            users.append(msg.author.id)
+        for embed in msg.embeds:
+            if embed.author:
+                ce = Contest_Entries.filter(session, msg=msg.id).first()
+                if ce:
+                    users.append(ce.id)
+    from ..dispatch.xp import User_Experience
+    new_xp = session.query(User_Experience.user_id, User_Experience.value).filter(User_Experience.server_id == ctx.guild_id, User_Experience.user_id.in_(users)).all()
+    from ..database.log import Statistic, types
+    old_exp = session.query(Statistic.user_id, Statistic.value).filter(Statistic.name == types.Statistic.Chat).all()
+    rows = []
+    for user in users:
+        row = {"user_id": user, "old_exp": 0, "new_xp": 0}
+        old = next(filter(lambda x: user == x[0], old_exp), None)
+        new = next(filter(lambda x: user == x[0], new_xp), None)
+        if old:
+            row["old_exp"] = old[1]
+        if new:
+            row["new_xp"] = new[1]
+        rows.append(row)
+    import csv
+    with open('entries.txt','w',newline='',encoding='utf-8') as file:
+        cw = csv.DictWriter(file, ["user_id", "old_exp", "new_xp"])
+        cw.writeheader()
+        cw.writerows(rows)
