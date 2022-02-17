@@ -873,3 +873,58 @@ async def summary(ctx: Context):
     filename = f"halloween_summary-{datetime.now().year}.png"
     e.setImage("attachment://"+filename).setColor(16744206)
     await ctx.send(embeds=[e], file=img, filename=filename)
+
+@register(group=Groups.SYSTEM, interaction=False)
+async def crossref(ctx: Context, *, language):
+    '''
+    Description to use with help command
+    '''
+    s = ctx.db.sql.session()
+    players = s.query(sa.distinct(HalloweenLog.user_id)).filter(
+        HalloweenLog.server_id == ctx.guild_id
+    ).all()
+    unique_victims = s.query(Halloween.user_id).filter(
+        Halloween.server_id == ctx.guild_id
+    ).all()
+    unique_victims = [i for i in unique_victims if i not in players]
+    not_found = []
+    for victim in unique_victims:
+        m = ctx.cache.members.get(victim[0])
+        if not m:
+            not_found.append(victim[0])
+    from ...database import log, types
+    users = {}
+    avg_chat = []
+    avg_voice = []
+    with_infractions = []
+    for left in not_found:
+        r = log.Statistic.filter(s, server_id=ctx.guild_id, user_id=left).all()
+        infractions = s.query(sa.func.count(log.Infraction.user_id)).filter(
+            log.Infraction.user_id == left
+        ).first()
+        if infractions[0]:
+            with_infractions.append((left, infractions[0]))
+            continue
+
+        chatted = False
+        voiced = False
+        for _ in r:
+            if _.name == types.Statistic.Chat:
+                avg_chat.append((left, _.value))
+                chatted = True
+            elif _.name == types.Statistic.Voice:
+                avg_voice.append((left, _.value))
+                voiced = True
+        if not chatted:
+            avg_chat.append((left, 0))
+        if not voiced:
+            avg_voice.append((left, 0))
+    
+    top_chat = sorted(avg_chat, key= lambda x: x[1])
+    top_voice = sorted(avg_voice, key= lambda x: x[1])
+    tc = max(top_chat[0], top_chat[-1], key= lambda x: x[1])
+    tv = max(top_voice[0], top_voice[-1], key= lambda x: x[1])
+    avg_chat = [i[1] for i in avg_chat if i[1] < 1000]
+    avg_voice = [i[1] for i in avg_voice if i[1] < 1000]
+    with_infractions = [i[1] for i in with_infractions if i[1]]
+    return f"{len(avg_chat)}/{len(ctx.cache.members)}\nAvg chat activity: {sum(avg_chat)/len(avg_chat)}\nAvg voice activity: {sum(avg_voice)/len(avg_voice)}\nWith infractions: {len(with_infractions)}\nAvg infractions: {sum(with_infractions)/len(with_infractions)}\nChatter: <@{tc[0]}> - {tc[1]}\nVoice: <@{tv[0]}> - {tv[1]}"
