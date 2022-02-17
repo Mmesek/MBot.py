@@ -420,3 +420,50 @@ async def electricity(ctx: Context, price: float=0.78, watts: float=1, active_ho
         Days in month (Default: 30)
     '''
     return f"~{round(((watts * (active_hours * active_days)) / 1000) * price, 2)} / month"
+
+@register(group=Groups.GLOBAL, main=convert)
+async def palette(ctx: Context, colors: str):
+    '''
+    Shows how specified colors looks like on Discord backgrounds
+    Params
+    ------
+    colors:
+        Hexadecimal colors to display. Separate multiple with comma (,) or hash (#)
+    '''
+    _colors = colors.replace(" ", "").split(",")
+    if len(_colors) == 1:
+        _colors = colors.replace(" ", "").split("#")
+    colors = []
+    for color in _colors:
+        if not color:
+            continue
+        if not color.startswith("#"):
+            color = "#" +str(color)
+        color = color.strip()
+        colors.append(color)
+    from mlib.colors import buffered_image
+    from PIL import Image, ImageDraw, ImageFont
+    dark = "#36393F"
+    mention_dark = "#49443C"
+    light = "#FFFFFF"
+    mention_light = "#FEEED1"
+    height = len(colors) * 50
+    dst = Image.new("RGBA", (1000, height))
+    dst.paste(Image.new("RGBA", (150, height), dark), (400, 0))
+    dst.paste(Image.new("RGBA", (150, height), mention_dark), (550, 0))
+    dst.paste(Image.new("RGBA", (150, height), light), (700, 0))
+    dst.paste(Image.new("RGBA", (150, height), mention_light), (850, 0))
+    font = ImageFont.truetype("data/Roboto-Regular.ttf", size=15)
+    color_font = ImageFont.truetype("data/Roboto-Regular.ttf", size=20)
+
+    draw = ImageDraw.Draw(dst)
+    for x, color in enumerate(colors):
+        dst.paste(Image.new("RGBA", (200, 35), color), (0, x*50))
+        dst.paste(Image.new("RGBA", (100, 15), color), (225, x*50 + 10))
+        draw.text((60, x*50 + 5), color, font=color_font)
+        draw.text((420, x*50 + 5), str(ctx.user), font=font, fill=color) # Dark
+        draw.text((570, x*50 + 5), str(ctx.user), font=font, fill=color) # MentionDark
+        draw.text((720, x*50 + 5), str(ctx.user), font=font, fill=color) # Light
+        draw.text((870, x*50 + 5), str(ctx.user), font=font, fill=color) # MentionLight
+    f = buffered_image(dst)
+    await ctx.reply(file=f, filename="colors.png")
