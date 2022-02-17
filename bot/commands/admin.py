@@ -102,6 +102,36 @@ async def role_icon(ctx: Context, role: Snowflake, emoji: str):
     await ctx.bot.modify_guild_role(guild_id=ctx.guild_id, role_id=role, **emoji)
     return "Icon changed"
 
+@register(group=Groups.SYSTEM, interaction=False)
+async def avatar(ctx: Context, avatar: str):
+    '''
+    Change bot's avatar
+    Params
+    ------
+    name:
+        URL to bot's new avatar
+    '''
+    import requests
+    icon = requests.get(avatar)
+    if icon.ok:
+        from binascii import b2a_base64
+        await ctx.bot.modify_current_user(avatar=f"data:image/{avatar.split('.')[-1] if '.' in avatar else 'png'};base64,{b2a_base64(icon.content).decode()}")
+        return "Changed"
+    return "Error fetching avatar"
+
+
+@register(group=Groups.SYSTEM, interaction=False)
+async def username(ctx: Context, name: str):
+    '''
+    Change bot's username
+    Params
+    ------
+    name:
+        Bot's new Name
+    '''
+    await ctx.bot.modify_current_user(name)
+    return "Changed"
+
 @register(group=Groups.ADMIN, interaction=False)
 async def nick(ctx: Context, nick: str):
     '''
@@ -112,3 +142,4 @@ async def nick(ctx: Context, nick: str):
         New nickname
     '''
     await ctx.bot.modify_current_user_nick(ctx.guild_id, nick, reason=f"Request made by {ctx.user.username}")
+    return "New nickname: "+nick
