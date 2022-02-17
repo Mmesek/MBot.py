@@ -58,3 +58,54 @@ async def answer(ctx: Context, answer: str) -> str:
     session.add(Answers_Wrong(key=answer, user_id=ctx.user_id))
     session.commit()
     return "Sadly, that's not the answer to any of currently released puzzles :( Try again later"
+
+'''
+Main Solvers - Users with most main correct answers
+
+SELECT COUNT("user_id"), user_id
+FROM "Answers_Puzzle"
+WHERE "key" ILIKE '%puzzle%'
+GROUP BY "user_id"
+ORDER BY "count" DESC
+LIMIT 50
+
+---
+
+Secret Hunters - Users with most correct answers
+
+SELECT COUNT("user_id"), user_id
+FROM "Answers_Puzzle"
+GROUP BY "user_id"
+ORDER BY "count" DESC
+LIMIT 50
+
+---
+
+Puzzle Difficulty - Answers with most hits
+
+SELECT COUNT("key"), key
+FROM "Answers_Puzzle"
+GROUP BY "key"
+ORDER BY "count" DESC
+LIMIT 50
+
+---
+
+Most Attempts - Users with most misses/wrong answers
+
+SELECT COUNT("user_id"), user_id
+FROM "Answers_Wrong"
+GROUP BY "user_id"
+ORDER BY "count" DESC
+LIMIT 50
+
+---
+
+Mostly Missed - Most often submited wrong Answers
+
+SELECT COUNT("key"), LOWER(REPLACE(REPLACE("key", ' ', ''), '&', 'and'))
+FROM "Answers_Wrong"
+GROUP BY LOWER(REPLACE(REPLACE("key", ' ', ''), '&', 'and'))
+ORDER BY "count" DESC
+LIMIT 50
+'''
