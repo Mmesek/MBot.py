@@ -373,3 +373,24 @@ async def sacrifice(ctx: Context, monster: Monsters, quantity: int=1, *, session
         return f"Successfuly sacrificed {monster.name}{f' x {quantity}' if quantity > 1 else ''} and received Reinforced Fear x {rf_q}!" 
     return "You don't have enough monsters of that type!"
     
+@register(group=Groups.SYSTEM, interaction=False)
+async def convert_fear(ctx: Context):
+    '''
+    Converts fear to Reinforced Fear
+    '''
+    session = ctx.db.sql.session()
+    from typing import List
+    inventories: List[items.Inventory] = session.query(items.Inventory).filter(items.Inventory.item_id.in_([16, 18,20,21,22,29])).all()
+    rf_item = items.Item.fetch_or_add(session, name="Reinforced Fear")
+    for inv in inventories:
+        rf = items.Inventory(rf_item, (inv.quantity // 15) or 1)
+        u = models.User.fetch_or_add(session, id=inv.user_id)
+        t = u.transfer(
+            ctx.guild_id,
+            u,
+            [inv],
+            [rf],
+            False, True
+        )
+        session.add(t)
+    session.commit()
