@@ -488,7 +488,7 @@ async def anagram(ctx: Context, letters: str, exact_amount: bool = True) -> str:
                 anagrams.add(word.lower())
     return (
         Embed()
-        .setDescription(", ".join(sorted(list(anagrams), key=lambda x: len(x))))
+        .setDescription(", ".join(sorted(list(anagrams), key=lambda x: len(x), reverse=True)))
         .setTitle(f"Anagrams ({len(anagrams)}) for {letters}")
         .setFooter(
             f"Took {round(time.perf_counter() - start, 2)}s to check {len(words)} English words!"
