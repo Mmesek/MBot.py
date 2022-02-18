@@ -457,3 +457,40 @@ async def tuning(ctx: Context, tuning: str = None) -> str:
     fret_numbers += ' | '.join([str(i)+' ' if len(str(i)) == 1 else str(i) for i in range(len(base)+1)])
     separator = '-' * len(fret_numbers)
     return f"```md\n{fret_numbers}\n{separator}{final}```"
+
+@register(group=Groups.GLOBAL, main=search)
+async def anagram(ctx: Context, letters: str, exact_amount: bool = True) -> str:
+    '''
+    Assembles english words from provided letters/solves anagrams
+    Params
+    ------
+        letters:
+            Letters to use for anagram
+        exact_amount:
+            Whether to show only anagrams containing same amount of letters
+    '''
+    with open('/usr/share/dict/words') as f:
+        words = set(word.strip().upper() for word in f)
+    from collections import Counter
+    import time
+    start = time.perf_counter()
+    count = Counter(letters.upper())
+    anagrams = set()
+    for word in words:
+        if not set(word) - count.keys():
+            current = set()
+            for letter, amount in Counter(word).items():
+                if amount == count[letter]:
+                    current.add(letter)
+            if exact_amount and current == count.keys():
+                anagrams.add(word.lower())
+            elif not exact_amount and current == set(word):
+                anagrams.add(word.lower())
+    return (
+        Embed()
+        .setDescription(", ".join(sorted(list(anagrams), key=lambda x: len(x))))
+        .setTitle(f"Anagrams ({len(anagrams)}) for {letters}")
+        .setFooter(
+            f"Took {round(time.perf_counter() - start, 2)}s to check {len(words)} English words!"
+        )
+    )
