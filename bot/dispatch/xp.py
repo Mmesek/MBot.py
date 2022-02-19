@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta, timezone
 import sqlalchemy as sa
 
 from mlib.database import Base, TimestampUpdate
@@ -36,6 +37,8 @@ async def exp(self: Bot, data: Message):
             role_boosts += self.cache[data.guild_id].role_rates.get(role, 0) or 0
 
     rate = 1 * (((self.cache[data.guild_id].exp_rates.get(data.channel_id, 1.0) or 0) + role_boosts) * self.cache[data.guild_id].server_exp_rate)
+    if datetime.now(timezone.utc) <= self.cache[data.guild_id].boosted_until:
+        rate *= self.cache[data.guild_id].boosted_rate
 
     #from MFramework.database import alchemy as db
 
@@ -199,3 +202,18 @@ async def progress(ctx: Context, user: User = None) -> Embed:
         e.addField("Current XP", str(exp.value), True)
         e.addField("Remaining XP", str(next - exp.value), True)
     return e
+
+@register(group=Groups.ADMIN, main=xp, only_interaction=True)
+async def boost(ctx: Context, duration: timedelta = timedelta(hours=1), rate: float = 2.0):
+    '''
+    Boost XP gain for a period of time
+    Params
+    ------
+    duration:
+        Duration for how long boost should last. Default is 1 hour.
+    rate:
+        Boosted rate. Default is x2.
+    '''
+    ctx.cache.boosted_until = datetime.now(timezone.utc) + duration
+    ctx.cache.boosted_rate = rate
+    return f"Boosted all XP gains on server by {rate} for {duration}!"
