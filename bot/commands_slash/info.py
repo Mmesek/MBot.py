@@ -26,7 +26,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     
     dates = []
     dates.append(("On Discord since", member.user.id.styled_date()))
-    if member:
+    if member and member.joined_at:
         dates.append(("Joined Server at", f"<t:{int(member.joined_at.timestamp())}>"))
         try:
             dates.append(("Booster since", f"<t:{int(member.premium_since.timestamp())}>"))
