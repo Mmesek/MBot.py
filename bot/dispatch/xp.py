@@ -217,3 +217,21 @@ async def boost(ctx: Context, duration: timedelta = timedelta(hours=1), rate: fl
     ctx.cache.boosted_until = datetime.now(timezone.utc) + duration
     ctx.cache.boosted_rate = rate
     return f"Boosted all XP gains on server by {rate} for {duration}!"
+
+@register(group=Groups.ADMIN, main=xp, only_interaction=True)
+async def reset(ctx: Context, user: User):
+    '''
+    Reset user XP
+    Params
+    ------
+    user:
+        User's XP you want to reset
+    '''
+    session = ctx.db.sql.session()
+    try:
+        exp = User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
+        exp.value = 0
+        session.commit()
+        return f"Reseted {user.username} XP back to 0"
+    except:
+        return "Couldn't find specified user"
