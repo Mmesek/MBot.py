@@ -37,7 +37,7 @@ async def exp(self: Bot, data: Message):
             role_boosts += self.cache[data.guild_id].role_rates.get(role, 0) or 0
 
     rate = 1 * (((self.cache[data.guild_id].exp_rates.get(data.channel_id, 1.0) or 0) + role_boosts) * self.cache[data.guild_id].server_exp_rate)
-    if datetime.now(timezone.utc) <= self.cache[data.guild_id].boosted_until:
+    if hasattr(self.cache[data.guild_id], 'boosted_until') and datetime.now(timezone.utc) <= self.cache[data.guild_id].boosted_until:
         rate *= self.cache[data.guild_id].boosted_rate
 
     #from MFramework.database import alchemy as db
