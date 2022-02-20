@@ -6,6 +6,31 @@ from MFramework.commands.components import Select, Select_Option
 
 @onDispatch
 async def direct_message_create(self: Bot, data: Message):
+    if 'find this life-changing' in data.content:
+        from ..commands_slash.infractions import InfractionTypes
+        _ = self.cache[self.primary_guild].logging.get("auto_mod", None)
+        if _:
+            await _(
+                guild_id=self.primary_guild,
+                channel_id=None,
+                message_id=None,
+                moderator=self.cache[self.primary_guild].bot.user,
+                user_id=data.author.id,
+                reason="Possible Raid",
+                duration=None,
+                type=InfractionTypes.Kick
+            )
+            try:
+                r = await _.log_dm(
+                    type=InfractionTypes.Kick, 
+                    guild_id=self.primary_guild,
+                    user_id=data.author.id,
+                    reason="Possible Raid",
+                    duration=None
+                )
+            except Exception as ex:
+                r = None
+        return await self.remove_guild_member(self.primary_guild, data.author.id, reason="Possible Raid")
     await self.cache[self.primary_guild].logging["direct_message"](data)
     if data.channel_id not in self.cache[0]:
         from MFramework.database.cache_internal.models import Collection
