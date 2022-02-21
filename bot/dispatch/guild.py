@@ -14,7 +14,7 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
                 message_id=None,
                 moderator=self.cache[data.guild_id].bot.user,
                 user_id=data.user.id,
-                reason="Possible Raid",
+                reason="Possible Raid: Account Age",
                 duration=None,
                 type=InfractionTypes.Kick
             )

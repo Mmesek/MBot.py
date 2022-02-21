@@ -16,7 +16,7 @@ async def direct_message_create(self: Bot, data: Message):
                 message_id=None,
                 moderator=self.cache[self.primary_guild].bot.user,
                 user_id=data.author.id,
-                reason="Possible Raid",
+                reason="Possible Raid: Modmail",
                 duration=None,
                 type=InfractionTypes.Kick
             )
