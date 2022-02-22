@@ -1,15 +1,4 @@
-from MFramework import onDispatch, Bot, Ready, log
-
-@onDispatch
-async def ready(self: Bot, ready: Ready):
-    self.session_id = ready.session_id
-    self.user_id = ready.user.id
-    self.username = ready.user.username
-    import time
-    self.start_time = time.time()
-    log.info("Connected as %s", ready.user.username)
-
-from MFramework import Presence_Update, Activity_Types, Activity
+from MFramework import onDispatch, Bot, Presence_Update, Activity_Types, Activity
 
 @onDispatch
 async def presence_update(self: Bot, data: Presence_Update):
