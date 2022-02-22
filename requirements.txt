@@ -14,4 +14,3 @@ gitpython
 upsidedown
 pycountry
 howlongtobeatpy
-python-i18n
