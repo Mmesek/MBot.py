@@ -78,9 +78,9 @@ async def stashed(ctx: Context, type: db.types.Snippet, name: str=None, search_c
     '''
     s = ctx.db.sql.session()
     r = db.Snippet.filter(s, server_id=ctx.guild_id, type=type)
-    if "," in name:
+    if name and "," in name:
         names = [i.strip() for i in name.split(",")]
-    elif " " in name:
+    elif name and " " in name:
         names = [i.strip() for i in name.split(" ")]
     else:
         names = [name]
