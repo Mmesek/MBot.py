@@ -9,7 +9,7 @@ async def graph(ctx: Context, graph='all', resample='Y', locator='Month', interv
     import pandas as pd
     import matplotlib.pyplot as plt
     from mlib import graphing
-    from MFramework.utils.utils import created, truncate
+    from mlib.utils import truncate
     from datetime import date
 
     f = time.time()
@@ -18,25 +18,25 @@ async def graph(ctx: Context, graph='all', resample='Y', locator='Month', interv
     #Gather data here
     server = ctx.cache
     m_retries = 0
-    if len(server.joined) != server.member_count:
-        if len(server.joined) >= server.member_count:
-            server.joined = []
-        await ctx.bot.request_guild_members(ctx.guild_id)
-    while len(server.joined) != server.member_count and len(server.joined) < server.member_count:
-        await asyncio.sleep(0.1)
-        m_retries+=1
-        if m_retries == 75:
-            break
+    #if len(server.members) != server.member_count:
+    #    if len(server.members) >= server.member_count:
+    #        server.joined = []
+    #    await ctx.bot.request_guild_members(ctx.guild_id)
+    #while len(server.members) != server.member_count and len(server.members) < server.member_count:
+    #    await asyncio.sleep(0.1)
+    #    m_retries+=1
+    #    if m_retries == 75:
+    #        break
     s = time.time()
 
     #Create figure and plot data here
-    s_member = ctx.cache.joined
+    s_member = ctx.cache.members.values()
     total = {'joined':[], 'created':[], 'premium':[]}
     for each in s_member:
-        t = pd.to_datetime(each[1]).tz_convert(None) #Joined
-        c = pd.to_datetime(created(each[0])).tz_localize(None)  #Created
+        t = pd.to_datetime(each.joined_at).tz_convert(None) #Joined
+        c = pd.to_datetime(each.user.id.as_date).tz_localize(None)  #Created
         try:
-            p = pd.to_datetime(each[2]).tz_convert(None)  #Premium
+            p = pd.to_datetime(each.premium_since).tz_convert(None)  #Premium
             total['premium'] += [p]
         except:
             pass
@@ -84,7 +84,7 @@ async def graph(ctx: Context, graph='all', resample='Y', locator='Month', interv
 
 
     #Set Names
-    graphing.set_legend(ax, tr('commands.graph.growth', language), tr('commands.graph.memberCount', language), tr('commands.graph.dates', language))
+    graphing.set_legend(ax, tr('commands.graph.growth', language), tr('commands.graph.memberCount', language), tr('commands.graph.dates', language), framealpha=0)
 
     fig.tight_layout()
     img_str = graphing.create_image(fig)
