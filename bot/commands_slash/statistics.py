@@ -260,8 +260,8 @@ async def membercount(ctx: Context, stat: str = 'total', year: int = None, month
     if stat not in {'total', 'since', 'growth'}:
         return "Command usage: !membercount [`total`|`growth`|`since`] [year] [month] [day]"
     if stat == 'total':
-        return len(list(filter(lambda x: (not year or x.joined_at.year <= year) and (not month or x.joined_at.month <= month) and (not day or x.joined_at.day <= day), ctx.cache.members.values())))
+        return len(list(filter(lambda x: (not year or x.joined_at.year <= int(year)) and (not month or x.joined_at.month <= int(month)) and (not day or x.joined_at.day <= int(day)), ctx.cache.members.values())))
     elif stat == 'since':
-        return len(list(filter(lambda x: (not year or x.joined_at.year >= year) and (not month or x.joined_at.month >= month) and (not day or x.joined_at.day >= day), ctx.cache.members.values())))
+        return len(list(filter(lambda x: (not year or x.joined_at.year >= int(year)) and (not month or x.joined_at.month >= int(month)) and (not day or x.joined_at.day >= int(day)), ctx.cache.members.values())))
     elif stat == 'growth':
-        return len(list(filter(lambda x: (not year or x.joined_at.year == year) and (not month or x.joined_at.month == month) and (not day or x.joined_at.day == day), ctx.cache.members.values())))
+        return len(list(filter(lambda x: (not year or x.joined_at.year == int(year)) and (not month or x.joined_at.month == int(month)) and (not day or x.joined_at.day == int(day)), ctx.cache.members.values())))
