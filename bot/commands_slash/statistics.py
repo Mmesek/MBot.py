@@ -251,3 +251,17 @@ async def memberchange(ctx: Context, period: str = "7d") -> str:
         return f"Membercount change witin last {period}\n` Start:` `[{joined['_start']}]`\n`   End:` `[{joined['_stop']}]`\n`Joined:` `{joined['_value']}`\n`  Left:` `{left}`\n`User Retention`: `{retention}%`"
     except:
         return "Not enough to show data. (Possibly zero users joined)"
+
+@register(group=Groups.ADMIN, interaction=False)
+async def membercount(ctx: Context, stat: str = 'total', year: int = None, month: int = None, day: int = None) -> str:
+    '''
+    Show how many current users where present on specified day
+    '''
+    if stat not in {'total', 'since', 'growth'}:
+        return "Command usage: !membercount [`total`|`growth`|`since`] [year] [month] [day]"
+    if stat == 'total':
+        return len(list(filter(lambda x: (not year or x.joined_at.year <= year) and (not month or x.joined_at.month <= month) and (not day or x.joined_at.day <= day), ctx.cache.members.values())))
+    elif stat == 'since':
+        return len(list(filter(lambda x: (not year or x.joined_at.year >= year) and (not month or x.joined_at.month >= month) and (not day or x.joined_at.day >= day), ctx.cache.members.values())))
+    elif stat == 'growth':
+        return len(list(filter(lambda x: (not year or x.joined_at.year == year) and (not month or x.joined_at.month == month) and (not day or x.joined_at.day == day), ctx.cache.members.values())))
