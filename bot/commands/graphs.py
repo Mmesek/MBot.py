@@ -4,7 +4,7 @@ from mlib.localization import tr
 @register(group=Groups.ADMIN, interaction=False)
 async def graph(ctx: Context, graph='all', resample='Y', locator='Month', interval=4, *args, growth=False, language, **kwargs):
     '''Possible arguments: graph=all/joined/created/boosters\nresample=W-MON/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth'''
-    import time, asyncio
+    import time
     b = time.time()
     import pandas as pd
     import matplotlib.pyplot as plt
@@ -99,19 +99,19 @@ async def graph_infractions(ctx: Context, infraction_type='all', resample='D', l
     from mlib import graphing
     import pandas as pd
     import matplotlib.pyplot as plt
-    from MFramework.utils.utils import truncate
+    from mlib.utils import truncate
     from datetime import date
     f = time.time()
     await ctx.deferred()
     _s = ctx.db.sql.session()
-    from ..database import log as db
-    infractions = _s.query(db.Infractions).filter(db.Infraction.server_id == ctx.guild_id)
+    from ..commands_slash.infractions import db_Infraction as Infraction, InfractionTypes
+    infractions = _s.query(Infraction).filter(Infraction.server_id == ctx.guild_id)
     if infraction_type != 'all':
-        infractions = infractions.filter(db.Infraction.type == infraction_type)
+        infractions = infractions.filter(Infraction.type == InfractionTypes(infraction_type))
     if moderator != None:
-        infractions = infractions.filter(db.Infraction.moderator_id == moderator)
+        infractions = infractions.filter(Infraction.moderator_id == moderator)
     if user != None:
-        infractions = infractions.filter(db.Infraction.user_id == user)
+        infractions = infractions.filter(Infraction.user_id == user)
     infractions = infractions.all()
     s = time.time()
     total = {'Total Infractions': []}
@@ -158,7 +158,7 @@ async def graph_infractions(ctx: Context, infraction_type='all', resample='D', l
     fig.autofmt_xdate()
 
     #Set Names
-    graphing.set_legend(ax, tr('commands.graph.infractions', language), tr('commands.graph.infractionCount', language), 'Dates (D/M)')
+    graphing.set_legend(ax, tr('commands.graph.infractions', language), tr('commands.graph.infractionCount', language), 'Dates (D/M)', framealpha=1)
     fig.tight_layout()
     
     img_str = graphing.create_image(fig)
