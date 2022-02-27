@@ -209,6 +209,7 @@ async def when(ctx: Context) -> str:
 class Characters(Enum):
     Ayo = "Hakon_Betrayal"
     Hakon = "HakonStory"
+    Frank = "LooseEnds"
 
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 
@@ -231,6 +232,7 @@ async def truth(ctx: Context, character: Characters, captions: str=None):
     chars = {
         Characters.Ayo: "Farewell, we will tell people you went to Harran for Olympics",
         Characters.Hakon: "Hakon, visiting Ayo so soon?",
+        Characters.Frank: "Your rent is long due, Frank",
     }
     if not captions:
         captions = chars.get(character)
