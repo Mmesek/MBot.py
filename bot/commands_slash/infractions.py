@@ -420,6 +420,8 @@ async def report(ctx: Context, msg: str = None):
     msg:
         optional message about what's happening
     '''
+    if not ctx.data.referenced_message and not msg:
+        return "Either reply to message you want to report or state a reason of your report."
     #await ctx.cache.logging["report"](ctx.data)
     reported_to = 0
     _msg = await ctx.reply("I'm on my way to notify moderators!")
@@ -442,12 +444,16 @@ async def report(ctx: Context, msg: str = None):
     import time
     start = time.time()
     #for moderator in filter(lambda x: ctx.data.channel_id in x["moderated_channels"] or language in x["languages"], ctx.cache.moderators):
+    mod_roles = ctx.cache.groups[Groups.MODERATOR]
+    for moderator in list(filter(lambda x: any(role in ctx.cache.members[x].roles for role in mod_roles), ctx.cache.members)):
     #for moderator in list(filter(lambda x: ctx.cache.cachedRoles(ctx.cache.members[x].roles).can_use(Groups.MODERATOR), ctx.cache.members)):
-    #    if ctx.cache.members[moderator].user.bot or (moderator not in ctx.cache.moderators or ctx.cache.moderators[moderator].status not in ["online", "idle"]):
-    #        continue
+        if ctx.cache.members[moderator].user.bot or (moderator not in ctx.cache.moderators or ctx.cache.moderators[moderator].status not in ["online", "idle"]):
+            continue
 
-    #    await ctx.cache.logging["report"].log_dm(moderator, embeds, components)
-    #    reported_to += 1
+        #await ctx.cache.logging["report"].log_dm(moderator, embeds, components)
+        dm = await ctx.bot.create_dm(moderator)
+        await ctx.bot.create_message(dm.id, embeds=embeds, components=components)
+        reported_to += 1
 
     end = time.time()
     if reported_to:
@@ -455,7 +461,7 @@ async def report(ctx: Context, msg: str = None):
         await ctx.data.react(ctx.bot.emoji.get("success"))
     else:
         await _msg.edit(f"Couldn't find any moderator online, falling back to regular ping")
-        await ctx.bot.create_message(ctx.channel_id, "<@&496201383524171776>, There is a report waiting!", message_reference=ctx.data.message_reference or Message_Reference(message_id=ctx.data.id, channel_id=ctx.data.channel_id, guild_id=ctx.data.guild_id), allowed_mentions=None)
+        await ctx.bot.create_message(ctx.channel_id, "<@&496201383524171776>, There is a report waiting!", embeds=embeds, message_reference=ctx.data.message_reference or Message_Reference(message_id=ctx.data.id, channel_id=ctx.data.channel_id, guild_id=ctx.data.guild_id), allowed_mentions=None)
 
 class Report(Log):
     username = "User Report Log"
