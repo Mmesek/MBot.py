@@ -123,7 +123,7 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     await msg.edit(f"The word was `{hidden}`! Took `{x-1}` rounds to guess", embeds=[e])
 
 @register(group=Groups.GLOBAL, main=game)
-async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: bool = False, accept_invalid: bool = False, view_letters: bool = False):
+async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: bool = False, accept_invalid: bool = False, view_letters: int = 0):
     '''
     Worlde game with random words each time
     Params
@@ -137,8 +137,15 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
     accept_invalid:
         Whether not valid words should be accepted and consume try
     view_letters:
-        Whether correct letters should be displayed instead of hidden characters
+        How correct letters should be displayed
+        Choices:
+            Colors = 0
+            Symbols = 1
+            Letters = 2
     '''
+    symbols = view_letters == 1
+    if symbols:
+        view_letters = False
     with open('/usr/share/dict/words') as f:
         words = [word.strip() for word in f if "'" not in word]
     hidden = random.choice(list(words))
@@ -171,13 +178,13 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
             if letter in hidden:
                 if hidden[x] == letter:
                     # Correct letter
-                    positions.append(f"__{letter}__" if view_letters else "*")
+                    positions.append(f"__{letter}__" if view_letters else "🟩" if not symbols else "*")
                     correct_letters.add(letter)
                 else:
                     # Correct letter, wrong place
-                    positions.append(f"**{letter}**" if view_letters else "!")
+                    positions.append(f"**{letter}**" if view_letters else "🟨" if not symbols else "!")
             else:
-                positions.append("-")
+                positions.append("🟥" if not symbols else "-")
         guess = "".join(positions)
         guesses.append(guess)
         attempts = "\n".join([f"{x+1} | {i}" for x, i in enumerate(guesses)])
