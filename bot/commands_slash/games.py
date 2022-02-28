@@ -52,7 +52,7 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     '''
     if not words:
         with open('/usr/share/dict/words') as f:
-            words = [word.strip() for word in f]
+            words = [word.strip() for word in f if "'" not in word]
     else:
         words = [word.strip() for word in words.split(',')]
     msg = await ctx.reply("...")
