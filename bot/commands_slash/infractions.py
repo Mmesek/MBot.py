@@ -616,3 +616,44 @@ async def guild_member_update(self: Bot, data: Guild_Member_Update):
 
 class Auto_Mod(Infraction):
     pass
+
+
+from MFramework.commands.components import Button, Row, Modal, TextInput, Button_Styles, Emoji
+
+class Reason(Modal):
+    @classmethod
+    async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
+        action, id = data.split("-")
+        member: Guild_Member = ctx.cache.members.get(int(id))
+        if member:
+            user = member.user
+        else:
+            user = User(id=data)
+        if action == "Warn":
+            return await warn(ctx, user, inputs.get("Reason", "Instant Action"))
+        elif action == "Mute":
+            return await mute(ctx, user, inputs.get("Reason", "Instant Action"))
+        elif action == "Kick":
+            return await kick(ctx, user, inputs.get("Reason", "Instant Action"))
+        elif action == "Ban":
+            return await ban(ctx, user, inputs.get("Reason", "Instant Action"))
+
+class InstantAction(Button):
+    auto_deferred: bool = False
+    def __init__(self, label: str, custom_id: str = None, style: Button_Styles = ..., emoji: Emoji = None, disabled: bool = False):
+        super().__init__(label, custom_id or label, style, emoji, disabled)
+    @classmethod
+    async def execute(cls, ctx: Context, data: str):
+        return Reason(Row(TextInput("Reason", placeholder="Reason of this action")), title="Infraction", custom_id=data)
+
+
+def instant_actions(id: Snowflake):
+    _instant_actions = Row(
+        InstantAction("Warn", style=Button_Styles.PRIMARY, emoji=Emoji(name="📖")), 
+        InstantAction("Mute", style=Button_Styles.SECONDARY, emoji=Emoji(name="🔕")), 
+        InstantAction("Kick", style=Button_Styles.SECONDARY, emoji=Emoji(name="🦶")), 
+        InstantAction("Ban", style=Button_Styles.DANGER, emoji=Emoji(name="🔨"))
+    )
+    for ia in _instant_actions.components:
+        ia.custom_id += f"-{id}"
+    return _instant_actions
