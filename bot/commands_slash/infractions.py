@@ -621,6 +621,7 @@ class Auto_Mod(Infraction):
 from MFramework.commands.components import Button, Row, Modal, TextInput, Button_Styles, Emoji
 
 class Reason(Modal):
+    private_response = False
     @classmethod
     async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
         action, id = data.split("-")
@@ -651,7 +652,7 @@ def instant_actions(id: Snowflake):
     _instant_actions = Row(
         InstantAction("Warn", style=Button_Styles.PRIMARY, emoji=Emoji(name="📖")), 
         InstantAction("Mute", style=Button_Styles.SECONDARY, emoji=Emoji(name="🔕")), 
-        InstantAction("Kick", style=Button_Styles.SECONDARY, emoji=Emoji(name="🦶")), 
+        InstantAction("Kick", style=Button_Styles.SECONDARY, emoji=Emoji(name="🏌️‍♂️")), 
         InstantAction("Ban", style=Button_Styles.DANGER, emoji=Emoji(name="🔨"))
     )
     for ia in _instant_actions.components:
