@@ -3,6 +3,7 @@ from typing import List
 from MFramework import register, Groups, Context, UserID, Snowflake, onDispatch, Bot, Message, Channel_Types
 from MFramework.utils.log import Message as MessageLog
 from MFramework.commands.components import Select, Select_Option
+from bot.commands_slash.infractions import instant_actions
 
 @onDispatch
 async def direct_message_create(self: Bot, data: Message):
@@ -184,7 +185,8 @@ class Direct_Message(MessageLog):
                     )
                 ]
             else:
-                dm_components = None
+                dm_components = []
+            dm_components.append(instant_actions(msg.author.id))
             await self._log(content=content+f' <@!{msg.author.id}>', embeds=embeds, username=f"{msg.author.username}#{msg.author.discriminator}", avatar=avatar, thread_id=thread_id, components=dm_components)
             await msg.react(self.bot.emoji['success'])
         except:
