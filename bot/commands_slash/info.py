@@ -105,8 +105,16 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
             _stats.append((stat.name.name, stat.value))
         if _stats:
             embed.addField("Statistics", "\n".join(format_values(_stats)), False)
+        from ..dispatch.xp import User_Experience
+        xp = User_Experience.fetch_or_add(s, user_id=member.user.id, server_id=ctx.guild_id)
+        if ctx.permission_group.can_use(Groups.MODERATOR) and xp.value:
+            embed.addField("XP", str(xp.value), True)
+    components = []
+    if ctx.permission_group.can_use(Groups.MODERATOR):
+        from .infractions import instant_actions
+        components.append(instant_actions(member.user.id))
+    await ctx.reply(embeds=[embed], components=components)
 
-    return embed
 
 from typing import Callable, List, Tuple
 def format_values(iterable: List[Tuple[str, str]], check: Callable = None):
