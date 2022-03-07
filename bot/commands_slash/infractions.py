@@ -482,7 +482,7 @@ async def expire(ctx: Context, infraction_id: int) -> str:
         Infraction to expire
     '''
     session = ctx.db.sql.session()
-    infraction = Infraction.filter(session, server_id=ctx.guild_id, id=infraction_id).first()
+    infraction = db_Infraction.filter(session, server_id=ctx.guild_id, id=infraction_id).first()
     if not infraction:
         return "Couldn't find infraction with provided id"
     infraction.expires_at = datetime.utcnow()
@@ -621,6 +621,37 @@ class Auto_Mod(Infraction):
 
 
 from MFramework.commands.components import Button, Row, Modal, TextInput, Button_Styles, Emoji
+'''
+class InstantActions(Row):
+    def __init__(self, id: Snowflake):
+        super().__init__(i.custom_id + f"-{id}" for i in InstantActions.components)
+
+    async def get_user(self, ctx: Context, data: str) -> User:
+        member: Guild_Member = ctx.cache.members.get(int(data))
+        if member:
+            return member.user
+        return User(id=data)
+
+    @button(style=Button_Styles.PRIMARY, auto_defer=False)
+    async def warn(self, ctx: Context, data: str):
+        inputs = ctx.modal(TextInput("Reason"))
+        await warn(ctx, self.get_user(ctx, data), inputs.get("Reason", ""))
+
+    @button(style=Button_Styles.SECONDARY, auto_defer=False)
+    async def mute(self, ctx: Context, data: str):
+        inputs = ctx.modal(TextInput("Reason"))
+        await mute(ctx, self.get_user(ctx, data), inputs.get("Reason", ""))
+
+    @button(style=Button_Styles.SECONDARY, auto_defer=False)
+    async def kick(self, ctx: Context, data: str):
+        inputs = ctx.modal(TextInput("Reason"))
+        await kick(ctx, self.get_user(ctx, data), inputs.get("Reason", ""))
+
+    @button(style=Button_Styles.DANGER, auto_defer=False)
+    async def ban(self, ctx: Context, data: str):
+        inputs = ctx.modal(TextInput("Reason"))
+        await ban(ctx, self.get_user(ctx, data), inputs.get("Reason", ""))
+'''
 
 class Reason(Modal):
     private_response = False
