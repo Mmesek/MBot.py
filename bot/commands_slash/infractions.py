@@ -236,7 +236,7 @@ async def list_(ctx: Context, user: User=None):
     width, id_width, active = 0, 0, 0
     user_infractions = []
     from collections import namedtuple
-    Row = namedtuple("Row", ['id', 'link', 'timestamp', 'type', 'reason', 'moderator_id', 'duration', 'active'])
+    _Row = namedtuple("Row", ['id', 'link', 'timestamp', 'type', 'reason', 'moderator_id', 'duration', 'active'])
     from mlib.localization import tr, secondsToText
     for infraction in _infractions:
         translated = tr(f"commands.infractions.types.{infraction.type.name}", language)
@@ -245,7 +245,7 @@ async def list_(ctx: Context, user: User=None):
         if len(str(infraction.id)) > id_width:
             id_width = len(str(infraction.id))
         user_infractions.append(
-            Row(
+            _Row(
                 id=infraction.id,
                 link="[#](<{}>)".format(
                         Discord_Paths.MessageLink.link.format(guild_id=infraction.server_id, channel_id=infraction.channel_id, message_id=infraction.message_id)
@@ -289,8 +289,22 @@ async def list_(ctx: Context, user: User=None):
             await ctx.send_dm(embeds=[e])
             return "Check your DM"
         else:
-            return e
+            components = []
+            if ctx.permission_group.can_use(Groups.ADMIN):
+                _ = [Select_Option(label=f"#{i[0]}", value=i[0], description=i[4][:50]) for i in user_infractions if not i[-1]][:25]
+                if _:
+                    components.append(Row(ExpireInfractions(*_, placeholder="Expire Infractions")))
+            await ctx.reply(embeds=[e], components=components)
+            return
     return tr("commands.infractions.no_infractions", language)
+
+from MFramework.commands.components import Select, Select_Option
+class ExpireInfractions(Select):
+    @classmethod
+    async def execute(cls, ctx: 'Context', data: str, values: List[str], not_selected: List[Select_Option]):
+        if ctx.permission_group.can_use(Groups.ADMIN):
+            return await expire(ctx, values[0])
+        return "Only Admins can expire infractions!"
 
 
 #@register(group=Groups.MODERATOR, main=infraction)
@@ -487,7 +501,7 @@ async def expire(ctx: Context, infraction_id: int) -> str:
         return "Couldn't find infraction with provided id"
     infraction.expires_at = datetime.utcnow()
     session.commit()
-    return f"Successfully expired infraction with reason `{infraction.reason}` added by {infraction.moderator_id}"
+    return f"Successfully expired infraction with reason `{infraction.reason}` added by <@{infraction.moderator_id}>"
 
 
 class Infraction(Log):
