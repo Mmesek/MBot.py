@@ -290,6 +290,8 @@ async def list_(ctx: Context, user: User=None):
             return "Check your DM"
         else:
             components = []
+            if ctx.permission_group.can_use(Groups.MODERATOR):
+                components.append(instant_actions(user.id))
             if ctx.permission_group.can_use(Groups.ADMIN):
                 _ = [Select_Option(label=f"#{i[0]}", value=i[0], description=i[4][:50]) for i in user_infractions if not i[-1]][:25]
                 if _:
