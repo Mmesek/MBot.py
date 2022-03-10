@@ -7,16 +7,16 @@ async def edit_message(ctx: Context, messageID, *newMessage,  channel, **kwargs)
 
 
 @register(group=Groups.ADMIN, interaction=False)
-async def edit_emoji(ctx: Context, emojis, roles, *args,  **kwargs):
+async def edit_emoji(ctx: Context, emojis: str, roles: Snowflake):
     '''Allows only specific roles access to emoji's'''
-    for emoji in emojis:
+    for emoji in emojis.split(","):
         if "<:" in emoji:
-            part2 = emoji.replace("\\<:", "").replace(">", "").replace(":", " ").split(" ", 2)
+            part2 = emoji.strip().replace("\\<:", "").replace(">", "").replace(":", " ").split(" ", 2)
             await ctx.bot.modify_guild_emoji(ctx.guild_id, part2[1], part2[0], roles)
 
 
 @register(group=Groups.ADMIN, interaction=False)
-async def aemoji(ctx: Context, emoji_name) -> str:
+async def aemoji(ctx: Context, emoji_name: str) -> str:
     '''Sends animated emoji'''
     emojis = await ctx.bot.list_guild_emoji(ctx.guild_id)
     message = ""
@@ -31,7 +31,7 @@ async def aemoji(ctx: Context, emoji_name) -> str:
 
 
 @register(group=Groups.ADMIN, interaction=False)
-async def list_emoji(ctx: Context, *args,  all=False, regular=False) -> Embed:
+async def list_emoji(ctx: Context, all: bool=False, regular: bool=False) -> Embed:
     '''Lists all available emoji's in guild'''
     emojis = await ctx.bot.list_guild_emojis(ctx.guild_id)
     _animated = ""
@@ -54,12 +54,12 @@ async def list_emoji(ctx: Context, *args,  all=False, regular=False) -> Embed:
 
 
 @register(group=Groups.ADMIN, interaction=False)
-async def delete(ctx: Context, channel, *message):
+async def delete(ctx: Context, channel: Snowflake, message: Snowflake):
     '''Delete's message'''
     await ctx.bot.delete_message(channel, *message)
 
 @register(group=Groups.ADMIN, interaction=False)
-async def getmessages(ctx: Context, user) -> Embed:
+async def getmessages(ctx: Context, user: Snowflake) -> Embed:
     '''Retrives messages from DM'''
     dm = await ctx.bot.create_dm(user)
     messages = await ctx.bot.get_messages(dm.id)
@@ -70,7 +70,7 @@ async def getmessages(ctx: Context, user) -> Embed:
     return e
 
 @register(group=Groups.ADMIN, interaction=False)
-async def prunecount(ctx: Context, days=7) -> str:
+async def prunecount(ctx: Context, days: int = 7) -> str:
     '''Shows prune count'''
     count = await ctx.bot.get_guild_prune_count(ctx.guild_id, days)
     return str(count)
