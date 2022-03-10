@@ -59,6 +59,8 @@ Only people with `_Techland` in their names *and* with the Techland role work fo
 However, If you need to reach Techland, you can either directly contact the Community Manager, <@210060521238560768>, send them an email to `support@techland.pl` or use their website: https://support.techland.pl/
 
 Under any circumstances, do **not** DM or @ping ANY other Techland employee other than <@210060521238560768> on the server.
+
+__***THIS IS AUTOMATED MESSAGE. DO NOT REPLY AS YOUR MESSAGES WILL BE SEND TO A SERVER MODERATION.***__
 '''
     try:
         channel = await self.create_dm(data.user.id)
