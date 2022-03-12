@@ -191,7 +191,7 @@ async def infraction(ctx: Context, *, type: InfractionTypes, user: User=None, re
                 else:
                     await ctx.send("Couldn't deliver DM message")
     
-    if active and type not in {InfractionTypes.Mute, InfractionTypes.Kick, InfractionTypes.Ban, InfractionTypes.Unmute, InfractionTypes.Unban}:
+    if active and type not in {InfractionTypes.Timeout, InfractionTypes.Mute, InfractionTypes.Kick, InfractionTypes.Ban, InfractionTypes.Unmute, InfractionTypes.Unban}:
         return await auto_moderation(ctx, session, user, type, infractions)
     elif active or type in {InfractionTypes.Unban, InfractionTypes.Unmute, InfractionTypes.DM_Unmute}:
         return True
@@ -208,7 +208,7 @@ async def auto_moderation(ctx: Context, session, user: User, type: InfractionTyp
         #    await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, MUTED_ROLE[0], reason=f"{active} active infractions")
         #else:
         await ctx.bot.modify_guild_member(ctx.guild_id, user.id, mute=None, deaf=None, communication_disabled_until=datetime.utcnow()+duration, reason=f"{active} active infractions")
-        await infraction(ctx, type=InfractionTypes.Mute, user=user, reason=f"{active} active infractions", duration=duration, increase_counter=False)
+        await infraction(ctx, type=InfractionTypes.Timeout, user=user, reason=f"{active} active infractions", duration=duration, increase_counter=False)
     elif autoban and active >= autoban and type is not InfractionTypes.Ban:
         await ctx.bot.create_guild_ban(ctx.guild_id, user.id, reason=f"{active} active infractions")
         reason = "\n" + "\n".join([f"- {i.reason}" for i in active_infractions if i.type not in {InfractionTypes.Unmute, InfractionTypes.Unban}])
