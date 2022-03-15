@@ -204,10 +204,11 @@ async def auto_moderation(ctx: Context, session, user: User, type: InfractionTyp
     if automute and active == automute and type is not InfractionTypes.Mute:
         #MUTED_ROLE = list(ctx.cache.groups.get(Groups.MUTED, [None]))
         duration = ctx.cache.settings.get(types.Setting.Auto_Mute_Duration, '12h')
+        from mlib.converters import total_seconds
         #if MUTED_ROLE:
         #    await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, MUTED_ROLE[0], reason=f"{active} active infractions")
         #else:
-        await ctx.bot.modify_guild_member(ctx.guild_id, user.id, mute=None, deaf=None, communication_disabled_until=datetime.utcnow()+duration, reason=f"{active} active infractions")
+        await ctx.bot.modify_guild_member(ctx.guild_id, user.id, mute=None, deaf=None, communication_disabled_until=datetime.utcnow()+total_seconds(duration), reason=f"{active} active infractions")
         await infraction(ctx, type=InfractionTypes.Timeout, user=user, reason=f"{active} active infractions", duration=duration, increase_counter=False)
     elif autoban and active >= autoban and type is not InfractionTypes.Ban:
         await ctx.bot.create_guild_ban(ctx.guild_id, user.id, reason=f"{active} active infractions")
