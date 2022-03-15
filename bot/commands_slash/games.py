@@ -123,7 +123,7 @@ async def hangman(ctx: Context, words: str = None, multiplayer: bool=False, roun
     await msg.edit(f"The word was `{hidden}`! Took `{x-1}` rounds to guess", embeds=[e])
 
 @register(group=Groups.GLOBAL, main=game)
-async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: bool = False, accept_invalid: bool = False, view_letters: int = 0):
+async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, official: bool = False, day: int = None, hard: bool = False, accept_invalid: bool = False, view_letters: int = 0):
     '''
     Worlde game with random words each time
     Params
@@ -132,6 +132,10 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
         Amount of chances you have to guess the word
     multiplayer:
         Whether you want to allow other people in chat to guess as well
+    official:
+        Whether today's word from official list should used instead
+    day:
+        When using official list, Specific day that should be used instead of today
     hard:
         Whether new attempt should contain previously guessed letters
     accept_invalid:
@@ -146,9 +150,19 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
     symbols = view_letters == 1
     if symbols:
         view_letters = False
-    with open('/usr/share/dict/words') as f:
+    if official:
+        word_list = "data/wordle-official.txt"
+    else:
+        word_list = '/usr/share/dict/words'
+    with open(word_list) as f:
         words = [word.strip() for word in f if "'" not in word]
-    hidden = random.choice(list(words))
+    if official:
+        if not day:
+            from datetime import datetime
+            day = (datetime.today() - datetime(year=2021, month=6, day=19)).days
+        hidden = words[day]
+    else:
+        hidden = random.choice(list(words))
     await ctx.reply("Send word (only valid words are accepted) of same length as \"mystery word\".\n`*` Means it's a correct letter in correct place\n`!` is just correct letter\n`-` means wrong letter")
     await ctx.data.send_followup("`"+"-"*len(hidden)+f"` ({len(hidden)})")
     r = 0
@@ -170,9 +184,6 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
                                     timeout = 360)
         except TimeoutError:
             return f"Didn't receive any answer for past 6 minutes! Game ended \=( Correct word was: `{hidden}`"
-        if answer.content == hidden:
-            await answer.reply(f"You guessed correctly! Took `{r}` rounds to guess")
-            return
         positions = []
         for x, letter in enumerate(answer.content.lower().strip()):
             if letter in hidden:
@@ -191,4 +202,7 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, hard: 
         if not view_letters:
             attempts = f"```{attempts}```"
         await ctx.data.edit_followup(content=f"{attempts}\nRemaining attempts: {tries-r}")
+        if answer.content == hidden:
+            await answer.reply(f"You guessed correctly! Took `{r}` rounds to guess")
+            return
     return f"Sadly you ran out of attempts! Correct word was: `{hidden}`"
