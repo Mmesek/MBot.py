@@ -440,7 +440,7 @@ async def report(ctx: Context, msg: str = None):
         optional message about what's happening
     '''
     if not ctx.data.referenced_message and not msg:
-        return "Either reply to message you want to report or state a reason of your report."
+        return "Either reply to a message you want to have reported and/or state a reason of your report while using command."
     #await ctx.cache.logging["report"](ctx.data)
     reported_to = 0
     _msg = await ctx.reply("I'm on my way to notify moderators!")
