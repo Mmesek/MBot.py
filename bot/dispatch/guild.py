@@ -53,10 +53,14 @@ Hey! Welcome to *the official Dying Light Discord server*! I'm a **community**-m
 Feel free to message me whenever you have an issue, suggestion or really anything related to the Discord **server**. 
 Please, do not DM moderation directly for these matters.
 
-Note however, that currently __no member of the server moderation or administration works for Techland__. 
-Only people with `_Techland` in their names *and* with the Techland role work for Techland.
-
 However, If you need to reach Techland, you can either directly contact the Community Manager, <@210060521238560768>, send them an email to `support@techland.pl` or use their website: https://support.techland.pl/
+
+Some links:
+
+<https://store.techland.net/> - Techland Store
+<https://techland-merch.com/> - Techland Merch
+<https://techlandgg.com/> - Get in game rewards and complete challenges
+<https://twitch.tv/uncyy> - Check out latest Techland's CM streams
 
 Under any circumstances, do **not** DM or @ping ANY other Techland employee other than <@210060521238560768> on the server.
 
