@@ -162,7 +162,7 @@ async def rate(ctx: Context, rate: float, channel: Channel = None, role: Role = 
         result.append(("Server", ctx.cache.guild.name, rate, previous))
 
     session.commit()
-    return "\n".join(["Rate for [{}] {} changed: {}->{}".format(*i) for i in result]) or "Nothing selected"
+    return "\n".join(["Rate for [{}] {} changed: {} from {}".format(*i) for i in result]) or "Nothing selected"
 
 @register(group=Groups.GLOBAL, main=xp, private_response=True, only_interaction=True)
 async def progress(ctx: Context, user: User = None) -> Embed:
