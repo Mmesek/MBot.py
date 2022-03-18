@@ -145,8 +145,8 @@ async def rate(ctx: Context, rate: float, channel: Channel = None, role: Role = 
         r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
         previous = r.get_setting(types.Setting.Exp) or 1.0
         r.add_setting(types.Setting.Exp, rate)
-        ctx.cache.role_rates.append((role.id, rate))
-        ctx.cache.role_rates.sort(key=lambda x: x[1])
+        ctx.cache.role_rates[role.id] = rate
+        #ctx.cache.role_rates.sort(key=lambda x: x[1])
         result.append(("Role", role.name, rate, previous))
     if user:
         from ..database import models
