@@ -160,6 +160,15 @@ async def rate(ctx: Context, rate: float, channel: Channel = None, role: Role = 
         s.add_setting(types.Setting.Exp, rate)
         ctx.cache.server_exp_rate = rate
         result.append(("Server", ctx.cache.guild.name, rate, previous))
+    
+    if not any(channel, role, user, server):
+        if ctx.cache.exp_rates:
+            result.extend([f"[Channel] <#{k}>: {v}" for k, v in ctx.cache.exp_rates.items()])
+        if ctx.cache.role_rates:
+            result.extend([f"[Role] <@&{k}>: {v}" for k, v in ctx.cache.role_rates.items()])
+        if ctx.cache.server_exp_rate and ctx.cache.server_exp_rate != 1.0:
+            result.extend([f"[Server] {ctx.cache.guild.name}: {ctx.cache.server_exp_rate}"])
+        return "\n".join(result)
 
     session.commit()
     return "\n".join(["Rate for [{}] {} changed: {} from {}".format(*i) for i in result]) or "Nothing selected"
