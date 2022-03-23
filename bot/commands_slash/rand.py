@@ -138,3 +138,23 @@ async def xkcdpassword(ctx: Context) -> str:
         words = [word.strip() for word in f]
         password = ' '.join(secrets.choice(words) for i in range(4))
     return password
+
+@register(group=Groups.GLOBAL, main=roll)
+async def ratio(ctx: Context, severity: int = 5):
+    '''
+    Get Ratioed
+    Params
+    ------
+    severity:
+        Severity of the ratio
+    '''
+    with open('data/ratio.txt','r',newline='\n',encoding='utf-8') as file:
+        words = set([i.strip() for i in file.readlines()])
+    if severity > len(words):
+        severity = len(words)
+    elif severity < 1:
+        severity = 1
+    ratios = " + ".join(random.sample(words, severity))
+    if len(ratios) > 2000:
+        ratios = ratios[:1990] + f" + ...{len(ratios[1990:])}"
+    return ratios
