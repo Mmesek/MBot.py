@@ -139,8 +139,9 @@ async def xkcdpassword(ctx: Context) -> str:
         password = ' '.join(secrets.choice(words) for i in range(4))
     return password
 
+
 @register(group=Groups.GLOBAL, main=roll)
-async def ratio(ctx: Context, severity: int = 5):
+async def ratio(ctx: Context, severity: int = 5) -> str:
     '''
     Get Ratioed
     Params
@@ -158,3 +159,22 @@ async def ratio(ctx: Context, severity: int = 5):
     if len(ratios) > 2000:
         ratios = ratios[:1990] + f" + ...{len(ratios[1990:])}"
     return ratios
+
+
+@register(group=Groups.GLOBAL, main=roll)
+async def spin(ctx: Context, terms: str = None, k: int = 1) -> str:
+    '''
+    Pick random word(s) from selection
+    Params
+    ------
+    terms:
+        Terms to choose from, split using comma (,). Leave empty for any English word
+    k:
+        Amount of words to choose.
+    '''
+    if not terms:
+        with open('/usr/share/dict/words') as f:
+            terms = f.readlines()
+    else:
+        terms = terms.split(',')
+    return ", ".join(random.sample([i.strip() for i in terms], k))
