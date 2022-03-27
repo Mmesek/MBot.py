@@ -151,7 +151,7 @@ async def wordle(ctx: Context, tries: int = 6, multiplayer: bool = False, offici
     if symbols:
         view_letters = False
     if official:
-        word_list = "data/wordle-official.txt"
+        word_list = "data/words/wordle-official.txt"
     else:
         word_list = '/usr/share/dict/words'
     with open(word_list) as f:

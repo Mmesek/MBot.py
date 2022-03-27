@@ -237,9 +237,9 @@ async def truth(ctx: Context, character: Characters, captions: str=None):
     if not captions:
         captions = chars.get(character)
     from PIL import Image, ImageDraw, ImageFont
-    img = Image.open(f'data/{character.value}.png')
+    img = Image.open(f'data/images/{character.value}.png')
     draw = ImageDraw.Draw(img)
-    font = ImageFont.truetype("data/Roboto-Regular.ttf", size=65)
+    font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=65)
     from textwrap import wrap
     captions = wrap(captions, 38)
     y = 470

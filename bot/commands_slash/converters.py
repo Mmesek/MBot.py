@@ -453,8 +453,8 @@ async def palette(ctx: Context, colors: str):
     dst.paste(Image.new("RGBA", (150, height), mention_dark), (550, 0))
     dst.paste(Image.new("RGBA", (150, height), light), (700, 0))
     dst.paste(Image.new("RGBA", (150, height), mention_light), (850, 0))
-    font = ImageFont.truetype("data/Roboto-Regular.ttf", size=15)
-    color_font = ImageFont.truetype("data/Roboto-Regular.ttf", size=20)
+    font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=15)
+    color_font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=20)
 
     draw = ImageDraw.Draw(dst)
     for x, color in enumerate(colors):

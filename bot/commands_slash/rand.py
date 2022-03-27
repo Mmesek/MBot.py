@@ -46,7 +46,7 @@ async def ball(question: str = None) -> str:
     question:
         Question you seek answer to
     """
-    with open("data/8ball.json", "r", newline="", encoding="utf-8") as file:
+    with open("data/words/8ball.json", "r", newline="", encoding="utf-8") as file:
         import json
 
         ball8 = json.load(file)
@@ -104,13 +104,13 @@ async def quote() -> str:
     """Sends random quote"""
     from os import path
 
-    if not path.isfile("data/quotes.json"):
+    if not path.isfile("data/words/quotes.json"):
         import requests
 
         raw = requests.get("https://raw.githubusercontent.com/dwyl/quotes/master/quotes.json")
-        with open("data/quotes.json", "wb") as file:
+        with open("data/words/quotes.json", "wb") as file:
             file.write(raw.content)
-    with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
+    with open("data/words/quotes.json", "r", newline="", encoding="utf-8") as file:
         import json
 
         q = json.load(file)
@@ -139,7 +139,7 @@ async def ratio(severity: int = 5) -> str:
     severity:
         Severity of the ratio
     """
-    with open("data/ratio.txt", "r", newline="\n", encoding="utf-8") as file:
+    with open("data/words/ratio.txt", "r", newline="\n", encoding="utf-8") as file:
         words = set([i.strip() for i in file.readlines()])
     if severity > len(words):
         severity = len(words)
