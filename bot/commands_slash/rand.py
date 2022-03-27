@@ -1,14 +1,14 @@
-from MFramework import register, Groups, Context
+from MFramework import register, Groups
 from random import SystemRandom
 random = SystemRandom()
 
 @register()
-async def roll(ctx: Context):
+async def roll():
     '''Random Numbers'''
     pass
 
 @register(group=Groups.GLOBAL, main=roll)
-async def chance(ctx: Context, statement: str) -> str:
+async def chance(statement: str) -> str:
     '''Rolls a percentage chance
     Params
     ------
@@ -20,7 +20,7 @@ async def chance(ctx: Context, statement: str) -> str:
     return f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}"
 
 @register(group=Groups.GLOBAL, main=roll)
-async def dice(ctx: Context, number: int=20, times: int=1) -> str:
+async def dice(number: int=20, times: int=1) -> str:
     '''Rolls a die
     Params
     ------
@@ -32,7 +32,7 @@ async def dice(ctx: Context, number: int=20, times: int=1) -> str:
     return ', '.join([str(number) + ": " + str(random.randrange(int(number)) + 1) for i in range(times)])
 
 @register(group=Groups.GLOBAL, main=roll)
-async def ball(ctx: Context, question: str = None, *args, language, **kwargs):
+async def ball(question: str = None) -> str:
     '''
     Asks 8 ball a question
     Params
@@ -70,17 +70,17 @@ async def ball(ctx: Context, question: str = None, *args, language, **kwargs):
             answer += random.choice(ball8["interpuntions"]).strip(',')
     else:
         answer = random.choice(ball8["answers"])
-    await ctx.reply(answer)
+    return answer
 
 
 @register(group=Groups.GLOBAL, main=roll)
-async def coin(ctx: Context) -> str:
+async def coin() -> str:
     '''Flips coin'''
     return 'Heads' if random.randint(0, 1) else 'Tails'
 
 
 @register(group=Groups.GLOBAL, main=roll)
-async def quote(ctx: Context) -> str:
+async def quote() -> str:
     '''Sends random quote'''
     from os import path
     if not path.isfile("data/quotes.json"):
@@ -91,12 +91,12 @@ async def quote(ctx: Context) -> str:
     with open("data/quotes.json", "r", newline="", encoding="utf-8") as file:
         import json
         q = json.load(file)
-    r = random.SystemRandom().randrange(len(q))
+    r = random.randrange(len(q))
     return '_'+q[r]["text"] + "_\n    ~" + q[r]["author"]
 
 
-@register(group=Groups.GLOBAL, main=roll)
-async def xkcdpassword(ctx: Context) -> str:
+@register(group=Groups.GLOBAL, main=roll, private_response=True)
+async def xkcdpassword() -> str:
     '''Generates random xkcd 936 styled password'''
     import secrets
     # On standard Linux systems, use a convenient dictionary file.
@@ -107,7 +107,7 @@ async def xkcdpassword(ctx: Context) -> str:
 
 
 @register(group=Groups.GLOBAL, main=roll)
-async def ratio(ctx: Context, severity: int = 5) -> str:
+async def ratio(severity: int = 5) -> str:
     '''
     Get Ratioed
     Params
@@ -128,7 +128,7 @@ async def ratio(ctx: Context, severity: int = 5) -> str:
 
 
 @register(group=Groups.GLOBAL, main=roll)
-async def spin(ctx: Context, terms: str = None, k: int = 1) -> str:
+async def spin(terms: str = None, k: int = 1) -> str:
     '''
     Pick random word(s) from selection
     Params
