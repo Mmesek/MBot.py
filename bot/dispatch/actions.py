@@ -10,6 +10,7 @@ async def responder(ctx: Bot, msg: Message, emoji: str):
         await msg.reply(file=emoji[1], filename=emoji[0])
 
 SNIPPET_PATTERN = re.compile(r"(?:(?P<cmd>[\D]+?)): ?(?:(?P<args>[^-\n]+)) ?(?:-(?P<flags>[\w]+))?")
+                              #(?:(?P<cmd>[\D]+(?: |:))) ?(?:(?P<args>[^-\n]+)) ?(?:-(?P<flags>[\w]+))?
 ALIASES = {"m": "Meme", "r":"Rule", "s":"Snippet"}
 
 EMOJI = re.compile(r":\w+:")
@@ -246,6 +247,25 @@ async def delete_non_spoilers(self: Bot, data: Message):
         )
     ):
         await data.delete(reason="Message is not surrounded with spoilers")
+        return True
+
+@onDispatch(event="message_create")
+async def media_only(self: Bot, data: Message):
+    channel: Channel = self.cache[data.guild_id].channels.get(data.channel_id, None)
+    if (
+        channel and ("media-only" in channel.topic.lower() and not (data.attachments or URL_PATTERN.search(data.content)))
+    ):
+        await data.delete(reason="Message doesn't contain attachment or URL in media-only channel")
+        return True
+
+@onDispatch(event="message_create", priority=1)
+async def no_commands(self: Bot, data: Message):
+    if (self.cache[data.guild_id].cachedRoles(data.member.roles).can_use(Groups.SUPPORT)
+        or self.cache[data.guild_id].guild.owner_id == data.author.id
+    ):
+        return
+    channel: Channel = self.cache[data.guild_id].channels.get(data.channel_id, None)
+    if channel and "commands-disabled" in channel.topic.lower():
         return True
 
 
