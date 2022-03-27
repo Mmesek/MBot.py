@@ -628,6 +628,7 @@ class Timeout_Event(Infraction_Event):
         if data.communication_disabled_until and data.communication_disabled_until > datetime.now(timezone.utc):
             reason, moderator = await self.get_ban_data(data, InfractionTypes.Timeout, 24)
             await super().log(data, type="timed out", reason=reason, by_user=moderator)
+            await super().log_dm(InfractionTypes.Timeout, data.guild_id, data.user.id, reason)
 
 @onDispatch
 async def guild_member_update(self: Bot, data: Guild_Member_Update):
