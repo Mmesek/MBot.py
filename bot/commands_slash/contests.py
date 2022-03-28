@@ -9,7 +9,66 @@ class Contest_Entries(Base):
     msg = sa.Column(sa.BigInteger)
     cc = sa.Column(sa.String)
 
-@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
+class Contest_Entries2(Base):
+    id = sa.Column(sa.BigInteger, primary_key=True)
+    msg = sa.Column(sa.BigInteger)
+
+from MFramework.commands.decorators import EventBetween
+from MFramework.commands.components import Modal, TextInput, Text_Input_Styles, Row
+
+@register(group=Groups.GLOBAL, guild=289739584546275339, auto_defer=False, private_response=True)
+@EventBetween(after_month=3, after_day=28, before_month=5, before_day=5, before_hour=17)
+async def msi(ctx: Context) -> str:
+    '''
+    Participate in MSI contest
+    '''
+    r = Msi(
+        Row(
+            TextInput("URL", style=Text_Input_Styles.Short, min_length=1, max_length=200, required=True, placeholder="URL to a picture")
+        ),
+        Row(
+            TextInput("URL 2", style=Text_Input_Styles.Short, min_length=1, max_length=200, required=False, placeholder="Optional URL to a second picture")
+        ),
+        Row(
+            TextInput("URL 3", style=Text_Input_Styles.Short, min_length=1, max_length=200, required=False, placeholder="Optional URL to a third picture")
+        ), title="MSI Contest"
+    )
+    return r
+
+
+class Msi(Modal):
+    @classmethod
+    async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
+        attachment = inputs.get('URL')
+        attachment2 = inputs.get('URL 2')
+        attachment3 = inputs.get('URL 3')
+
+        if attachment and (not (attachment.endswith(".png") or attachment.endswith(".jpg") or attachment.endswith(".jpeg")) or not attachment.startswith("http")):
+            return "Your URL (1) should point directly to an image, not an album! Seems like your URL doesn't start with http or doesn't end with .png, .jpg or .jpeg"
+        if attachment2 and (not (attachment2.endswith(".png") or attachment2.endswith(".jpg") or attachment2.endswith(".jpeg")) or not attachment2.startswith("http")):
+            return "Your URL (2) should point directly to an image, not an album! Seems like your URL doesn't start with http or doesn't end with .png, .jpg or .jpeg"
+        if attachment3 and (not (attachment3.endswith(".png") or attachment3.endswith(".jpg") or attachment3.endswith(".jpeg")) or not attachment3.startswith("http")):
+            return "Your URL (3) should point directly to an image, not an album! Seems like your URL doesn't start with http or doesn't end with .png, .jpg or .jpeg"
+        embeds = [Embed().setImage(attachment).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar()).setColor("#060606")]
+        if attachment2:
+            embeds.append(Embed().setImage(attachment2).setColor("#ed1c24"))
+        if attachment3:
+            embeds.append(Embed().setImage(attachment3).setColor("#ed1c24"))
+        session = ctx.db.sql.session()
+        entry = Contest_Entries.filter(session, id=ctx.user_id).first()
+        if entry:
+            try:
+                await ctx.bot.edit_message(957937620724371476, entry.msg, embeds=embeds)
+                return "Entry Edited!"
+            except:
+                pass
+        msg = await ctx.bot.create_message(957937620724371476, embeds=embeds)
+        session.add(Contest_Entries(id=ctx.user_id, msg=msg.id))
+        session.commit()
+        return "Entry Confirmed!"
+
+
+#@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
 async def msi(ctx: Context, country: str, text: str = None, attachment: str = None, attachment2: str = None) -> str:
     '''
     Participate in MSI contest
