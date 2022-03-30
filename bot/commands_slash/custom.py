@@ -206,16 +206,19 @@ async def when(ctx: Context) -> str:
     }
     return random().choices(list(responses.values()), list(responses.keys()))[0]
 
-class Characters(Enum):
-    Ayo = "Hakon_Betrayal"
-    Hakon = "HakonStory"
-    Frank = "LooseEnds"
+import os
+
+characters = {}
+for file in os.listdir("data/images/truth"):
+    if not file.endswith("json") and "_" in file:
+        character, name = file.split("_", 1)
+        characters[character] = name
 
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 
-@register(group=Groups.GLOBAL, guild=289739584546275339)#, interaction=False)
+@register(group=Groups.GLOBAL, guild=289739584546275339)
 @cooldown(minutes=5, logic=CacheCooldown)
-async def truth(ctx: Context, character: Characters, captions: str=None):
+async def truth(ctx: Context, character: characters, captions: str=None):
     '''
     Shows what happened with previous bot
     Params
@@ -229,15 +232,13 @@ async def truth(ctx: Context, character: Characters, captions: str=None):
         await ctx.deferred(True)
         return "This command works only as `/` one, try again with `/truth`"
     await ctx.deferred()
-    chars = {
-        Characters.Ayo: "Farewell, we will tell people you went to Harran for Olympics",
-        Characters.Hakon: "Hakon, visiting Ayo so soon?",
-        Characters.Frank: "Your rent is long due, Frank",
-    }
+    import json
+    with open('data/images/truth/characters.json','r',newline='',encoding='utf-8') as file:
+        chars = json.load(file)
     if not captions:
-        captions = chars.get(character)
+        captions = chars.get(character[0])
     from PIL import Image, ImageDraw, ImageFont
-    img = Image.open(f'data/images/{character.value}.png')
+    img = Image.open(f'data/images/truth/{character[0]}_{character[1]}') #TODO
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=65)
     from textwrap import wrap
