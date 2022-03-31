@@ -191,7 +191,7 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
     await ctx.reply(embeds=[embed])
 
 class Leaderboards(Enum):
-    Easter_Egg = "Easter Egg"
+    Easter_Egg = "Easter Egg 2022"
     Pumpkin_Hunt = "Pumpkin"
     #Halloween = "Halloween"
     Fear = "Reinforced Fear"
@@ -202,6 +202,7 @@ class Leaderboards(Enum):
     Hitted_Snowballs = "Thrown Snowball"
     Mostly_Snowballed = "Splashed Snowball"
     Grinch = "Stolen Presents"
+    Chickens = "Chicken"
     #Cookies = "Cookie"
     #Gifting = "Present"
     #Advent = "Advent"
