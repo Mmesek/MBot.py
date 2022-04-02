@@ -191,6 +191,7 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
     await ctx.reply(embeds=[embed])
 
 class Leaderboards(Enum):
+    Easter_Egg_2021 = "Easter Egg"
     Easter_Egg = "Easter Egg 2022"
     Pumpkin_Hunt = "Pumpkin"
     #Halloween = "Halloween"
