@@ -7,7 +7,7 @@ async def responder(ctx: Bot, msg: Message, emoji: str):
     if type(emoji) is str:
         await msg.reply(emoji)
     elif type(emoji) is tuple:
-        await msg.reply(file=emoji[1], filename=emoji[0])
+        await msg.reply(attachments=[Attachment(file=emoji[1], filename=emoji[0])])
 
 SNIPPET_PATTERN = re.compile(r"(?:(?P<cmd>[\D]+?)): ?(?:(?P<args>[^-\n]+)) ?(?:-(?P<flags>[\w]+))?")
                               #(?:(?P<cmd>[\D]+(?: |:))) ?(?:(?P<args>[^-\n]+)) ?(?:-(?P<flags>[\w]+))?

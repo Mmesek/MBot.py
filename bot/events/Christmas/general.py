@@ -2,7 +2,7 @@ import functools
 
 from datetime import datetime, timezone, timedelta
 
-from MFramework import Context, User, Groups, register, Event, EventBetween, Embed, Channel_Types
+from MFramework import Context, User, Groups, register, Event, EventBetween, Embed, Channel_Types, Attachment
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.commands.decorators import Chance
 from ... import database as db
@@ -161,7 +161,7 @@ async def advent(ctx: Context, *, language) -> str:
         return _t('advent_already_claimed', language)
 
 @christmas
-async def hat(ctx: Context, user: User):
+async def hat(ctx: Context, user: User) -> Attachment:
     '''Adds Santa's hat onto user's avatar'''
     await ctx.deferred()
     from PIL import Image
@@ -174,7 +174,7 @@ async def hat(ctx: Context, user: User):
     buffered = BytesIO()
     img.save(buffered, format="PNG")
     img_str = buffered.getvalue()
-    await ctx.bot.create_message(ctx.channel_id, file=img_str, filename="avatar.png")
+    return Attachment(file=img_str, filename="avatar.png")
 
 #from functools import cache
 import asyncio, re

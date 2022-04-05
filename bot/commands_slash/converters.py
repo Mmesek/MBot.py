@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Interaction, Embed, Context
+from MFramework import register, Groups, Interaction, Embed, Context, Attachment
 
 @register()
 async def convert(ctx: Context, interaction: Interaction, *args, language, **kwargs):
@@ -422,7 +422,7 @@ async def electricity(ctx: Context, price: float=0.78, watts: float=1, active_ho
     return f"~{round(((watts * (active_hours * active_days)) / 1000) * price, 2)} / month"
 
 @register(group=Groups.GLOBAL, main=convert)
-async def palette(ctx: Context, colors: str):
+async def palette(ctx: Context, colors: str) -> Attachment:
     '''
     Shows how specified colors looks like on Discord backgrounds
     Params
@@ -466,4 +466,4 @@ async def palette(ctx: Context, colors: str):
         draw.text((720, x*50 + 5), str(ctx.user), font=font, fill=color) # Light
         draw.text((870, x*50 + 5), str(ctx.user), font=font, fill=color) # MentionLight
     f = buffered_image(dst)
-    await ctx.reply(file=f, filename="colors.png")
+    return Attachment(file=f, filename="colors.png")

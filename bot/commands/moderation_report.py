@@ -2,10 +2,11 @@ from MFramework import *
 from MFramework.utils.utils import get_usernames
 from datetime import datetime, timedelta, timezone
 from MFramework import register, Groups
-from .. import database as db
+
+from ..commands_slash.infractions import db_Infraction as Infraction
 
 @register(group=Groups.SYSTEM, interaction=False)
-async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *args, **kwargs):
+async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0) -> Attachment:
     await ctx.deferred()
     s = ctx.db.sql.session()
     now = datetime.now(tz=timezone.utc)
@@ -20,10 +21,10 @@ async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *ar
     if guild_id == 0:
         guild_id = ctx.guild_id
     if month == 0:
-        infractions = s.query(db.log.Infraction).filter(db.log.Infraction.server_id == int(guild_id)).all()
+        infractions = s.query(Infraction).filter(Infraction.server_id == int(guild_id)).all()
         table = ["Infractions", "Commands Used"] 
     else:
-        infractions = s.query(db.log.Infraction).filter(db.log.Infraction.server_id == int(guild_id), db.log.Infraction.timestamp >= last_month, db.log.Infraction.timestamp < next_month).all()
+        infractions = s.query(Infraction).filter(Infraction.server_id == int(guild_id), Infraction.timestamp >= last_month, Infraction.timestamp < next_month).all()
     moderators = {}
     table = ["Infractions", "Warn", "Temp_Mute", "Mute", "Unmute",
         "Kick", "Temp_Ban", "Ban", "Unban", "Commands Used"] #, "chat", "voice"]
@@ -66,4 +67,4 @@ async def mod_report(ctx: Context, month: int=None, guild_id: Snowflake = 0, *ar
 
     img_str = 'moderator'+buffered.getvalue()
 
-    msg = await ctx.reply(file=img_str, filename=f"moderation-report{last_month.year}-{last_month.month}.csv")
+    return Attachment(file=img_str, filename=f"moderation-report{last_month.year}-{last_month.month}.csv")

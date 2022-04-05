@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context, Embed, Snowflake, RoleID, ChannelID, Role, Bitwise_Permission_Flags, Guild_Member, Premium_Types, User_Flags
+from MFramework import register, Groups, Context, Embed, Snowflake, RoleID, ChannelID, Role, Bitwise_Permission_Flags, Guild_Member, Premium_Types, User_Flags, Attachment
 
 @register()
 async def info(ctx: Context):
@@ -209,7 +209,7 @@ async def role(ctx: Context, role_id: RoleID = 0) -> Embed:
         from mlib.colors import buffered_image
         from PIL import Image
         f = buffered_image(Image.new("RGB", (100, 100), color))
-    await ctx.reply(embeds=[embed], file=f, filename="color.png")
+    await ctx.reply(embeds=[embed], attachments=[Attachment(file=f, filename="color.png")])
 
 @register(group=Groups.MODERATOR, main=info)
 async def channel(ctx: Context, channel_id: ChannelID = 0) -> Embed:

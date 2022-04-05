@@ -10,7 +10,7 @@ def _t(key: str, language: str='en', **kwargs):
 import sqlalchemy as sa
 
 from mlib.database import Base, Timestamp
-from MFramework import Context, User, Snowflake, Groups, Embed, register, EventBetween, Chance
+from MFramework import Context, User, Snowflake, Groups, Embed, register, EventBetween, Chance, Attachment
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 from MFramework.database.alchemy.mixins import ServerID
 from ...database.types import Statistic, HalloweenRaces as Race
@@ -478,7 +478,7 @@ async def betray(ctx: Context, target: User, *, session: sa.orm.Session, this_us
         Target you want to convince'''
     return await turn(ctx, session, this_user, target.id, this_user.race, action="betray")
 
-@register(group=Groups.GLOBAL, name="Defend or Betray")
+#@register(group=Groups.GLOBAL, name="Defend or Betray")
 @hunters(should_register=False)
 async def defend_or_betray(ctx: Context, user: User, *, session: sa.orm.Session, this_user: Halloween):
     '''
@@ -492,7 +492,7 @@ async def defend_or_betray(ctx: Context, user: User, *, session: sa.orm.Session,
     await ctx.deferred(private=True)
     raise Cant("generic", ctx.language)
 
-@register(group=Groups.GLOBAL, name="Bite or Cure")
+#@register(group=Groups.GLOBAL, name="Bite or Cure")
 async def bite_or_cure(ctx: Context, user: User):
     '''
     Bite or cure user depending on your class
@@ -872,7 +872,7 @@ async def summary(ctx: Context):
     img = graphing.create_image(fig)
     filename = f"halloween_summary-{datetime.now().year}.png"
     e.setImage("attachment://"+filename).setColor(16744206)
-    await ctx.send(embeds=[e], file=img, filename=filename)
+    await ctx.send(embeds=[e], attachments=[Attachment(file=img, filename=filename)])
 
 @register(group=Groups.SYSTEM, interaction=False)
 async def crossref(ctx: Context, *, language):

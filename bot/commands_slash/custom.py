@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
-from enum import Enum
 
-from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author, Discord_Paths, Channel_Types
+from MFramework import register, Groups, Context, Interaction, Embed, Embed_Footer, Embed_Thumbnail, Embed_Author, Discord_Paths, Channel_Types, Attachment
 from MFramework.commands.decorators import Chance
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
@@ -216,9 +215,9 @@ for file in os.listdir("data/images/truth"):
 
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 
-@register(group=Groups.GLOBAL, guild=289739584546275339)
+@register(group=Groups.GLOBAL, guild=463433273620824104)
 @cooldown(minutes=5, logic=CacheCooldown)
-async def truth(ctx: Context, character: characters, captions: str=None):
+async def truth(ctx: Context, character: characters, captions: str=None) -> Attachment:
     '''
     Shows what happened with previous bot
     Params
@@ -231,7 +230,6 @@ async def truth(ctx: Context, character: characters, captions: str=None):
     if ctx.is_message:
         await ctx.deferred(True)
         return "This command works only as `/` one, try again with `/truth`"
-    await ctx.deferred()
     import json
     with open('data/images/truth/characters.json','r',newline='',encoding='utf-8') as file:
         chars = json.load(file)
@@ -247,8 +245,7 @@ async def truth(ctx: Context, character: characters, captions: str=None):
     draw.multiline_text((10,y), "\n".join(captions), fill=(255,255,255), font=font, align='center', stroke_fill=(0,0,0), stroke_width=4)
     from mlib.colors import buffered_image
     img_str = buffered_image(img)
-    await ctx.reply("Sending...")
-    await ctx.bot.create_message(ctx.channel_id, file=img_str, filename="SPOILER_WhatReallyHappened.png")
+    return Attachment(file=img_str, filename="WhatReallyHappened.png", spoiler=True)
 
 from MFramework import Guild_Member
 @register(group=Groups.OWNER, guild=289739584546275339)

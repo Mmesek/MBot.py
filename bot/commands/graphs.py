@@ -1,4 +1,4 @@
-from MFramework import register, Groups, Context
+from MFramework import register, Groups, Context, Attachment
 from mlib.localization import tr
 
 @register(group=Groups.ADMIN, interaction=False)
@@ -89,7 +89,7 @@ async def graph(ctx: Context, graph='all', resample='Y', locator='Month', interv
     fig.tight_layout()
     img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
-    await ctx.reply(content=stats, file=img_str, filename=f"growth-{date.today()}.png")#f"Took ~{truncate(time.time()-d,2)}s\n{truncate(s-f,2)}s to gather\n{truncate(d-sd,2)}s to sort\n{truncate(sd-s,2)}s to convert\n{truncate(f-b,2)}s to import stuff")
+    await ctx.reply(content=stats, attachments=[Attachment(file=img_str, filename=f"growth-{date.today()}.png")])#f"Took ~{truncate(time.time()-d,2)}s\n{truncate(s-f,2)}s to gather\n{truncate(d-sd,2)}s to sort\n{truncate(sd-s,2)}s to convert\n{truncate(f-b,2)}s to import stuff")
 
 @register(group=Groups.ADMIN, interaction=False)
 async def graph_infractions(ctx: Context, infraction_type='all', resample='D', locator='Week', interval=1, *args, moderator=None, user=None, growth=False, language, **kwargs):
@@ -163,7 +163,7 @@ async def graph_infractions(ctx: Context, infraction_type='all', resample='D', l
     
     img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
-    await ctx.reply(stats, file=img_str, filename=f"growth-{date.today()}.png")
+    await ctx.reply(stats, attachments=[Attachment(file=img_str, filename=f"growth-{date.today()}.png")])
 
 @register(group=Groups.ADMIN, interaction=False)
 async def graph_words(ctx: Context, channel_id, *word_or_phrase, limit_messages=10000, resample='W-MON', locator='Week', interval=1, growth=False, language, **kwargs):
@@ -261,5 +261,4 @@ async def graph_words(ctx: Context, channel_id, *word_or_phrase, limit_messages=
 
     img_str = graphing.create_image(fig)
     stats = tr('commands.graph.stats', language, total=truncate(time.time()-d, 2), gather=truncate(s-f,2), sort=truncate(d-sd,2), convert=truncate(sd-s,2), imp=truncate(f-b,2))
-    await ctx.reply(f"Found {len(total[word_or_phrase])} messages containing `{word_or_phrase}` within {len(total_messages)} of total fetched messages. (Took {truncate(s-f,2)}s to fetch them)", file=img_str, filename=f"growth-{date.today()}.png")
-
+    await ctx.reply(f"Found {len(total[word_or_phrase])} messages containing `{word_or_phrase}` within {len(total_messages)} of total fetched messages. (Took {truncate(s-f,2)}s to fetch them)", attachments=[Attachment(file=img_str, filename=f"growth-{date.today()}.png")])
