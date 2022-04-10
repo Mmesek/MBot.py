@@ -238,6 +238,11 @@ async def credits(ctx: Context, *args, language, **kwargs):
     pass
 
 @register(group=Groups.MODERATOR, interaction=False)
+async def count():
+    '''Counters'''
+    pass
+
+@register(group=Groups.MODERATOR, interaction=False)
 async def memberchange(ctx: Context, period: str = "7d") -> str:
     '''
     Shows how many users joined and left server within last period
@@ -253,7 +258,7 @@ async def memberchange(ctx: Context, period: str = "7d") -> str:
         return "Not enough to show data. (Possibly zero users joined)"
 
 @register(group=Groups.ADMIN, interaction=False)
-async def membercount(ctx: Context, stat: str = 'total', year: int = None, month: int = None, day: int = None) -> str:
+async def members(ctx: Context, stat: str = 'total', year: int = None, month: int = None, day: int = None) -> int:
     '''
     Show how many current users where present on specified day
     '''
@@ -265,3 +270,14 @@ async def membercount(ctx: Context, stat: str = 'total', year: int = None, month
         return len(list(filter(lambda x: (not year or x.joined_at.year >= int(year)) and (not month or x.joined_at.month >= int(month)) and (not day or x.joined_at.day >= int(day)), ctx.cache.members.values())))
     elif stat == 'growth':
         return len(list(filter(lambda x: (not year or x.joined_at.year == int(year)) and (not month or x.joined_at.month == int(month)) and (not day or x.joined_at.day == int(day)), ctx.cache.members.values())))
+
+@register(group=Groups.MODERATOR, interaction=False)
+async def names(ctx: Context, value: str) -> int:
+    '''
+    Shows how many users have value in either their nick or username
+    Params
+    ------
+    value:
+        value to count
+    '''
+    return len(list(filter(lambda x: x.nick and value in x.nick or value in x.user.username, ctx.cache.members.values())))
