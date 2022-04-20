@@ -215,7 +215,7 @@ for file in os.listdir("data/images/truth"):
 
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 
-@register(group=Groups.GLOBAL, guild=463433273620824104)
+@register(group=Groups.GLOBAL, guild=289739584546275339)
 @cooldown(minutes=5, logic=CacheCooldown)
 async def truth(ctx: Context, character: characters, captions: str=None) -> Attachment:
     '''
