@@ -84,6 +84,8 @@ async def morse(ctx: Context, message: str, decode: bool=False, *args, language,
 @register(group=Groups.GLOBAL, main=convert, interaction=False, private_response=True)
 async def roman(ctx: Context, value: str) -> str:
     '''Converts Roman to digits, or vice versa
+    Params
+    ------
     value:
         Value to convert'''
     #Very simple and does not really work (Well, it works but if you mess up digit it does not really check that)
@@ -137,6 +139,8 @@ async def roman(ctx: Context, value: str) -> str:
 @register(group=Groups.GLOBAL, main=convert)
 async def timeunits(ctx: Context, duration: int, from_unit: str='s', to: str='w', *, language) -> str:
     '''Converts for example 3600s into 1h. Works with s, m, h, d and w
+    Params
+    ------
     duration:
         Value to calculate
     from_unit:
@@ -150,6 +154,8 @@ async def timeunits(ctx: Context, duration: int, from_unit: str='s', to: str='w'
 @register(group=Groups.GLOBAL, main=convert)
 async def timezone(ctx: Context, yymmdd: str='YYYY-MM-DD', hhmm:str='HH:MM', timezones: str=[], *args, language) -> Embed:
     '''Shows current time in specified timezone(s)
+    Params
+    ------
     yymmdd:
         Base Date
     hhmm:
@@ -261,6 +267,8 @@ async def timezone(ctx: Context, yymmdd: str='YYYY-MM-DD', hhmm:str='HH:MM', tim
 @register(group=Groups.GLOBAL, main=convert, private_response=True)
 async def upside(ctx: Context, text: str) -> str:
     '''Makes text uʍop ǝpᴉsdn!
+    Params
+    ------
     text:
         Text to invert'''
     import upsidedown
@@ -269,6 +277,8 @@ async def upside(ctx: Context, text: str) -> str:
 @register(group=Groups.GLOBAL, main=convert, private_response=True)
 async def rot(ctx: Context, message: str, shift: int=13, alphabet: str='ABCDEFGHIJKLMNOPQRSTUVWXYZ') -> Embed:
     '''Caesar Cipher
+    Params
+    ------
     message:
         Message to rotate
     shift:
@@ -336,6 +346,8 @@ async def dec2hex(ctx: Context, value: int) -> int:
 @register(group=Groups.GLOBAL, main=convert, interaction=False, private_response=True)
 async def asciitohex(ctx: Context, ascii_:str) -> Embed:
     '''Converts Ascii to Numbers
+    Params
+    ------
     ascii_:
         Value to Convert'''
     f = Embed().setTitle('Ascii to Hex').setDescription(ascii_)
@@ -348,6 +360,8 @@ async def asciitohex(ctx: Context, ascii_:str) -> Embed:
 @register(group=Groups.GLOBAL, main=convert)
 async def currency(ctx: Context, amount: float=1, from_currency: str="EUR", to_currency: str="USD", *, language) -> str:
     '''Converts currency
+    Params
+    ------
     amount:
         Amount to convert
     from_currency:
@@ -394,6 +408,8 @@ async def currency(ctx: Context, amount: float=1, from_currency: str="EUR", to_c
 @register(group=Groups.GLOBAL, main=convert, private_response=True)
 async def reverse(ctx: Context, message: str, in_place: bool=False) -> str:
     '''Reverses letters
+    Params
+    ------
     message:
         Message to reverse
     in_place:

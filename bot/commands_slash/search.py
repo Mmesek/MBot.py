@@ -79,6 +79,8 @@ async def api(ctx: Context, category: str, random: bool=False, desc: str='', tit
 @register(group=Groups.GLOBAL, main=search, interaction=False)
 async def stack(ctx: Context, search: str) -> Embed:
     '''Search Stack Overflow
+    Params
+    ------
     search:
         Query to search'''
     #Inspired by https://github.com/Vik0105/Devscord
