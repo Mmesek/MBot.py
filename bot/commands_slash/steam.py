@@ -54,7 +54,7 @@ async def playercount(ctx: Context, game: str, *args, language, **kwargs):
             result += f"{game}: {playercount}\n"
         except KeyError:
             result += f"{game}: "+tr("commands.playercount.error", language)
-    await ctx.reply(result[:2000])
+    return result[:2000]
 
 
 def getBazarPrice(game):
@@ -178,7 +178,7 @@ async def game(ctx: Context, interaction: Interaction, game: str, *args, languag
             if g.gameplay_completionist != -1:
                 embed.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
         embed.addField(tr("commands.game.open", language), f"steam://store/{appid}/")
-        await ctx.reply(embeds=[embed])
+        return embed
 
 
 @register(group=Groups.GLOBAL, main=steam)
@@ -198,16 +198,16 @@ async def steamcalc(ctx: Context, steam_id: str=None, country: str = "us", *args
     if uid != tr('commands.steamcalc.notFound', language):
         uid = uid['response']
     else:
-        return await ctx.reply(tr('commands.steamcalc.vanityURL', language))
+        return tr('commands.steamcalc.vanityURL', language)
     if uid['success'] == 1:
         user = uid['steamid']
     games = await s.OwnedGames(user)
     try:
         games = games.get('response', {'games': {}})
     except:
-        return await ctx.reply(tr('commands.steamcalc.vanityURL', language))
+        return tr('commands.steamcalc.vanityURL', language)
     if games.get('games',{}) == {}:
-        return await ctx.reply(tr('commands.steamcalc.privateProfile', language))
+        return tr('commands.steamcalc.privateProfile', language)
     total_playtime = 0
     total_played = 0
     game_ids = []
@@ -275,11 +275,11 @@ async def steamcalc(ctx: Context, steam_id: str=None, country: str = "us", *args
     profile = await s.PlayerSummaries(user)
     profile = profile['response']['players'][0]
     e.setThumbnail(profile['avatarfull']).setAuthor(profile["personaname"],profile["profileurl"],"").setColor(get_main_color(profile['avatar']))
-    await ctx.reply(embeds=[e])
+    return e
 
 
 @register(group=Groups.GLOBAL, main=steam)
-async def hltb(ctx: Context, game: str, *args, language, **kwargs):
+async def hltb(ctx: Context, game: str) -> Embed:
     '''Shows How Long To Beat statistics for provided game
     Params
     ------
@@ -296,4 +296,4 @@ async def hltb(ctx: Context, game: str, *args, language, **kwargs):
         e.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
         from mlib.colors import get_main_color
         e.setFooter("", f"Title Similiarity: {g.similarity}").setColor(get_main_color(g.game_image_url))
-    await ctx.reply(embeds=[e])
+    return e
