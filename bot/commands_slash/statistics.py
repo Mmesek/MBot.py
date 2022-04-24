@@ -242,7 +242,7 @@ async def count():
     '''Counters'''
     pass
 
-@register(group=Groups.MODERATOR, interaction=False)
+@register(group=Groups.MODERATOR, interaction=False, main=count)
 async def memberchange(ctx: Context, period: str = "7d") -> str:
     '''
     Shows how many users joined and left server within last period
@@ -257,7 +257,7 @@ async def memberchange(ctx: Context, period: str = "7d") -> str:
     except:
         return "Not enough to show data. (Possibly zero users joined)"
 
-@register(group=Groups.ADMIN, interaction=False)
+@register(group=Groups.ADMIN, interaction=False, main=count)
 async def members(ctx: Context, stat: str = 'total', year: int = None, month: int = None, day: int = None) -> int:
     '''
     Show how many current users where present on specified day
@@ -271,7 +271,7 @@ async def members(ctx: Context, stat: str = 'total', year: int = None, month: in
     elif stat == 'growth':
         return len(list(filter(lambda x: (not year or x.joined_at.year == int(year)) and (not month or x.joined_at.month == int(month)) and (not day or x.joined_at.day == int(day)), ctx.cache.members.values())))
 
-@register(group=Groups.MODERATOR, interaction=False)
+@register(group=Groups.MODERATOR, interaction=False, main=count)
 async def names(ctx: Context, value: str) -> int:
     '''
     Shows how many users have value in either their nick or username
