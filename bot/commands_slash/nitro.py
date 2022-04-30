@@ -64,11 +64,12 @@ async def nitro(ctx: Context, hex_color: str=None, name: str=None, emoji: str = 
         if ':' in emoji and not emoji.startswith("http"):
             emoji_name, id = parseMention(emoji).split(":")
             emoji = CDN_URL+CDN_Endpoints.Custom_Emoji.value.format(emoji_id=id)
-        import requests
-        icon = requests.get(emoji)
-        if icon.ok:
-            from binascii import b2a_base64
-            emoji = {"icon":f"data:image/png;base64,{b2a_base64(icon.content).decode()}"}
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            async with session.get(emoji) as icon:
+                if icon.ok:
+                    from binascii import b2a_base64
+                    emoji = {"icon":f"data:image/png;base64,{b2a_base64(icon.content).decode()}"}
     else:
         emoji = {"icon": "" if emoji else None, "unicode_emoji": emoji}
 
