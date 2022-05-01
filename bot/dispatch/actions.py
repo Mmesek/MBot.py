@@ -253,7 +253,7 @@ async def delete_non_spoilers(self: Bot, data: Message):
 async def media_only(self: Bot, data: Message):
     channel: Channel = self.cache[data.guild_id].channels.get(data.channel_id, None)
     if (
-        channel and ("media-only" in channel.topic.lower() and not (data.attachments or URL_PATTERN.search(data.content)))
+        channel and channel.topic and ("media-only" in channel.topic.lower() and not (data.attachments or URL_PATTERN.search(data.content)))
     ):
         await data.delete(reason="Message doesn't contain attachment or URL in media-only channel")
         return True
@@ -265,7 +265,7 @@ async def no_commands(self: Bot, data: Message):
     ):
         return
     channel: Channel = self.cache[data.guild_id].channels.get(data.channel_id, None)
-    if channel and "commands-disabled" in channel.topic.lower():
+    if channel and channel.topic and "commands-disabled" in channel.topic.lower():
         return True
 
 
