@@ -67,5 +67,5 @@ crontab -e
 
 Install required packages:
 ```sh
-python3.7 pip install -r requirements.txt
+python3.10 pip install -r requirements.txt
 ```
