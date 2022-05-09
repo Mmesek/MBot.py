@@ -13,7 +13,7 @@ from MFramework import (
     Bot,
     Guild_Member_Update,
 )
-from MFramework.commands.components import Modal, TextInput, Text_Input_Styles, Row
+from MFramework.commands.components import TextInput
 
 
 class Codes(Base):
@@ -22,53 +22,25 @@ class Codes(Base):
     user_id = sa.Column(sa.BigInteger)
     role_id = sa.Column(sa.BigInteger)
 
-
-class Code(Modal):
-    @classmethod
-    async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
-        code = inputs.get("Order Number")
-        email = inputs.get("Associated Email")
-
-        session = ctx.db.sql.session()
-        entry = Codes.filter(session, code=code.strip().upper(), email=email.strip().lower()).first()
-        if not entry:
-            return f"HOSS could not verify your information and could not conclude you to be a member of the Liars Club. If you believe your credentials are correct, please use Modmail to place a ticket for assistance.\nOrder Number: {code}\nEmail: {email}"
-        if entry and entry.user_id and entry.user_id != ctx.user_id:
-            return "Another Liars Club member has these credentials, if you are receiving this error and have not redeemed your exclusive Liars Club role, please place a modmail ticket."
-        await ctx.bot.add_guild_member_role(938233719142121482, ctx.user_id, entry.role_id, f"User used code #{code}")
-        entry.user_id = ctx.user_id
-        session.commit()
-        return "HOSS has granted you designation as a member of The Liar's Club."
-
-
-@register(group=Groups.DM, auto_defer=False, bot=963549809447432292)
-async def redeem(ctx: Context) -> Code:
+@register(group=Groups.DM, private_response=True, bot=963549809447432292, modal_title="Code redeemtion")
+async def redeem(ctx: Context, order_number: TextInput[1, 100] = "SHOP1234 or 12345678", associated_email: TextInput[1, 100] = "email@domain.tld") -> str:
     """
     Redeem your code for a role!
     """
-    return Code(
-        Row(
-            TextInput(
-                "Order Number",
-                style=Text_Input_Styles.Short,
-                min_length=1,
-                max_length=200,
-                required=True,
-                placeholder="SHOP1234 or 12345678",
-            )
-        ),
-        Row(
-            TextInput(
-                "Associated Email",
-                style=Text_Input_Styles.Short,
-                min_length=1,
-                max_length=200,
-                required=True,
-                placeholder="email@domain.tld",
-            )
-        ),
-        title="Code redeemption",
-    )
+    session = ctx.db.sql.session()
+    entry = Codes.filter(session, code=order_number.strip().upper(), email=associated_email.strip().lower()).first()
+
+    if not entry:
+        return f"HOSS could not verify your information and could not conclude you to be a member of the Liars Club. If you believe your credentials are correct, please use Modmail to place a ticket for assistance.\nOrder Number: {order_number}\nEmail: {associated_email}"
+    if entry and entry.user_id and entry.user_id != ctx.user_id:
+        return "Another Liars Club member has these credentials, if you are receiving this error and have not redeemed your exclusive Liars Club role, please place a modmail ticket."
+
+    await ctx.bot.add_guild_member_role(938233719142121482, ctx.user_id, entry.role_id, f"User used code #{order_number}")
+
+    entry.user_id = ctx.user_id
+    session.commit()
+
+    return "HOSS has granted you designation as a member of The Liar's Club."
 
 
 @register(group=Groups.ADMIN, private_response=True, bot=963549809447432292)

@@ -1,6 +1,6 @@
 from mdiscord.exceptions import BadRequest
 from MFramework import register, Groups, Context, ChannelID, Snowflake, Embed, Message_Reference
-
+from MFramework.commands.components import TextInput
 
 @register(group=Groups.MODERATOR, private_response=True)
 async def say(ctx: Context, 
@@ -16,8 +16,8 @@ async def say(ctx: Context,
     color: str = None,
     left_name: str = None, left_text: str = None,
     middle_name: str = None, middle_text: str = None,
-    right_name: str = None, right_text: str = None,
-    *, language):
+    right_name: str = None, right_text: str = None
+    ):
     '''
     Sends message as a bot
     Params
@@ -116,22 +116,16 @@ async def say(ctx: Context,
                 embeds=[e] if e.total_characters-8 else None,
                 message_reference=reply
             )
-        await ctx.reply(f"Message sent.\nChannelID: {msg.channel_id}\nMessageID: {msg.id}", private=True)
+        return f"Message sent.\nChannelID: {msg.channel_id}\nMessageID: {msg.id}"
     except BadRequest as ex:
-        await ctx.reply(ex.msg or f"Exception: {ex}")
+        return ex.msg or f"Exception: {ex}"
     except Exception as ex:
-        await ctx.reply(f"Exception occured: {ex}")
+        return f"Exception occured: {ex}"
 
-@register(group=Groups.MODERATOR, auto_defer=False)
-async def say_long(ctx: Context):
+@register(group=Groups.MODERATOR, private_response=True)
+async def say_long(ctx: Context, your_message: TextInput[1, 4000] = "Message to send"):
     '''Shows Modal to send a multilined message as a bot'''
-    return Say(Row(TextInput("Message")))
-
-from MFramework.commands.components import Modal, TextInput, Row
-class Say(Modal):
-    @classmethod
-    async def execute(cls, ctx: 'Context', data: str, inputs: dict):
-        return await say(ctx, inputs.get('message'))
+    return await say(ctx, your_message, channel=ctx.channel_id)
 
 @register(group=Groups.MODERATOR, private_response=True)
 async def react(ctx: Context, reaction: str, message_id: Snowflake, channel: ChannelID=None, *, language):

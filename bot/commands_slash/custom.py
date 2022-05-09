@@ -346,10 +346,10 @@ class ReviewScores(Base):
     user_id = sa.Column(sa.BigInteger, primary_key=True)
     score = sa.Column(sa.Integer)
 
-from MFramework.commands.components import Modal, TextInput, Text_Input_Styles, Row
+from MFramework.commands.components import Modal, TextInput
 
-@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True, auto_defer=False)
-async def review(ctx: Context) -> Modal:
+@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
+async def review(ctx: Context, score: TextInput[1, 2] = "Number between 1 and 10", your_review: TextInput[1, 250] = "Your Review") -> Modal:
     '''
     Leave a Review!
     Params
@@ -359,45 +359,36 @@ async def review(ctx: Context) -> Modal:
     your_review:
         3-4 sentences
     '''
-    r = Review(
-        Row(
-            TextInput("Score", style=Text_Input_Styles.Short, min_length=1, max_length=2, required=True, placeholder="Number between 1 and 10")
-        #    Select(*[Select_Option(label=str(i), value=i) for i in range(1,10)], min_values=1, placeholder="Your Score")
-        ),
-        Row(
-            TextInput("Your Review", style=Text_Input_Styles.Paragraph, max_length=250, required=True), 
-        )
-    )
-    return r
+    s = ctx.db.sql.session()
 
+    if s.query(ReviewScores).filter(ReviewScores.user_id == ctx.user_id).first():
+        return "You've already sent your review"
 
-class Review(Modal):
-    @classmethod
-    async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
-        s = ctx.db.sql.session()
-        if s.query(ReviewScores).filter(ReviewScores.user_id == ctx.user_id).first():
-            return "You've already sent your review"
-        try:
-            score = int(inputs.get("Score"))
-        except ValueError:
-            return "Invalid Score. Make sure it's a numeric value"
-        your_review = inputs.get("Your Review")
-        if score > 10 or score < 1:
-            return "Invalid score. Make sure it's between 1 and 10"
-        if len(your_review.split(".")) > 4 or len(your_review) > 250:
-            return "Make your review with up to 4 sentences"
-        embed = Embed().setDescription(your_review).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar())
-        if score >= 7:
-            color = "#48B80F"
-        elif score >= 4:
-            color = "#FFB300"
-        else:
-            color = "#FF2929"
-        embed.setColor(color)
-        s.add(ReviewScores(user_id=ctx.user_id, score=score))
-        s.commit()
-        await ctx.bot.create_message(938473018500464700, embeds=[embed])
-        return "Thank you for your review!"
+    try:
+        score = int(score)
+    except ValueError:
+        return "Invalid Score. Make sure it's a numeric value"
+
+    if score > 10 or score < 1:
+        return "Invalid score. Make sure it's between 1 and 10"
+    if len(your_review.split(".")) > 4 or len(your_review) > 250:
+        return "Make your review with up to 4 sentences"
+
+    embed = Embed().setDescription(your_review).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar())
+
+    if score >= 7:
+        color = "#48B80F"
+    elif score >= 4:
+        color = "#FFB300"
+    else:
+        color = "#FF2929"
+    embed.setColor(color)
+
+    s.add(ReviewScores(user_id=ctx.user_id, score=score))
+    s.commit()
+
+    await ctx.bot.create_message(938473018500464700, embeds=[embed])
+    return "Thank you for your review!"
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
 async def reviews(ctx: Context):
