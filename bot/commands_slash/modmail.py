@@ -71,7 +71,11 @@ async def dm(ctx: Context, user: UserID, message: str, *, language):
 async def dm_thread(ctx: Bot, msg: Message):
     from MFramework.commands._utils import detect_group
     channel = ctx.cache[msg.guild_id].threads.get(msg.channel_id, msg.channel_id)
-    if channel != 686371597895991327:
+    _dm = ctx.cache[ctx.primary_guild].logging["direct_message"]
+    if _dm and not _dm.channel_id:
+        await _dm.get_wh_channel()
+
+    if channel != _dm.channel_id:
         return
     _g = detect_group(ctx, msg.author.id, msg.guild_id, msg.member.roles)
     if _g > Groups.HELPER:
