@@ -11,7 +11,8 @@ from MFramework import (
     Role,
     onDispatch,
     Bot,
-    Guild_Member_Update,
+    Guild_Member_Update, 
+    User,
 )
 from MFramework.commands.components import TextInput
 
@@ -96,6 +97,33 @@ async def retrieve(ctx: Context, order_number: str) -> str:
         return f"<@{entry.user_id}>"
     return "Order number found, not claimed"
 
+@register(group=Groups.MODERATOR, private_response=True, bot=963549809447432292)
+async def unclaim(ctx: Context, user: User, order_number: str = None) -> str:
+    '''
+    Unclaim code claimed by specified user
+    Params
+    ------
+    user:
+        User who's code should be unclaimed
+    order_number:
+        Specific code to unclaim. Leave empty to unclaim all codes associated with user
+    '''
+    session = ctx.db.sql.session()
+    entry = Codes.filter(session, user_id=user.id)
+
+    if order_number:
+        entry = [entry.filter(code=order_number).first()]
+    else:
+        entry = entry.all()
+
+    if not entry:
+        return "Couldn't find any codes claimed by specified User"
+
+    for _ in entry:
+        _.user_id = None
+
+    session.commit()
+    return f"Unclaimed {len(entry)} codes"
 
 @onDispatch(event="guild_member_update")
 async def membership_screening_role(self: Bot, data: Guild_Member_Update):
