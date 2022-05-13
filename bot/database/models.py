@@ -106,7 +106,7 @@ class User(HasDictSettingsRelated, Snowflake, Base):
     def turn_race(self, server_id: int, recipent: User, from_race: types.HalloweenRaces, into_race: types.HalloweenRaces) -> log.Transaction:
         return self.transfer(server_id, recipent, [from_race], [into_race], False, True) # That is definitly not what was planned #FIXME
 
-from MFramework.commands._utils import Groups
+from MFramework.commands import Groups
 class Snippet(Timestamp, File, RoleID, UserID, ServerID, Base):
     '''Snippets related to Server'''
     role_id: Snowflake = Column(ForeignKey("Role.id", ondelete='SET NULL', onupdate='Cascade'))

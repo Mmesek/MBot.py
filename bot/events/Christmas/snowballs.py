@@ -4,7 +4,7 @@ from MFramework import Context, Groups, register, Event, User, Embed
 from MFramework.commands.cooldowns import cooldown, CacheCooldown
 from ...database import items, models, types
 
-from MFramework.commands._utils import Error
+from MFramework.commands.exceptions import Error
 class SnowballError(Error):
     pass
 

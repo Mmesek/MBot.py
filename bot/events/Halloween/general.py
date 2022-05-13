@@ -83,7 +83,7 @@ class HalloweenCooldown(CacheCooldown):
         #Halloween.get_total(session, self.ctx.guild_id, remaining_monsters[0])
         self.remaining_factions = total.get(remaining_monsters[0], 1) + self.target_faction
 
-from MFramework.commands._utils import Error
+from MFramework.commands.exceptions import Error
 class HalloweenException(Error):
     _key = ""
     def __init__(self, key: str, language: str='en', *args: object, **kwargs) -> None:
