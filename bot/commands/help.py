@@ -1,6 +1,6 @@
 from mlib.localization import check_translation, tr
 from MFramework import Context, Embed, register, Groups
-from MFramework.commands._utils import commands, command_shortcuts, commands_regex, COMPILED_REGEX, aliasList, reactions
+from MFramework.commands.command import commands, command_shortcuts, commands_regex, COMPILED_REGEX, aliasList, reactions
 
 @register(group=Groups.GLOBAL, interaction=False)
 async def help(ctx: Context, command: str=None, *, language):
