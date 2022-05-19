@@ -294,7 +294,7 @@ async def list_(ctx: Context, user: User=None):
             if ctx.permission_group.can_use(Groups.MODERATOR):
                 components.append(instant_actions(user.id))
             if ctx.permission_group.can_use(Groups.ADMIN):
-                _ = [Select_Option(label=f"#{i[0]}", value=i[0], description=i[4][:50]) for i in user_infractions if not i[-1]][:25]
+                _ = [Select_Option(label=f"#{i[0]}", value=i[0], description=i[4][:50] if i[4] else "No reason specified") for i in user_infractions if not i[-1]][:25]
                 if _:
                     components.append(Row(ExpireInfractions(*_, placeholder="Expire Infractions")))
             await ctx.reply(embeds=[e], components=components)
