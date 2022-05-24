@@ -696,6 +696,8 @@ class InstantAction(Button):
         super().__init__(label, custom_id or label, style, emoji, disabled)
     @classmethod
     async def execute(cls, ctx: Context, data: str):
+        if not ctx.permission_group.can_use(Groups.MODERATOR):
+            return "You can't use this button!"
         return Reason(Row(TextInput("Reason", placeholder="Reason of this action")), title="Infraction", custom_id=data)
 
 
