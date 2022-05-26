@@ -237,6 +237,24 @@ async def credits(ctx: Context, *args, language, **kwargs):
     '''
     pass
 
+@register(group=Groups.GLOBAL, main=bot)
+async def source(ctx: Context) -> str:
+    '''
+    Sends URL to source code of bot
+    '''
+    try:
+        import git
+        urls = [f"{remote.name}: {remote.url[:-4]}" for remote in git.Repo().remotes]
+        if not urls:
+            raise Exception
+    except:
+        repos = ctx.bot.cfg.get('source_urls', {})
+        if not repos:
+            return "Couldn't find any Source URLs in config nor load current repository \:(\nEither install `gitpython` module to fetch URL from configured remote in local repository or add section `source_urls` with `NAME` = `URL` items"
+        urls = [f"{name}: {url}" for name, url in repos.items()]
+    return "\n".join(urls)
+
+
 @register(group=Groups.MODERATOR, interaction=False)
 async def count():
     '''Counters'''
