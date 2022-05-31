@@ -32,7 +32,24 @@ async def direct_message_create(self: Bot, data: Message):
             except Exception as ex:
                 r = None
         return await self.remove_guild_member(self.primary_guild, data.author.id, reason="Possible Raid")
-    await self.cache[self.primary_guild].logging["direct_message"](data)
+
+    guilds = list(filter(lambda x: data.author.id in x.members, [cache for cache in self.cache.values() if type(cache) is not dict and cache.logging.get("direct_message", None)]))
+    if len(guilds) > 1:
+        guilds = {x: guild for x, guild in enumerate(guilds)}
+        servers = "\n".join([f"{k} - {v.guild.name}" for k, v in guilds.items()])
+        await data.reply(f"Detected multiple mutual servers! Specify target server by responding with **digit** matching server name to contact:\n{servers}")
+        try:
+            answer = await self.wait_for("direct_message_create", check=lambda x: x.channel_id == data.channel_id and x.author.id == data.author.id, timeout=30)
+            cache = guilds[int(answer.content)]
+        except Exception as ex:
+            await data.reply("Timed out. Message __is not__ forwarded. Resend your message if you want to try again")
+            return
+    elif len(guilds) == 1:
+        cache = self.cache[guilds[0].guild_id]
+    else:
+        cache = self.cache[self.primary_guild]
+
+    await cache.logging["direct_message"](data)
     if data.channel_id not in self.cache[0]:
         from MFramework.database.cache_internal.models import Collection
         self.cache[data.guild_id][data.channel_id] = Collection()
@@ -71,7 +88,7 @@ async def dm(ctx: Context, user: UserID, message: str, *, language):
 async def dm_thread(ctx: Bot, msg: Message):
     from MFramework.commands._utils import detect_group
     channel = ctx.cache[msg.guild_id].threads.get(msg.channel_id, msg.channel_id)
-    _dm = ctx.cache[ctx.primary_guild].logging["direct_message"]
+    _dm = ctx.cache[msg.guild_id].logging["direct_message"]
     if _dm and not _dm.channel_id:
         await _dm.get_wh_channel()
 
