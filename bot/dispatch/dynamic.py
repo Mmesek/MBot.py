@@ -3,7 +3,7 @@ from datetime import timedelta
 from MFramework import onDispatch, Bot, Voice_State, Channel, Channel_Types, log
 
 CHANNEL_LIMIT = 40
-DYNAMIC_NAME = "create"
+DYNAMIC_NAME = ["create", "créer"]
 COOLDOWN_NAME = "dynamic_channel"
 COOLDOWN_DELTA = timedelta(minutes=15)
 
@@ -33,7 +33,7 @@ async def cleanup_dynamic_channel(self: Bot, data: Voice_State):
 async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
     '''Creates Dynamic Channel'''
     channel: Channel = self.cache[data.guild_id].channels[data.channel_id]
-    if not channel or DYNAMIC_NAME not in channel.name.lower() or channel.id in self.cache[data.guild_id].dynamic_channels:
+    if not channel or all(NAME not in channel.name.lower() for NAME in DYNAMIC_NAME) or channel.id in self.cache[data.guild_id].dynamic_channels:
         return
 
     if (
