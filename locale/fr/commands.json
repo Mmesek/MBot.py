@@ -1,0 +1,7 @@
+{
+    "dm": {
+        "singleWordError": "Salut! Il semble que votre message consiste principalement en un seul mot, donc je ne vais pas le transférer. Je fais suivre vos messages ici automatiquement et <:%{emoji_success}> sous le message signifie qu'il a été remis avec succès à l'équipe de mods. Veuillez former une phrase et réessayer. Merci.",
+        "sameMessageError": "Merci de ne pas envoyer le même message plusieurs fois de suite, merci.",
+        "cannedResponseSent": "Canned response `%{name}` has been sent in return."
+    }
+}
