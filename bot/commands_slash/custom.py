@@ -399,7 +399,7 @@ async def reviews(ctx: Context):
     r = s.query(sa.func.avg(ReviewScores.score)).first()
     return f"{r[0]:.2f}"
 
-@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True, only_interaction=True)
+@register(group=Groups.GLOBAL, private_response=True, only_interaction=True, bot=572532846678376459)
 async def biomarker(ctx: Interaction) -> Embed:
     '''
     Shows your infection state
