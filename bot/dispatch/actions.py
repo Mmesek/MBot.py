@@ -114,6 +114,14 @@ async def deduplicate_messages(self: Bot, data: Message) -> bool:
         if len(_last_message) >= self.cache[data.guild_id].allowed_duplicated_messages:
             log.debug('Deleting Message "%s" because of being duplicate', data.content)
             await data.delete(reason="Duplicate Message")
+            dm = await self.create_dm(data.author.id)
+            try:
+                embed = Embed().setDescription(data.content).setTitle("Message").setColor("#d10a2b")
+                await self.create_message(
+                    dm.id, f"Hey, we do not allow sending repeating message in a row!", embeds=[embed]
+                )
+            except:
+                pass
             return True
     else:
         self.cache[data.guild_id].last_messages[data.channel_id] = []
