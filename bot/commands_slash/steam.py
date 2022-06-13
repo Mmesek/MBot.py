@@ -1,13 +1,29 @@
+from enum import Enum
 from MFramework import register, Groups, Context, Interaction, Embed
-from MFramework.api.steam import Steam, loadSteamIndex
-
 from mlib.localization import tr
+
+class URL(Enum):
+    STEAM = "http://api.steampowered.com/"
+    STORE = "https://store.steampowered.com/api/"
+
+async def steam_api(path="", query="", method="GET", api=URL.STEAM, **kwargs):
+    import aiohttp
+    async with aiohttp.ClientSession() as session:
+        request = await session.request(method, api.value + path + query, **kwargs)
+        try:
+            return await request.json()
+        except:
+            return request.reason
+
+def loadSteamIndex(ctx):
+    with open("data/steamstoreindex.json") as fjson:
+        import json
+        ctx.bot.index = json.load(fjson)
 
 @register(group=Groups.SYSTEM, interaction=False)
 async def refreshAppIndex(ctx: Context, *args, data, **kwargs):
     """Updates Index of Steam Games"""
-    steamapi = Steam(None)
-    apps = await steamapi.AppList()
+    apps = await steam_api("ISteamApps/GetAppList/v2")
     index = {}
     for each in apps["applist"]["apps"]:
         index[each["name"]] = each["appid"]
@@ -26,7 +42,7 @@ async def steamParse(ctx: Context, request, language, game):
     #game = " ".join(game)
     games = game.split(",")
     if not hasattr(ctx.bot, "index"):
-        await loadSteamIndex(ctx)
+        loadSteamIndex(ctx)
     for game in games:
         try:
             game = get_close_matches(game, ctx.bot.index.keys(), 1)[0]
@@ -34,10 +50,14 @@ async def steamParse(ctx: Context, request, language, game):
             yield {}, game
         appid = ctx.bot.index[game]
         if request == "playercount":
-            playercount = await Steam.CurrentPlayers(appid)
+            playercount = await steam_api("ISteamUserStats/GetNumberOfCurrentPlayers/v1/", f"?appid={appid}")
             yield playercount, game
         elif request == "details":
-            page = await Steam.appDetails(appid, language)
+            if language == 'pl':
+                cc, l = 'pl', 'polish'
+            else:
+                cc, l = 'us', 'english'
+            page = await steam_api("appdetails/", querry=f"?appids={appid}&l={l}&cc={cc}", api=URL.STORE)
             yield page[str(appid)].get("data",{"short_description": "There was an error searching for data, perhaps Steam page doesn't exist anymore?", "name":game}), appid
 
 @register(group=Groups.GLOBAL, main=steam)
@@ -140,7 +160,7 @@ async def game(ctx: Context, interaction: Interaction, game: str, *args, languag
         r = game.get("recommendations", {}).get("total")
         if r is not None:
             embed.addField(tr("commands.game.recommendations", language), r, True)
-        cp = await Steam.CurrentPlayers(appid)
+        cp = await steam_api("ISteamUserStats/GetNumberOfCurrentPlayers/v1/", f"?appid={appid}")
         cp = cp.get("response", {}).get("player_count")
         if cp is not None:
             embed.addField(tr("commands.game.players", language), cp, True)
@@ -193,15 +213,15 @@ async def steamcalc(ctx: Context, steam_id: str=None, country: str = "us", *args
     await ctx.deferred()
     if not steam_id:
         steam_id = ctx.user.username
-    s = Steam(ctx.bot.cfg.get('Tokens', {}).get('steam', None))
-    uid = await s.resolveVanityUrl(steam_id)
+    token = ctx.bot.cfg.get('Tokens', {}).get('steam', None)
+    uid = await steam_api(f"ISteamUser/ResolveVanityURL/v0001/?key={token}&vanityurl={steam_id}")
     if uid != tr('commands.steamcalc.notFound', language):
         uid = uid['response']
     else:
         return tr('commands.steamcalc.vanityURL', language)
     if uid['success'] == 1:
         user = uid['steamid']
-    games = await s.OwnedGames(user)
+    games = await steam_api("IPlayerService/GetOwnedGames/v0001/", f"?key={token}&steamid={user}&format=json")
     try:
         games = games.get('response', {'games': {}})
     except:
@@ -240,7 +260,7 @@ async def steamcalc(ctx: Context, steam_id: str=None, country: str = "us", *args
     try:
         from mlib.utils import grouper
         for chunk in grouper(game_ids, 100):
-            prices = await s.getPrices(chunk, country)
+            prices = await steam_api(f"appdetails?appids={','.join([str(i) for i in chunk[:100]])}&filters=price_overview&cc={country}", api=URL.STORE)
             total_price, ending, has_price = calcPrice(prices, total_price, has_price)
     except Exception as ex:
         ending = ''
@@ -272,7 +292,7 @@ async def steamcalc(ctx: Context, steam_id: str=None, country: str = "us", *args
             avg += tr('commands.steamcalc.pricePerHour', language, price="{:.3}".format(truncate((total_price / 100) / (pt / 60), 2)) + f"{ending}")
     e.setFooter(f"SteamID: {user}").addField(tr('commands.steamcalc.avg', language), avg, True)
     from mlib.colors import get_main_color
-    profile = await s.PlayerSummaries(user)
+    profile = await steam_api("ISteamUser/GetPlayerSummaries/v2/", f"?key={token}&steamids={user}")
     profile = profile['response']['players'][0]
     e.setThumbnail(profile['avatarfull']).setAuthor(profile["personaname"],profile["profileurl"],"").setColor(get_main_color(profile['avatar']))
     return e
