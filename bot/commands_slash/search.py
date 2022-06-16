@@ -496,3 +496,21 @@ async def anagram(ctx: Context, letters: str, exact_amount: bool = True) -> str:
             f"Took {round(time.perf_counter() - start, 2)}s to check {len(words)} English words!"
         )
     )
+
+@register(group=Groups.GLOBAL, main=search, private_response=True)
+async def mac_adress(address: str) -> str:
+    '''
+    Search for a manufacturer of specified MAC address
+    Params
+    ------
+    address:
+        Ad-dr-es st:os:ea:rc hf:or
+    '''
+    import aiohttp, json
+    async with aiohttp.ClientSession() as session:
+        async with session.get("https://api.macvendors.com/" + json.dumps(address.strip())) as response:
+            try:
+                r = await response.json()
+                return r.get("errors", {}).get("detail", "Error")
+            except:
+                return str(await response.text())
