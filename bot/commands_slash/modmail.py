@@ -89,7 +89,10 @@ async def dm_thread(ctx: Bot, msg: Message):
     from MFramework.commands._utils import detect_group
     channel = ctx.cache[msg.guild_id].threads.get(msg.channel_id, msg.channel_id)
     _dm = ctx.cache[msg.guild_id].logging["direct_message"]
-    if issubclass(_dm, Log) and not getattr(_dm, 'channel_id', None):
+    if not issubclass(type(_dm), Log):
+        return 
+
+    if not getattr(_dm, 'channel_id', None):
         await _dm.get_wh_channel()
 
     if channel != _dm.channel_id:
