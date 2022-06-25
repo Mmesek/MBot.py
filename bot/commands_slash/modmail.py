@@ -1,7 +1,7 @@
 from typing import List
 
 from MFramework import register, Groups, Context, UserID, Snowflake, onDispatch, Bot, Message, Channel_Types
-from MFramework.utils.log import Message as MessageLog
+from MFramework.utils.log import Log, Message as MessageLog
 from MFramework.commands.components import Select, Select_Option
 from bot.commands_slash.infractions import instant_actions
 
@@ -89,7 +89,7 @@ async def dm_thread(ctx: Bot, msg: Message):
     from MFramework.commands._utils import detect_group
     channel = ctx.cache[msg.guild_id].threads.get(msg.channel_id, msg.channel_id)
     _dm = ctx.cache[msg.guild_id].logging["direct_message"]
-    if _dm and not _dm.channel_id:
+    if issubclass(_dm, Log) and not getattr(_dm, 'channel_id', None):
         await _dm.get_wh_channel()
 
     if channel != _dm.channel_id:
