@@ -459,27 +459,37 @@ async def palette(ctx: Context, colors: str) -> Attachment:
         colors.append(color)
     from mlib.colors import buffered_image
     from PIL import Image, ImageDraw, ImageFont
-    dark = "#36393F"
-    mention_dark = "#49443C"
-    light = "#FFFFFF"
-    mention_light = "#FEEED1"
+
+    backgrounds = {
+        "#36393F": "#49443C", 
+        "#FFFFFF": "#FEEED1", 
+        "#101010": "#261f14"
+    }
+
     height = len(colors) * 50
-    dst = Image.new("RGBA", (1000, height))
-    dst.paste(Image.new("RGBA", (150, height), dark), (400, 0))
-    dst.paste(Image.new("RGBA", (150, height), mention_dark), (550, 0))
-    dst.paste(Image.new("RGBA", (150, height), light), (700, 0))
-    dst.paste(Image.new("RGBA", (150, height), mention_light), (850, 0))
+    dst = Image.new("RGBA", (len(backgrounds) * 500, height))
+
+    x = 250
+    for background, mention in backgrounds.items():
+        dst.paste(Image.new("RGBA", (150, height), background), (x+150, 0))
+        dst.paste(Image.new("RGBA", (150, height), mention), (x+300, 0))
+        x += 300
+
     font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=15)
     color_font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=20)
 
     draw = ImageDraw.Draw(dst)
-    for x, color in enumerate(colors):
-        dst.paste(Image.new("RGBA", (200, 35), color), (0, x*50))
-        dst.paste(Image.new("RGBA", (100, 15), color), (225, x*50 + 10))
-        draw.text((60, x*50 + 5), color, font=color_font)
-        draw.text((420, x*50 + 5), str(ctx.user), font=font, fill=color) # Dark
-        draw.text((570, x*50 + 5), str(ctx.user), font=font, fill=color) # MentionDark
-        draw.text((720, x*50 + 5), str(ctx.user), font=font, fill=color) # Light
-        draw.text((870, x*50 + 5), str(ctx.user), font=font, fill=color) # MentionLight
+
+    for y, color in enumerate(colors):
+        dst.paste(Image.new("RGBA", (200, 35), color), (0, y*50))
+        dst.paste(Image.new("RGBA", (100, 15), color), (225, y*50 + 10))
+        draw.text((60, y*50 + 5), color, font=color_font)
+
+        x = 250
+        for background, mention in backgrounds.items():
+            draw.text((x+170, y*50 + 5), str(ctx.user), font=font, fill=color) # Color
+            draw.text((x+320, y*50 + 5), str(ctx.user), font=font, fill=color) # Mention
+            x += 300
+
     f = buffered_image(dst)
     return Attachment(file=f, filename="colors.png")
