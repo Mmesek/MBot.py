@@ -1,8 +1,9 @@
-from MFramework import register, Groups, Context, Invite_Target_Types
+from MFramework import Context, Groups, Invite_Target_Types, register
+
 
 @register(group=Groups.GLOBAL)
 async def activity(ctx: Context, activity: str) -> str:
-    '''
+    """
     Start activity in selected voice channel
     Params
     ------
@@ -27,9 +28,11 @@ async def activity(ctx: Context, activity: str) -> str:
             Youtube Together = 755600276941176913
     pass:
         pass
-    '''
+    """
     channel_id = next(filter(lambda x: ctx.user_id in ctx.cache.voice.get(x, []), ctx.cache.voice), None)
     if not channel_id:
         return "You have to be in a voice channel first! Join some and then use the command again!"
-    invite = await ctx.bot.create_channel_invite(channel_id, target_type=Invite_Target_Types.EMBEDDED_APPLICATION, target_application_id=activity)
+    invite = await ctx.bot.create_channel_invite(
+        channel_id, target_type=Invite_Target_Types.EMBEDDED_APPLICATION, target_application_id=activity
+    )
     return f"[Click here to join {invite.target_application.name} in {invite.channel.name}!](<https://discord.gg/{invite.code}>)"

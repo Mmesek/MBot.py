@@ -4,7 +4,6 @@ repos:
     hooks:
     -   id: debug-statements
     -   id: check-added-large-files
-    -   id: check-docstring-first
     -   id: check-ast
     -   id: check-json
     -   id: trailing-whitespace
@@ -14,6 +13,7 @@ repos:
     rev: 22.6.0
     hooks:
       - id: black
+        args: ["-l", "120"]
 -   repo: https://github.com/pycqa/isort
     rev: 5.10.1
     hooks:

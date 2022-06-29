@@ -1,15 +1,17 @@
 import asyncio
 from datetime import timedelta
-from MFramework import onDispatch, Bot, Voice_State, Channel, Channel_Types, log
+
+from MFramework import Bot, Channel, Channel_Types, Voice_State, log, onDispatch
 
 CHANNEL_LIMIT = 40
 DYNAMIC_NAME = ["create", "créer"]
 COOLDOWN_NAME = "dynamic_channel"
 COOLDOWN_DELTA = timedelta(minutes=15)
 
-@onDispatch(event='voice_state_update', priority=130)
+
+@onDispatch(event="voice_state_update", priority=130)
 async def cleanup_dynamic_channel(self: Bot, data: Voice_State):
-    '''Deletes Dynamic channel if it's empty'''
+    """Deletes Dynamic channel if it's empty"""
     v = self.cache[data.guild_id].voice
     removed = set()
     await asyncio.sleep(3)
@@ -29,11 +31,15 @@ async def cleanup_dynamic_channel(self: Bot, data: Voice_State):
         self.cache[data.guild_id].dynamic_channels.pop(user, None)
 
 
-@onDispatch(event='voice_state_update', priority=15)
+@onDispatch(event="voice_state_update", priority=15)
 async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
-    '''Creates Dynamic Channel'''
+    """Creates Dynamic Channel"""
     channel: Channel = self.cache[data.guild_id].channels[data.channel_id]
-    if not channel or all(NAME not in channel.name.lower() for NAME in DYNAMIC_NAME) or channel.id in self.cache[data.guild_id].dynamic_channels:
+    if (
+        not channel
+        or all(NAME not in channel.name.lower() for NAME in DYNAMIC_NAME)
+        or channel.id in self.cache[data.guild_id].dynamic_channels
+    ):
         return
 
     if (
@@ -53,7 +59,7 @@ async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
     gc = self.cache[data.guild_id].dynamic_channels
     if gc:
         c = [int(self.cache[data.guild_id].channels.get(gc[u], Channel()).name.split(" ", 1)[0].strip("#")) for u in gc]
-        count = (sorted(set(range(1, c[-1]+2)).difference(c)) or [1])[0]
+        count = (sorted(set(range(1, c[-1] + 2)).difference(c)) or [1])[0]
     else:
         count = 1
 
@@ -61,19 +67,26 @@ async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
 
     self.cache[data.guild_id].cooldowns.store(data.guild_id, data.user_id, COOLDOWN_NAME, expire=COOLDOWN_DELTA)
     new_channel = await self.create_guild_channel(
-        guild_id=data.guild_id, 
+        guild_id=data.guild_id,
         name=f'#{count} {channel.name.split(":",1)[-1] if ":" in channel.name else name}',
-        type=Channel_Types.GUILD_VOICE.value, 
-        bitrate=channel.bitrate, 
-        user_limit=channel.user_limit, 
-        position=channel.position, 
-        permission_overwrites=channel.permission_overwrites, 
-        parent_id=channel.parent_id, 
-        reason=f"Generated Channel for user {data.member.user.username}"
+        type=Channel_Types.GUILD_VOICE.value,
+        bitrate=channel.bitrate,
+        user_limit=channel.user_limit,
+        position=channel.position,
+        permission_overwrites=channel.permission_overwrites,
+        parent_id=channel.parent_id,
+        reason=f"Generated Channel for user {data.member.user.username}",
     )
     self.cache[data.guild_id].dynamic_channels[data.user_id] = new_channel.id
 
-    await self.modify_guild_member(data.guild_id, data.user_id, mute=None, deaf=None, channel_id=new_channel.id, reason=f"Moved {data.member.user.username} to generated channel")
+    await self.modify_guild_member(
+        data.guild_id,
+        data.user_id,
+        mute=None,
+        deaf=None,
+        channel_id=new_channel.id,
+        reason=f"Moved {data.member.user.username} to generated channel",
+    )
     log.debug("Moved User %s from template channel to created %s", data.user_id, new_channel.id)
 
     return True

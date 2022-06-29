@@ -1,10 +1,12 @@
 import enum
 
-from mlib.types import Enum
 from MFramework.database.alchemy.types import *
+from mlib.types import Enum
+
 
 class Snippet(Permissions):
-    '''Snippets'''
+    """Snippets"""
+
     Snippet: Groups.MODERATOR = (0, "Snippet text")
     Regex: Groups.MODERATOR = (1, "Regular Expression")
     Rule: Groups.MODERATOR = (2, "!r")
@@ -36,9 +38,9 @@ class Statistic(Enum):
     Spawned_Eggs = 12
     Spawned_Presents = 13
     Spawned_Pumpkins = 14
-    #Spawned_Treats = 15
-    #Spawned_Fear = 16
-    #Spawned_Snowballs = 17
+    # Spawned_Treats = 15
+    # Spawned_Fear = 16
+    # Spawned_Snowballs = 17
     Spawned_Moka = 18
     Spawned_GoldMoka = 19
 
@@ -49,45 +51,45 @@ class Statistic(Enum):
 
 
 class Item(Enum):
-    SYSTEM = 0 # Metadata Items
-    Entity = 0 # Mobs
-    Race = 0 # Race
+    SYSTEM = 0  # Metadata Items
+    Entity = 0  # Mobs
+    Race = 0  # Race
 
-    Event = 1 # Event Items
+    Event = 1  # Event Items
 
-    Currency = 2 # Valuable on it's own
-    Energy = 2 # Non static values like electric current or mana
-    Fluid = 2 # Water
-    
-    Resource = 3 # Rocks
-    Gift = 4 # Presents, items obtainable only via receiving from someone 
-    
-    Weapon = 5 # Offensive
-    Protection = 6 # Defensive
-    
-    Tool = 7 # Important utilities, like keys
-    Potion = 8 # Consumable with effects
-    Recipe = 9 # Crafting recipes
-    Spell = 9 # Spells
-    Book = 10 # Lore bits?
-    
-    Knowledge = 11 # Known "things" like recipes/spells
-    
-    Effects = 11 # Active effects
-    #Booster = 11 # Active effects
-    #Upgrade = 12 # Grants bonus stats to an item (Same as mod below tbh)
-    Modification = 12 # Effects on item 
+    Currency = 2  # Valuable on it's own
+    Energy = 2  # Non static values like electric current or mana
+    Fluid = 2  # Water
 
-    Experience = 13 # Experience in certain fields/skills?
-    Reputation = 13 # Repuation received from other players (should be stat tbh), Standing with factions?
+    Resource = 3  # Rocks
+    Gift = 4  # Presents, items obtainable only via receiving from someone
 
-    Achievement = 14 # Collectible "Static" Achievements for certain actions
-    Collectible = 14 # Hidden collectibles. Unlike above, they can be more "fluid"
+    Weapon = 5  # Offensive
+    Protection = 6  # Defensive
 
-    Utility = 15 # Usable item
-    Miscellaneous = 16 # Fluff?
-    Secret = 17 # Even I don't know
-    Other = 18 # Catch-all
+    Tool = 7  # Important utilities, like keys
+    Potion = 8  # Consumable with effects
+    Recipe = 9  # Crafting recipes
+    Spell = 9  # Spells
+    Book = 10  # Lore bits?
+
+    Knowledge = 11  # Known "things" like recipes/spells
+
+    Effects = 11  # Active effects
+    # Booster = 11 # Active effects
+    # Upgrade = 12 # Grants bonus stats to an item (Same as mod below tbh)
+    Modification = 12  # Effects on item
+
+    Experience = 13  # Experience in certain fields/skills?
+    Reputation = 13  # Repuation received from other players (should be stat tbh), Standing with factions?
+
+    Achievement = 14  # Collectible "Static" Achievements for certain actions
+    Collectible = 14  # Hidden collectibles. Unlike above, they can be more "fluid"
+
+    Utility = 15  # Usable item
+    Miscellaneous = 16  # Fluff?
+    Secret = 17  # Even I don't know
+    Other = 18  # Catch-all
 
 
 class Task(Enum):
@@ -115,6 +117,7 @@ class Rarity(Enum):
     Cursed = 13
     Dark = 14
 
+
 class Difficulty(Enum):
     Simple = 0
     Rookie = 1
@@ -127,11 +130,13 @@ class Difficulty(Enum):
     Nightmare = 8
     Hardcore = 9
 
+
 class Reward(Enum):
     ITEM = Rarity.Common
     JUNK = Rarity.Common
     TWIG = Rarity.Common
     KEY = Rarity.Epic
+
 
 class Present(Enum):
     WHITE = Rarity.Common
@@ -144,6 +149,7 @@ class Present(Enum):
     CURSED = Rarity.Cursed
     GOLD = Rarity.Legendary
 
+
 class ItemFlags(enum.IntFlag):
     Exclusive = 1 << 0
     Stackable = 1 << 1
@@ -155,11 +161,12 @@ class ItemFlags(enum.IntFlag):
     Edible = 1 << 7
     Giftable = 1 << 8
 
+
 class HalloweenRaces(Enum):
-    Human: Item.Race = "Human"#, Item.Race ##818181
-    Vampire: Item.Race = "Vampire"#, Item.Race #6b1010 #a71919 #8f2727 #942710
-    Werewolf: Item.Race = "Werewolf"#, Item.Race #aa6b00
-    Zombie: Item.Race = "Zombie"#, Item.Race #03803c
-    Hunter: Item.Race = "Hunter"#, Item.Race #ad4949
-    Huntsmen: Item.Race = "Huntsmen"#, Item.Race #be923d
-    Enchanter: Item.Race = "Enchanter"#, Item.Race #4abe5f
+    Human: Item.Race = "Human"  # , Item.Race ##818181
+    Vampire: Item.Race = "Vampire"  # , Item.Race #6b1010 #a71919 #8f2727 #942710
+    Werewolf: Item.Race = "Werewolf"  # , Item.Race #aa6b00
+    Zombie: Item.Race = "Zombie"  # , Item.Race #03803c
+    Hunter: Item.Race = "Hunter"  # , Item.Race #ad4949
+    Huntsmen: Item.Race = "Huntsmen"  # , Item.Race #be923d
+    Enchanter: Item.Race = "Enchanter"  # , Item.Race #4abe5f

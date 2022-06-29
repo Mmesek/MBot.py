@@ -1,14 +1,15 @@
 from typing import List
 
+from mlib.database import ID, Base, Default
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, UnicodeText
 from sqlalchemy.orm import relationship
-from sqlalchemy import Column, String, Integer, Boolean, UnicodeText, ForeignKey
 
-from mlib.database import Base, Default, ID
+from .mixins import CharacterID, ItemID, SkillID, UserID
 
-from .mixins import ItemID, SkillID, CharacterID, UserID
 
 class Skill(Default, Base):
     pass
+
 
 class Character(UserID, ID, Base):
     name: str = Column(String)
@@ -26,12 +27,12 @@ class Character(UserID, ID, Base):
     fear: str = Column(String)
     weakness: str = Column(String)
     strength: str = Column(String)
-    skills: List['Character_Skills'] = relationship("Character_Skills")
-    items: List['Character_Items'] = relationship("Character_Items")
+    skills: List["Character_Skills"] = relationship("Character_Skills")
+    items: List["Character_Items"] = relationship("Character_Items")
 
 
 class Character_Skills(SkillID, CharacterID, Base):
-    skill_id: int = Column(ForeignKey("Skill.id", ondelete='Cascade', onupdate='Cascade'), primary_key=True)
+    skill_id: int = Column(ForeignKey("Skill.id", ondelete="Cascade", onupdate="Cascade"), primary_key=True)
     exp: int = Column(Integer, default=0)
 
 

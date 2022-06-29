@@ -1,24 +1,26 @@
 async def handle_roles(self, data, l, levelRole, x, user_id):
     await self.add_guild_member_role(data.guild_id, user_id, levelRole.Role, "EXP Role")
     try:
-        previous_role = l[x+1]
+        previous_role = l[x + 1]
     except:
         return
     if not previous_role.Stacked and previous_role.Role in data.member.roles:
         await self.remove_guild_member_role(data.guild_id, user_id, previous_role.Role, "EXP Role")
 
+
 async def handle_exp(self, data, e=None):
     if e is None:
-        #user_id = data.user_id
+        # user_id = data.user_id
         user_id = getattr(data, "user_id", None) or getattr(data, "author").id
         session = self.db.sql.session()
         from ..database import log, types
+
         EXP = log.Statistic.get(session, data.guild_id, user_id, types.Statistic.Chat)
         vEXP = log.Statistic.get(session, data.guild_id, user_id, types.Statistic.Voice)
 
     else:
         user_id = getattr(data, "user_id", None) or getattr(data, "author").id
-        #user_id = data.author.id
+        # user_id = data.author.id
     l = self.cache[data.guild_id].level_roles
     if l == []:
         return
@@ -26,11 +28,11 @@ async def handle_exp(self, data, e=None):
         if levelRole.Role not in data.member.roles:
             if levelRole.ReqRoles is not None and not all(i in data.member.roles for i in levelRole.ReqRoles):
                 continue
-            if levelRole.Type == 'AND' and (EXP >= levelRole.ReqEXP and vEXP >= levelRole.ReqVEXP):
+            if levelRole.Type == "AND" and (EXP >= levelRole.ReqEXP and vEXP >= levelRole.ReqVEXP):
                 await handle_roles(self, data, l, levelRole, x, user_id)
-            elif levelRole.Type == 'OR' and (EXP >= levelRole.ReqEXP or vEXP >= levelRole.ReqVEXP):
+            elif levelRole.Type == "OR" and (EXP >= levelRole.ReqEXP or vEXP >= levelRole.ReqVEXP):
                 await handle_roles(self, data, l, levelRole, x, user_id)
-            elif levelRole.Type == 'COMBINED' and ((EXP + vEXP) >= (levelRole.ReqEXP + levelRole.ReqVEXP)):
+            elif levelRole.Type == "COMBINED" and ((EXP + vEXP) >= (levelRole.ReqEXP + levelRole.ReqVEXP)):
                 await handle_roles(self, data, l, levelRole, x, user_id)
             else:
                 continue
@@ -38,19 +40,32 @@ async def handle_exp(self, data, e=None):
         else:
             break
 
+
 async def handle_activity(self, data, type="chat"):
     session = self.db.sql.session()
     if type == "chat":
         user_id = data.author.id
     else:
         user_id = data.user_id
-    
+
     from ..database import alchemy as db
-    e = session.query(db.UserLevels).filter(db.UserLevels.GuildID == data.guild_id).filter(db.UserLevels.UserID == user_id).first()
-    
-    #activity_roles = self.cache[data.guild_id].activityRoles
-    activity_roles = session.query(db.ActivityRoles).filter(db.ActivityRoles.GuildID == data.guild_id).order_by(db.ActivityRoles.ActivityPeriod.asc()).all()
+
+    e = (
+        session.query(db.UserLevels)
+        .filter(db.UserLevels.GuildID == data.guild_id)
+        .filter(db.UserLevels.UserID == user_id)
+        .first()
+    )
+
+    # activity_roles = self.cache[data.guild_id].activityRoles
+    activity_roles = (
+        session.query(db.ActivityRoles)
+        .filter(db.ActivityRoles.GuildID == data.guild_id)
+        .order_by(db.ActivityRoles.ActivityPeriod.asc())
+        .all()
+    )
     from datetime import datetime, timedelta
+
     for x, activityRole in enumerate(activity_roles):
         if activityRole.ActivityPeriod <= e.TopActivityPeriod:
             continue
@@ -68,7 +83,9 @@ async def handle_activity(self, data, type="chat"):
                 await self.add_guild_member_role(data.guild_id, user_id, activityRole.RoleID, "Activity Role")
                 e.TopActivityPeriod = activityRole.ActivityPeriod
                 if x != 0:
-                    await self.remove_guild_member_role(data.guild_id, user_id, activity_roles[x-1].RoleID, "Activity Role")
+                    await self.remove_guild_member_role(
+                        data.guild_id, user_id, activity_roles[x - 1].RoleID, "Activity Role"
+                    )
             elif activityRole.RoleID in data.member.roles and _activity == []:
                 await self.remove_guild_member_role(data.guild_id, user_id, activityRole.RoleID, "Activity Role")
                 e.TopActivityPeriod = 0
@@ -78,8 +95,9 @@ async def handle_activity(self, data, type="chat"):
 
 
 def task_check_activity():
-    from ..database import database
     from ..database import alchemy as db
+    from ..database import database
+
     _db = database.Database()
     s = _db.sql.session()
     activity_roles = s.query(db.ActivityRoles).order_by(db.ActivityRoles.ActivityPeriod.asc()).all()
@@ -91,5 +109,5 @@ def task_check_activity():
             if user.UserID in chat or user.UserID in voice:
                 continue
             user.TopActivityPeriod += 1
-            #await self.remove_guild_member_role(user.GuildID, user.UserID, activityRole.RoleID, "Activity Role Cleanup")
+            # await self.remove_guild_member_role(user.GuildID, user.UserID, activityRole.RoleID, "Activity Role Cleanup")
     s.commit()

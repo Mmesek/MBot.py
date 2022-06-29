@@ -1,14 +1,15 @@
-from MFramework import register, Context, Groups, Embed, Snowflake
+from MFramework import Context, Embed, Groups, Snowflake, register
+
 
 @register(group=Groups.ADMIN, interaction=False)
-async def edit_message(ctx: Context, messageID, *newMessage,  channel, **kwargs):
-    '''Edits bot's message'''
-    await ctx.bot.edit_message(channel[0], messageID, ' '.join(newMessage))
+async def edit_message(ctx: Context, messageID, *newMessage, channel, **kwargs):
+    """Edits bot's message"""
+    await ctx.bot.edit_message(channel[0], messageID, " ".join(newMessage))
 
 
 @register(group=Groups.ADMIN, interaction=False)
 async def edit_emoji(ctx: Context, emojis: str, roles: Snowflake):
-    '''Allows only specific roles access to emoji's'''
+    """Allows only specific roles access to emoji's"""
     for emoji in emojis.split(","):
         if "<:" in emoji:
             part2 = emoji.strip().replace("\\<:", "").replace(">", "").replace(":", " ").split(" ", 2)
@@ -17,7 +18,7 @@ async def edit_emoji(ctx: Context, emojis: str, roles: Snowflake):
 
 @register(group=Groups.ADMIN, interaction=False)
 async def aemoji(ctx: Context, emoji_name: str) -> str:
-    '''Sends animated emoji'''
+    """Sends animated emoji"""
     emojis = await ctx.bot.list_guild_emoji(ctx.guild_id)
     message = ""
     for emoji in emojis:
@@ -31,8 +32,8 @@ async def aemoji(ctx: Context, emoji_name: str) -> str:
 
 
 @register(group=Groups.ADMIN, interaction=False)
-async def list_emoji(ctx: Context, all: bool=False, regular: bool=False) -> Embed:
-    '''Lists all available emoji's in guild'''
+async def list_emoji(ctx: Context, all: bool = False, regular: bool = False) -> Embed:
+    """Lists all available emoji's in guild"""
     emojis = await ctx.bot.list_guild_emojis(ctx.guild_id)
     _animated = ""
     _regular = ""
@@ -55,12 +56,13 @@ async def list_emoji(ctx: Context, all: bool=False, regular: bool=False) -> Embe
 
 @register(group=Groups.ADMIN, interaction=False)
 async def delete(ctx: Context, channel: Snowflake, message: Snowflake):
-    '''Delete's message'''
+    """Delete's message"""
     await ctx.bot.delete_message(channel, *message)
+
 
 @register(group=Groups.ADMIN, interaction=False)
 async def getmessages(ctx: Context, user: Snowflake) -> Embed:
-    '''Retrives messages from DM'''
+    """Retrives messages from DM"""
     dm = await ctx.bot.create_dm(user)
     messages = await ctx.bot.get_messages(dm.id)
     message = ""
@@ -69,15 +71,17 @@ async def getmessages(ctx: Context, user: Snowflake) -> Embed:
     e = Embed().setFooter("", f"DM ID: {dm.id}").setDescription(message[:2000])
     return e
 
+
 @register(group=Groups.ADMIN, interaction=False)
 async def prunecount(ctx: Context, days: int = 7) -> str:
-    '''Shows prune count'''
+    """Shows prune count"""
     count = await ctx.bot.get_guild_prune_count(ctx.guild_id, days)
     return str(count)
 
+
 @register(group=Groups.MODERATOR, interaction=False)
 async def role_icon(ctx: Context, role: Snowflake, emoji: str):
-    '''
+    """
     Allows setting icons for roles
     Params
     ------
@@ -85,61 +89,71 @@ async def role_icon(ctx: Context, role: Snowflake, emoji: str):
         role to modify
     emoji:
         Unicode Emoji, Discord Emoji or link to picture
-    '''
+    """
     from MFramework.utils.utils import parseMention
+
     if emoji and "http" in emoji or ":" in emoji:
-        if ':' in emoji and not emoji.startswith("http"):
+        if ":" in emoji and not emoji.startswith("http"):
             emoji_name, id = parseMention(emoji).split(":")
             from mdiscord import CDN_URL, CDN_Endpoints
-            emoji = CDN_URL+CDN_Endpoints.Custom_Emoji.value.format(emoji_id=id)
+
+            emoji = CDN_URL + CDN_Endpoints.Custom_Emoji.value.format(emoji_id=id)
         import requests
+
         icon = requests.get(emoji)
         if icon.ok:
             from binascii import b2a_base64
-            emoji = {"icon":f"data:image/png;base64,{b2a_base64(icon.content).decode()}"}
+
+            emoji = {"icon": f"data:image/png;base64,{b2a_base64(icon.content).decode()}"}
     else:
-        emoji = {"icon": "","unicode_emoji": emoji}
+        emoji = {"icon": "", "unicode_emoji": emoji}
     await ctx.bot.modify_guild_role(guild_id=ctx.guild_id, role_id=role, **emoji)
     return "Icon changed"
 
+
 @register(group=Groups.SYSTEM, interaction=False)
 async def avatar(ctx: Context, avatar: str):
-    '''
+    """
     Change bot's avatar
     Params
     ------
     name:
         URL to bot's new avatar
-    '''
+    """
     import requests
+
     icon = requests.get(avatar)
     if icon.ok:
         from binascii import b2a_base64
-        await ctx.bot.modify_current_user(avatar=f"data:image/{avatar.split('.')[-1] if '.' in avatar else 'png'};base64,{b2a_base64(icon.content).decode()}")
+
+        await ctx.bot.modify_current_user(
+            avatar=f"data:image/{avatar.split('.')[-1] if '.' in avatar else 'png'};base64,{b2a_base64(icon.content).decode()}"
+        )
         return "Changed"
     return "Error fetching avatar"
 
 
 @register(group=Groups.SYSTEM, interaction=False)
 async def username(ctx: Context, name: str):
-    '''
+    """
     Change bot's username
     Params
     ------
     name:
         Bot's new Name
-    '''
+    """
     await ctx.bot.modify_current_user(name)
     return "Changed"
 
+
 @register(group=Groups.ADMIN, interaction=False)
 async def nick(ctx: Context, nick: str):
-    '''
+    """
     Changes bot nickname
     Params
     ------
     nick:
         New nickname
-    '''
+    """
     await ctx.bot.modify_current_user_nick(ctx.guild_id, nick, reason=f"Request made by {ctx.user.username}")
-    return "New nickname: "+nick
+    return "New nickname: " + nick

@@ -1,9 +1,10 @@
-from MFramework import register, Groups, Context, Embed
+from MFramework import Context, Embed, Groups, register
 from MFramework.commands.components import TextInput
+
 
 @register(group=Groups.GLOBAL)
 async def suggestion(ctx: Context, title: TextInput[1, 100], your_suggestion: TextInput[1, 4000]) -> str:
-    '''
+    """
     Make a `Server Suggestion`!
     Params
     ------
@@ -11,12 +12,12 @@ async def suggestion(ctx: Context, title: TextInput[1, 100], your_suggestion: Te
         Title of suggestion
     your_suggestion: Long
         Your suggestion
-    '''
+    """
     e = Embed()
     e.set_author(str(ctx.user), icon_url=ctx.user.get_avatar())
     e.set_title(title)
     e.set_description(your_suggestion)
-    #e.set_color()#TODO
+    # e.set_color()#TODO
     webhook = ctx.cache.webhooks.get("suggestion", None)
     if not webhook:
         return "There is no channel configured to accept suggestions!"

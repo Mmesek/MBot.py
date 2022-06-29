@@ -1,19 +1,23 @@
-from datetime import timedelta
 import re
+from datetime import timedelta
+
 import aiohttp
+from MFramework import Context, Groups, register
 
-from MFramework import Groups, register, Context
+CHAPTER_PATTERN = re.compile(
+    r"(?:(?P<Minute>\d+):(?P<Second>\d+)) ?- ?(?P<Challenge>[^-\n]+)(?: ?- ?(?P<Checkpoint>\w+))?"
+)
 
-CHAPTER_PATTERN = re.compile(r"(?:(?P<Minute>\d+):(?P<Second>\d+)) ?- ?(?P<Challenge>[^-\n]+)(?: ?- ?(?P<Checkpoint>\w+))?")
 
 class Chapter:
     def __init__(self, minute: int, second: int, checkpoint: str) -> None:
         self.timestamp = timedelta(minutes=int(minute), seconds=int(second))
         self.checkpoint = checkpoint
 
+
 @register(group=Groups.GLOBAL, guild=289739584546275339)
 async def achievements(ctx: Context, achievement: str, url: str):
-    '''
+    """
     Submit a video for achievement!
     Params
     ------
@@ -23,17 +27,19 @@ async def achievements(ctx: Context, achievement: str, url: str):
             True Night Runner = True Night Runner
     url:
         URL to a YT video with a proof
-    '''
+    """
     video_id = url.split("=")[-1]
     token = ctx.bot.cfg.get("Tokens", {}).get("youtube", None)
     if not token:
         return "YT Token is not configured"
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(f"https://www.googleapis.com/youtube/v3/videos?id={video_id}&key={token}&part=snippet") as r:
+        async with session.get(
+            f"https://www.googleapis.com/youtube/v3/videos?id={video_id}&key={token}&part=snippet"
+        ) as r:
             if r.ok:
                 _ = await r.json()
-                description = _['items'][0]['snippet']["description"]
+                description = _["items"][0]["snippet"]["description"]
             else:
                 return "Couldn't find provided video. Is it a valid YT URL with a description?"
 

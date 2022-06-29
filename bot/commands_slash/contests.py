@@ -1,37 +1,63 @@
 import asyncio
+
 import sqlalchemy as sa
+from MFramework import Context, Embed, Groups, register
 from mlib.database import Base
 
-from MFramework import register, Groups, Context, Embed
 
 class Contest_Entries(Base):
     id = sa.Column(sa.BigInteger, primary_key=True)
     msg = sa.Column(sa.BigInteger)
     cc = sa.Column(sa.String)
 
+
 class Contest_Entries2(Base):
     id = sa.Column(sa.BigInteger, primary_key=True)
     msg = sa.Column(sa.BigInteger)
 
+
+from MFramework.commands.components import Modal, Row, Text_Input_Styles, TextInput
 from MFramework.commands.decorators import EventBetween
-from MFramework.commands.components import Modal, TextInput, Text_Input_Styles, Row
+
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, auto_defer=False, private_response=True)
 @EventBetween(after_month=3, after_day=28, before_month=5, before_day=5, before_hour=17)
 async def msi(ctx: Context) -> str:
-    '''
+    """
     Participate in MSI contest
-    '''
+    """
     r = Msi(
         Row(
-            TextInput("URL", style=Text_Input_Styles.Short, min_length=1, max_length=200, required=True, placeholder="URL to a picture")
+            TextInput(
+                "URL",
+                style=Text_Input_Styles.Short,
+                min_length=1,
+                max_length=200,
+                required=True,
+                placeholder="URL to a picture",
+            )
         ),
         Row(
-            TextInput("URL 2", style=Text_Input_Styles.Short, min_length=1, max_length=200, required=False, placeholder="Optional URL to a second picture")
+            TextInput(
+                "URL 2",
+                style=Text_Input_Styles.Short,
+                min_length=1,
+                max_length=200,
+                required=False,
+                placeholder="Optional URL to a second picture",
+            )
         ),
         Row(
-            TextInput("URL 3", style=Text_Input_Styles.Short, min_length=1, max_length=200, required=False, placeholder="Optional URL to a third picture")
-        ), title="MSI Contest"
+            TextInput(
+                "URL 3",
+                style=Text_Input_Styles.Short,
+                min_length=1,
+                max_length=200,
+                required=False,
+                placeholder="Optional URL to a third picture",
+            )
+        ),
+        title="MSI Contest",
     )
     return r
 
@@ -39,17 +65,28 @@ async def msi(ctx: Context) -> str:
 class Msi(Modal):
     @classmethod
     async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
-        attachment = inputs.get('URL')
-        attachment2 = inputs.get('URL 2')
-        attachment3 = inputs.get('URL 3')
+        attachment = inputs.get("URL")
+        attachment2 = inputs.get("URL 2")
+        attachment3 = inputs.get("URL 3")
 
-        if attachment and (not (attachment.endswith(".png") or attachment.endswith(".jpg") or attachment.endswith(".jpeg")) or not attachment.startswith("http")):
+        if attachment and (
+            not (attachment.endswith(".png") or attachment.endswith(".jpg") or attachment.endswith(".jpeg"))
+            or not attachment.startswith("http")
+        ):
             return "Your URL (1) should point directly to an image, not an album! Seems like your URL doesn't start with http or doesn't end with .png, .jpg or .jpeg"
-        if attachment2 and (not (attachment2.endswith(".png") or attachment2.endswith(".jpg") or attachment2.endswith(".jpeg")) or not attachment2.startswith("http")):
+        if attachment2 and (
+            not (attachment2.endswith(".png") or attachment2.endswith(".jpg") or attachment2.endswith(".jpeg"))
+            or not attachment2.startswith("http")
+        ):
             return "Your URL (2) should point directly to an image, not an album! Seems like your URL doesn't start with http or doesn't end with .png, .jpg or .jpeg"
-        if attachment3 and (not (attachment3.endswith(".png") or attachment3.endswith(".jpg") or attachment3.endswith(".jpeg")) or not attachment3.startswith("http")):
+        if attachment3 and (
+            not (attachment3.endswith(".png") or attachment3.endswith(".jpg") or attachment3.endswith(".jpeg"))
+            or not attachment3.startswith("http")
+        ):
             return "Your URL (3) should point directly to an image, not an album! Seems like your URL doesn't start with http or doesn't end with .png, .jpg or .jpeg"
-        embeds = [Embed().setImage(attachment).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar()).setColor("#060606")]
+        embeds = [
+            Embed().setImage(attachment).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar()).setColor("#060606")
+        ]
         if attachment2:
             embeds.append(Embed().setImage(attachment2).setColor("#ed1c24"))
         if attachment3:
@@ -68,9 +105,9 @@ class Msi(Modal):
         return "Entry Confirmed!"
 
 
-#@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
+# @register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
 async def msi(ctx: Context, country: str, text: str = None, attachment: str = None, attachment2: str = None) -> str:
-    '''
+    """
     Participate in MSI contest
     Params
     ------
@@ -82,8 +119,11 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
         DIRECT URL to a picture. Must end with either .png or .gif
     attachment2:
         DIRECT URL to a picture 2. Must end with either .png or .gif
-    '''
-    import pycountry, asyncio
+    """
+    import asyncio
+
+    import pycountry
+
     try:
         _country = pycountry.countries.search_fuzzy(country)
     except:
@@ -92,28 +132,42 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
         await ctx.reply(f"Most similiar Country: {_country[0].name}")
         await asyncio.sleep(5)
     session = ctx.db.sql.session()
-    #if Contest_Entries.filter(session, id=ctx.user_id).all():
+    # if Contest_Entries.filter(session, id=ctx.user_id).all():
     #    return "You've already sent your entry!"
     if text and len(text.split(" ")) > 500:
         return "Sadly your entry is too long \=("
     if not text:
         await ctx.reply("Send your entry here (Up to 500 words)")
         try:
-            msg = await ctx.bot.wait_for("message_create",
-                            check = lambda x: 
-                                x.channel_id == ctx.channel_id and 
-                                x.content and len(x.content.split(" ")) <= 500 and
-                                x.author.id == ctx.user_id,
-                            timeout = 600)
+            msg = await ctx.bot.wait_for(
+                "message_create",
+                check=lambda x: x.channel_id == ctx.channel_id
+                and x.content
+                and len(x.content.split(" ")) <= 500
+                and x.author.id == ctx.user_id,
+                timeout=600,
+            )
         except:
             return "Sadly you didn't respond in time! Use the command again!"
         await msg.delete()
         text = msg.content
-    if attachment and (not (attachment.endswith(".png") or attachment.endswith(".jpg") or attachment.endswith(".jpeg")) or not attachment.startswith("http")):
+    if attachment and (
+        not (attachment.endswith(".png") or attachment.endswith(".jpg") or attachment.endswith(".jpeg"))
+        or not attachment.startswith("http")
+    ):
         return "Your URL should point directly to an image, not an album!"
-    if attachment2 and (not (attachment2.endswith(".png") or attachment2.endswith(".jpg") or attachment2.endswith(".jpeg")) or not attachment2.startswith("http")):
+    if attachment2 and (
+        not (attachment2.endswith(".png") or attachment2.endswith(".jpg") or attachment2.endswith(".jpeg"))
+        or not attachment2.startswith("http")
+    ):
         return "Your URL should point directly to an image, not an album!"
-    embeds = [Embed().setDescription(text).setImage(attachment).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar()).setColor("#060606")]
+    embeds = [
+        Embed()
+        .setDescription(text)
+        .setImage(attachment)
+        .setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar())
+        .setColor("#060606")
+    ]
     if attachment2:
         embeds.append(Embed().setImage(attachment2).setColor("#ed1c24"))
     entry = Contest_Entries.filter(session, id=ctx.user_id).first()
@@ -128,21 +182,22 @@ async def msi(ctx: Context, country: str, text: str = None, attachment: str = No
     session.commit()
     return "Entry Confirmed!"
 
+
 @register(group=Groups.SYSTEM, interaction=False)
 async def msi_entries(ctx: Context, *, language):
-    '''
+    """
     Description to use with help command
     Params
     ------
     :
         description
-    '''
+    """
     msgs = [await ctx.bot.get_channel_message(934134541487050762, 940276323442655262)]
     for i in range(16):
         msgs.extend(await ctx.bot.get_channel_messages(934134541487050762, limit=100, before=msgs[-1].id))
         await asyncio.sleep(0.03)
     msgs.reverse()
-    text = ''
+    text = ""
     session = ctx.bot.db.sql.session()
     for msg in msgs:
         if msg.author.id != 572532846678376459:
@@ -160,18 +215,19 @@ async def msi_entries(ctx: Context, *, language):
             if embed.image:
                 text += embed.image.url + "\n"
         text += "\n---\n"
-    with open('entries.txt','w',newline='',encoding='utf-8') as file:
+    with open("entries.txt", "w", newline="", encoding="utf-8") as file:
         file.write(text)
+
 
 @register(group=Groups.SYSTEM, interaction=False)
 async def msi_activity(ctx: Context, *, language):
-    '''
+    """
     Description to use with help command
     Params
     ------
     :
         description
-    '''
+    """
     msgs = [await ctx.bot.get_channel_message(934134541487050762, 940276323442655262)]
     for i in range(16):
         msgs.extend(await ctx.bot.get_channel_messages(934134541487050762, limit=100, before=msgs[-1].id))
@@ -188,8 +244,14 @@ async def msi_activity(ctx: Context, *, language):
                 if ce:
                     users.append(ce.id)
     from ..dispatch.xp import User_Experience
-    new_xp = session.query(User_Experience.user_id, User_Experience.value).filter(User_Experience.server_id == ctx.guild_id, User_Experience.user_id.in_(users)).all()
+
+    new_xp = (
+        session.query(User_Experience.user_id, User_Experience.value)
+        .filter(User_Experience.server_id == ctx.guild_id, User_Experience.user_id.in_(users))
+        .all()
+    )
     from ..database.log import Statistic, types
+
     old_exp = session.query(Statistic.user_id, Statistic.value).filter(Statistic.name == types.Statistic.Chat).all()
     rows = []
     for user in users:
@@ -202,7 +264,8 @@ async def msi_activity(ctx: Context, *, language):
             row["new_xp"] = new[1]
         rows.append(row)
     import csv
-    with open('entries.txt','w',newline='',encoding='utf-8') as file:
+
+    with open("entries.txt", "w", newline="", encoding="utf-8") as file:
         cw = csv.DictWriter(file, ["user_id", "old_exp", "new_xp"])
         cw.writeheader()
         cw.writerows(rows)

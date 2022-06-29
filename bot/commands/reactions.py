@@ -1,12 +1,13 @@
-from MFramework import Groups, Context
+from MFramework import Context, Groups
 from MFramework.commands.decorators import reaction
+
 
 @reaction("📌", group=Groups.SUPPORTER)
 async def pin(ctx: Context, *args):
-    '''
+    """
     Pin's message
-    '''
-    if next(filter(lambda x: x.emoji.name == '📌', ctx.data.reactions)).count >= 3:
+    """
+    if next(filter(lambda x: x.emoji.name == "📌", ctx.data.reactions)).count >= 3:
         try:
             await ctx.bot.add_pinned_channel_message(ctx.channel_id, ctx.message_id, "User pinned message")
         except:
@@ -14,10 +15,12 @@ async def pin(ctx: Context, *args):
             await ctx.bot.unpin_message(ctx.channel_id, msgs[0].id, "Too many pins to pin a new message")
             await ctx.bot.add_pinned_channel_message(ctx.channel_id, ctx.message_id, "Users voted to pin a message")
 
+
 @reaction("poll", group=Groups.GLOBAL)
 async def poll(ctx: Context, *args):
     await ctx.data.react("✅")
     await ctx.data.react("❎")
+
 
 @reaction("🗑️")
 async def delete(ctx: Context, *args):
@@ -30,6 +33,6 @@ async def delete(ctx: Context, *args):
         ctx.member = member
     if not invoking_permission.can_use(ctx.permission_group):
         return
-    reaction = next(filter(lambda x: x.emoji.name == '🗑️', msg.reactions))
+    reaction = next(filter(lambda x: x.emoji.name == "🗑️", msg.reactions))
     if reaction.count >= 5:
         await ctx.data.delete(reason="Users voted to remove message")
