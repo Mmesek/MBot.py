@@ -147,7 +147,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
             embed.addField("XP", str(xp.value), True)
     components = []
     if ctx.permission_group.can_use(Groups.MODERATOR):
-        from .infractions import instant_actions
+        from ..infractions.interactions import instant_actions
 
         components.append(instant_actions(member.user.id))
     await ctx.reply(embeds=[embed], components=components)

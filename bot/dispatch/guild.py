@@ -3,43 +3,6 @@ from MFramework import Bot, Guild_Member_Add, Guild_Member_Remove, log, onDispat
 
 @onDispatch
 async def guild_member_add(self: Bot, data: Guild_Member_Add):
-    _last = self.cache[data.guild_id].last_join
-    from datetime import timedelta
-
-    if _last and abs(_last.as_date - data.user.id.as_date) < timedelta(days=1):
-        from ..commands_slash.infractions import InfractionTypes
-
-        _ = self.cache[data.guild_id].logging.get("auto_mod", None)
-        if _:
-            await _(
-                guild_id=data.guild_id,
-                channel_id=None,
-                message_id=None,
-                moderator=self.cache[data.guild_id].bot.user,
-                user_id=data.user.id,
-                reason="Possible Raid: Account Age",
-                duration=None,
-                type=InfractionTypes.Kick,
-            )
-            try:
-                r = await _.log_dm(
-                    type=InfractionTypes.Kick,
-                    guild_id=data.guild_id,
-                    user_id=data.user.id,
-                    reason="Possible Raid",
-                    duration=None,
-                )
-            except Exception as ex:
-                r = None
-        await self.remove_guild_member(data.guild_id, data.user.id, "Possible Raid")
-        try:
-            await self.remove_guild_member(data.guild_id, _last, "Possible Raid")
-        except:
-            pass
-        self.cache[data.guild_id].last_join = data.user.id
-        return True
-
-    self.cache[data.guild_id].last_join = data.user.id
     await self.db.influx.influxMember(data.guild_id, data.user.id, True, data.joined_at)
 
 

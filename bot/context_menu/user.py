@@ -11,7 +11,7 @@ async def Infractions(ctx: Context, user: User):
         User which infractions to show
     """
     await ctx.deferred(private=True)
-    from ..commands_slash.infractions import list_
+    from ..infractions.commands import list_
 
     return await list_(ctx, user)
 
@@ -55,7 +55,7 @@ async def Warn(ctx: Context, user: User):
     user:
         user to warn
     """
-    from ..commands_slash.infractions import Reason, Row, TextInput
+    from ..infractions.interactions import Reason, Row, TextInput
 
     return Reason(
         Row(TextInput("Reason", placeholder="Reason of this action")), title="Infraction", custom_id=f"Warn-{user.id}"

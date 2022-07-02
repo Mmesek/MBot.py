@@ -15,13 +15,13 @@ from MFramework.commands.components import Select, Select_Option
 from MFramework.utils.log import Log
 from MFramework.utils.log import Message as MessageLog
 
-from bot.commands_slash.infractions import instant_actions
+from ..infractions.interactions import instant_actions
 
 
 @onDispatch
 async def direct_message_create(self: Bot, data: Message):
     if "find this life-changing" in data.content:
-        from ..commands_slash.infractions import InfractionTypes
+        from ..infractions.models import Types as InfractionTypes
 
         _ = self.cache[self.primary_guild].logging.get("auto_mod", None)
         if _:

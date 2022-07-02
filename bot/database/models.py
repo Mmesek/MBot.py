@@ -20,8 +20,8 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from ..commands_slash.infractions import InfractionTypes
-from ..commands_slash.infractions import db_Infraction as Infraction
+from ..infractions.models import Infraction
+from ..infractions.models import Types as InfractionTypes
 from . import Inventory, log, types
 from .mixins import UserID
 
@@ -34,13 +34,18 @@ class User(HasDictSettingsRelated, Snowflake, Base):
     id: `Snowflake`"""
 
     infractions: List[Infraction] = relationship(
-        "Infraction", back_populates="user", foreign_keys="Infraction.user_id", order_by="desc(Infraction.timestamp)"
+        "Infraction",
+        # back_populates="user",
+        # foreign_keys="Infraction.user_id",
+        order_by="desc(Infraction.timestamp)",
+        primaryjoin="User.id == foreign(Infraction.user_id)",
     )
     mod_actions: List[Infraction] = relationship(
         "Infraction",
-        back_populates="moderator",
-        foreign_keys="Infraction.moderator_id",
+        # back_populates="moderator",
+        # foreign_keys="Infraction.moderator_id",
         order_by="desc(Infraction.timestamp)",
+        primaryjoin="User.id == foreign(Infraction.moderator_id)",
     )
     transactions: List[log.Transaction] = relationship("Transaction_Inventory", order_by="desc(Transaction.timestamp)")
     activities: List[log.Activity] = relationship("Activity", order_by="desc(Activity.timestamp)")

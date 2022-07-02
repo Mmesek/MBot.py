@@ -1,0 +1,38 @@
+from datetime import timedelta
+
+from MFramework import Cache, Snowflake, User
+
+from . import models
+
+
+async def log_action(
+    cache: Cache,
+    logger: str,
+    user_id: Snowflake,
+    reason: str,
+    type: models.Types,
+    dm_reason: str = None,
+    moderator: User = None,
+    guild_id: Snowflake = None,
+    channel_id: Snowflake = None,
+    message_id: Snowflake = None,
+    duration: timedelta = None,
+):
+    _ = cache.logging.get(logger, None)
+    if not _:
+        return
+
+    await _(
+        guild_id=guild_id or cache.guild_id,
+        channel_id=channel_id,
+        message_id=message_id,
+        moderator=moderator or cache.bot.user,
+        user_id=user_id,
+        reason=reason,
+        duration=duration,
+        type=type,
+    )
+
+    await _.log_dm(
+        type=type, guild_id=guild_id or cache.guild_id, user_id=user_id, reason=dm_reason or reason, duration=duration
+    )
