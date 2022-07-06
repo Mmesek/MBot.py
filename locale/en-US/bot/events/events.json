@@ -1,0 +1,92 @@
+{
+    "event": {
+        "name": "event",
+        "description": "Event related commands",
+        "arguments": {
+            "language": {
+                "name": "language",
+                "description": "MISSING DOCSTRING"
+            }
+        },
+        "sub_commands": {
+            "help": {
+                "name": "help",
+                "description": "Shows help related to Event",
+                "arguments": {
+                    "language": {
+                        "name": "language",
+                        "description": "MISSING DOCSTRING"
+                    }
+                }
+            },
+            "leaderboard": {
+                "name": "leaderboard",
+                "description": "Shows event Leaderboards",
+                "arguments": {
+                    "language": {
+                        "name": "language",
+                        "description": "MISSING DOCSTRING"
+                    }
+                }
+            },
+            "history": {
+                "name": "history",
+                "description": "Shows User's event history",
+                "arguments": {
+                    "user": {
+                        "name": "user",
+                        "description": "User's history to show"
+                    },
+                    "language": {
+                        "name": "language",
+                        "description": "MISSING DOCSTRING"
+                    }
+                }
+            },
+            "stats": {
+                "name": "stats",
+                "description": "Shows faction statistics",
+                "arguments": {
+                    "language": {
+                        "name": "language",
+                        "description": "MISSING DOCSTRING"
+                    }
+                }
+            },
+            "profile": {
+                "name": "profile",
+                "description": "Shows User's event profile",
+                "arguments": {
+                    "user": {
+                        "name": "user",
+                        "description": "User's profile to show"
+                    },
+                    "language": {
+                        "name": "language",
+                        "description": "MISSING DOCSTRING"
+                    }
+                }
+            },
+            "cooldown": {
+                "name": "cooldown",
+                "description": "Shows Current cooldowns",
+                "arguments": {
+                    "language": {
+                        "name": "language",
+                        "description": "MISSING DOCSTRING"
+                    }
+                }
+            },
+            "summary": {
+                "name": "summary",
+                "description": "Shows summary of Current Event",
+                "arguments": {
+                    "language": {
+                        "name": "language",
+                        "description": "MISSING DOCSTRING"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,357 @@
+{
+    "admin": {
+        "edit_message": {
+            "name": "edit_message",
+            "description": "Edits bot's message",
+            "arguments": {
+                "messageID": {
+                    "name": "messageID",
+                    "description": "MISSING DOCSTRING"
+                },
+                "newMessage": {
+                    "name": "newMessage",
+                    "description": "MISSING DOCSTRING"
+                },
+                "channel": {
+                    "name": "channel",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "edit_emoji": {
+            "name": "edit_emoji",
+            "description": "Allows only specific roles access to emoji's",
+            "arguments": {
+                "emojis": {
+                    "name": "emojis",
+                    "description": "MISSING DOCSTRING"
+                },
+                "roles": {
+                    "name": "roles",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "aemoji": {
+            "name": "aemoji",
+            "description": "Sends animated emoji",
+            "arguments": {
+                "emoji_name": {
+                    "name": "emoji_name",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "list_emoji": {
+            "name": "list_emoji",
+            "description": "Lists all available emoji's in guild",
+            "arguments": {
+                "all": {
+                    "name": "all",
+                    "description": "MISSING DOCSTRING"
+                },
+                "regular": {
+                    "name": "regular",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "delete": {
+            "name": "delete",
+            "description": "Delete's message",
+            "arguments": {
+                "channel": {
+                    "name": "channel",
+                    "description": "MISSING DOCSTRING"
+                },
+                "message": {
+                    "name": "message",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "getmessages": {
+            "name": "getmessages",
+            "description": "Retrives messages from DM",
+            "arguments": {
+                "user": {
+                    "name": "user",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "prunecount": {
+            "name": "prunecount",
+            "description": "Shows prune count",
+            "arguments": {
+                "days": {
+                    "name": "days",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "role_icon": {
+            "name": "role_icon",
+            "description": "Allows setting icons for roles",
+            "arguments": {
+                "role": {
+                    "name": "role",
+                    "description": "role to modify"
+                },
+                "emoji": {
+                    "name": "emoji",
+                    "description": "Unicode Emoji, Discord Emoji or link to picture"
+                }
+            }
+        },
+        "avatar": {
+            "name": "avatar",
+            "description": "Change bot's avatar",
+            "arguments": {
+                "avatar": {
+                    "name": "avatar",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "username": {
+            "name": "username",
+            "description": "Change bot's username",
+            "arguments": {
+                "name": {
+                    "name": "name",
+                    "description": "Bot's new Name"
+                }
+            }
+        },
+        "nick": {
+            "name": "nick",
+            "description": "Changes bot nickname",
+            "arguments": {
+                "nick": {
+                    "name": "nick",
+                    "description": "New nickname"
+                }
+            }
+        }
+    },
+    "graphs": {
+        "graph": {
+            "name": "graph",
+            "description": "Possible arguments: graph=all/joined/created/boosters\nresample=W-MON/M/Y/dunnowhatelse\nmonth_interval=1+ probably\n-growth",
+            "arguments": {
+                "graph": {
+                    "name": "graph",
+                    "description": "MISSING DOCSTRING"
+                },
+                "resample": {
+                    "name": "resample",
+                    "description": "MISSING DOCSTRING"
+                },
+                "locator": {
+                    "name": "locator",
+                    "description": "MISSING DOCSTRING"
+                },
+                "interval": {
+                    "name": "interval",
+                    "description": "MISSING DOCSTRING"
+                },
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "growth": {
+                    "name": "growth",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "graph_words": {
+            "name": "graph_words",
+            "description": "Plots word usage over days",
+            "arguments": {
+                "channel_id": {
+                    "name": "channel_id",
+                    "description": "MISSING DOCSTRING"
+                },
+                "word_or_phrase": {
+                    "name": "word_or_phrase",
+                    "description": "MISSING DOCSTRING"
+                },
+                "limit_messages": {
+                    "name": "limit_messages",
+                    "description": "MISSING DOCSTRING"
+                },
+                "resample": {
+                    "name": "resample",
+                    "description": "MISSING DOCSTRING"
+                },
+                "locator": {
+                    "name": "locator",
+                    "description": "MISSING DOCSTRING"
+                },
+                "interval": {
+                    "name": "interval",
+                    "description": "MISSING DOCSTRING"
+                },
+                "growth": {
+                    "name": "growth",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "help": {
+        "help": {
+            "name": "help",
+            "description": "Shows detailed help message for specified command alongside it's parameters, required permission, category and example usage.",
+            "arguments": {
+                "command": {
+                    "name": "command",
+                    "description": "Command to show detailed help info for  Example: command"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "permissions": {
+        "permission": {
+            "name": "permission",
+            "description": "Permissions related commands",
+            "arguments": {},
+            "sub_commands": {
+                "get": {
+                    "name": "get",
+                    "description": "etches set permissions for this command",
+                    "arguments": {
+                        "command": {
+                            "name": "command",
+                            "description": "command to get permissions of"
+                        }
+                    }
+                },
+                "user": {
+                    "name": "user",
+                    "description": "Description to use with help command",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "description"
+                        }
+                    }
+                },
+                "command": {
+                    "name": "command",
+                    "description": "Description to use with help command",
+                    "arguments": {
+                        "group": {
+                            "name": "group",
+                            "description": "description"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "system": {
+        "shutdown": {
+            "name": "shutdown",
+            "description": "Shuts bot down.",
+            "arguments": {
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "updateStatus": {
+            "name": "updateStatus",
+            "description": "Changes Bot's status",
+            "arguments": {
+                "status": {
+                    "name": "status",
+                    "description": "MISSING DOCSTRING"
+                },
+                "status_kind": {
+                    "name": "status_kind",
+                    "description": "MISSING DOCSTRING"
+                },
+                "status_type": {
+                    "name": "status_type",
+                    "description": "MISSING DOCSTRING"
+                },
+                "afk": {
+                    "name": "afk",
+                    "description": "MISSING DOCSTRING"
+                },
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "reloadCommands": {
+            "name": "reloadCommands",
+            "description": "Reloads commands files.\n    This probably needs to be placed in another file but well, it's here currently FOR SCIENCE.",
+            "arguments": {
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "update": {
+            "name": "update",
+            "description": "Pulls new commits",
+            "arguments": {
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    }
+}

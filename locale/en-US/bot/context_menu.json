@@ -1,0 +1,66 @@
+{
+    "message": {
+        "Bookmark": {
+            "name": "Bookmark",
+            "description": "Bookmark a moment in chat to save in your DMs for easy navigation",
+            "arguments": {
+                "message": {
+                    "name": "message",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "Quote": {
+            "name": "Quote",
+            "description": "Quotes a message",
+            "arguments": {
+                "message": {
+                    "name": "message",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "user": {
+        "Infractions": {
+            "name": "Infractions",
+            "description": "Shows user Infractions",
+            "arguments": {
+                "user": {
+                    "name": "user",
+                    "description": "User which infractions to show"
+                }
+            }
+        },
+        "Info": {
+            "name": "Info",
+            "description": "Shows User Info",
+            "arguments": {
+                "member": {
+                    "name": "member",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "Experience": {
+            "name": "Experience",
+            "description": "Shows Experience of user",
+            "arguments": {
+                "user": {
+                    "name": "user",
+                    "description": "User's exp to show"
+                }
+            }
+        },
+        "Warn": {
+            "name": "Warn",
+            "description": "Warn user",
+            "arguments": {
+                "user": {
+                    "name": "user",
+                    "description": "user to warn"
+                }
+            }
+        }
+    }
+}

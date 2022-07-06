@@ -1,0 +1,70 @@
+{
+    "hunt": {
+        "name": "hunt",
+        "description": "Base command for managing hunts",
+        "sub_commands": {
+            "create": {
+                "name": "create",
+                "description": "Allows creating new Hunts",
+                "arguments": {
+                    "name": {
+                        "name": "name",
+                        "description": "Name of the hunt"
+                    },
+                    "description": {
+                        "name": "description",
+                        "description": "Description of the hunt"
+                    },
+                    "start_date": {
+                        "name": "start_date",
+                        "description": "When should hunt start"
+                    },
+                    "end_date": {
+                        "name": "end_date",
+                        "description": "When should hunt end"
+                    },
+                    "reactions": {
+                        "name": "reactions",
+                        "description": "List (comma separated) of possible reactions in this hunt"
+                    },
+                    "item_name": {
+                        "name": "item_name",
+                        "description": "Name of an item that should be given to person that reacted"
+                    },
+                    "quantity": {
+                        "name": "quantity",
+                        "description": "Amount of items that should be given. For range specify min and max value"
+                    },
+                    "require_item": {
+                        "name": "require_item",
+                        "description": "Item required and removed upon upon reacting"
+                    },
+                    "require_quantity": {
+                        "name": "require_quantity",
+                        "description": "Amount of items needed in order to claim. For range specify min and max value"
+                    },
+                    "exchange_ratio": {
+                        "name": "exchange_ratio",
+                        "description": "Ratio of Required to Received items. Set to 0 for random"
+                    },
+                    "max_winners": {
+                        "name": "max_winners",
+                        "description": "Limit of winners per each drop. Set to 0 for no limit"
+                    },
+                    "lottery": {
+                        "name": "lottery",
+                        "description": "Whether all or random should receive reward (Depending on max_winners)"
+                    },
+                    "active_within": {
+                        "name": "active_within",
+                        "description": "Amount of last messages in a channel in which user should be present to be eligible"
+                    },
+                    "repeating": {
+                        "name": "repeating",
+                        "description": "Whether this hunt should be repeating"
+                    }
+                }
+            }
+        }
+    }
+}

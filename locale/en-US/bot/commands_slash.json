@@ -1,0 +1,2493 @@
+{
+    "achievements": {
+        "achievements": {
+            "name": "achievements",
+            "description": "Submit a video for achievement!",
+            "arguments": {
+                "achievement": {
+                    "name": "achievement",
+                    "description": "Achievement to submit",
+                    "choices": {
+                        "True Night Runner": "True Night Runner"
+                    }
+                },
+                "url": {
+                    "name": "url",
+                    "description": "URL to a YT video with a proof"
+                }
+            }
+        }
+    },
+    "activities": {
+        "activity": {
+            "name": "activity",
+            "description": "Start activity in selected voice channel",
+            "arguments": {
+                "activity": {
+                    "name": "activity",
+                    "description": "activity to start (Not all them might work)",
+                    "choices": {
+                        "Watch Together": "Watch Together",
+                        "Poker Night": "Poker Night",
+                        "Betrayal.io": "Betrayal.io",
+                        "Fishington.io": "Fishington.io",
+                        "Chess": "Chess",
+                        "Checkers": "Checkers",
+                        "Sketchy Artist": "Sketchy Artist",
+                        "Awkword (Cards against Humanity)": "Awkword (Cards against Humanity)",
+                        "Putts (Doesn't Work)": "Putts (Doesn't Work)",
+                        "Doodle Crew (Drawing)": "Doodle Crew (Drawing)",
+                        "Letter Tile (Scrabble)": "Letter Tile (Scrabble)",
+                        "Word Snacks": "Word Snacks",
+                        "SpellCast": "SpellCast",
+                        "Decoders (Guess Card)": "Decoders (Guess Card)",
+                        "Ocho": "Ocho",
+                        "Youtube Together": "Youtube Together"
+                    }
+                }
+            }
+        }
+    },
+    "answer": {
+        "answer": {
+            "name": "answer",
+            "description": "Got an answer to a puzzle?",
+            "arguments": {
+                "answer": {
+                    "name": "answer",
+                    "description": "Your answer"
+                }
+            }
+        }
+    },
+    "contests": {
+        "msi": {
+            "name": "msi",
+            "description": "Participate in MSI contest",
+            "arguments": {}
+        },
+        "msi_entries": {
+            "name": "msi_entries",
+            "description": "Description to use with help command",
+            "arguments": {
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "msi_activity": {
+            "name": "msi_activity",
+            "description": "Description to use with help command",
+            "arguments": {
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "converters": {
+        "convert": {
+            "name": "convert",
+            "description": "Converts things",
+            "arguments": {
+                "interaction": {
+                    "name": "interaction",
+                    "description": "MISSING DOCSTRING"
+                },
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            },
+            "sub_commands": {
+                "morse": {
+                    "name": "morse",
+                    "description": "Decodes or Encodes message in Morse",
+                    "arguments": {
+                        "message": {
+                            "name": "message",
+                            "description": "Message to encode or decode"
+                        },
+                        "decode": {
+                            "name": "decode",
+                            "description": "Whether to decode from or encode to Morse"
+                        },
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "roman": {
+                    "name": "roman",
+                    "description": "Converts Roman to digits, or vice versa",
+                    "arguments": {
+                        "value": {
+                            "name": "value",
+                            "description": "Value to convert"
+                        }
+                    }
+                },
+                "timeunits": {
+                    "name": "timeunits",
+                    "description": "Converts for example 3600s into 1h. Works with s, m, h, d and w",
+                    "arguments": {
+                        "duration": {
+                            "name": "duration",
+                            "description": "Value to calculate"
+                        },
+                        "from_unit": {
+                            "name": "from_unit",
+                            "description": "Base unit from which to convert. S for second, M for Minute, H for Hour, D for Day and W for Week"
+                        },
+                        "to": {
+                            "name": "to",
+                            "description": "Opposite to from_unit. Accepts same values"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "timezone": {
+                    "name": "timezone",
+                    "description": "Shows current time in specified timezone(s)",
+                    "arguments": {
+                        "yymmdd": {
+                            "name": "yymmdd",
+                            "description": "Base Date"
+                        },
+                        "hhmm": {
+                            "name": "hhmm",
+                            "description": "Base Hour"
+                        },
+                        "timezones": {
+                            "name": "timezones",
+                            "description": "Targeted timezones"
+                        },
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "upside": {
+                    "name": "upside",
+                    "description": "Makes text uʍop ǝpᴉsdn!",
+                    "arguments": {
+                        "text": {
+                            "name": "text",
+                            "description": "Text to invert"
+                        }
+                    }
+                },
+                "rot": {
+                    "name": "rot",
+                    "description": "Caesar Cipher",
+                    "arguments": {
+                        "message": {
+                            "name": "message",
+                            "description": "Message to rotate"
+                        },
+                        "shift": {
+                            "name": "shift",
+                            "description": "Value to rotate by"
+                        },
+                        "alphabet": {
+                            "name": "alphabet",
+                            "description": "Alphabet to use"
+                        }
+                    }
+                },
+                "hex2dec": {
+                    "name": "hex2dec",
+                    "description": "Convert hexadecimal value to Decimal",
+                    "arguments": {
+                        "value": {
+                            "name": "value",
+                            "description": "Hex value to convert"
+                        }
+                    }
+                },
+                "dec2hex": {
+                    "name": "dec2hex",
+                    "description": "Convert decimal value to Hexadecimal",
+                    "arguments": {
+                        "value": {
+                            "name": "value",
+                            "description": "Decimal value to convert"
+                        }
+                    }
+                },
+                "asciitohex": {
+                    "name": "asciitohex",
+                    "description": "Converts Ascii to Numbers",
+                    "arguments": {
+                        "ascii_": {
+                            "name": "ascii_",
+                            "description": "Value to Convert"
+                        }
+                    }
+                },
+                "currency": {
+                    "name": "currency",
+                    "description": "Converts currency",
+                    "arguments": {
+                        "amount": {
+                            "name": "amount",
+                            "description": "Amount to convert"
+                        },
+                        "from_currency": {
+                            "name": "from_currency",
+                            "description": "Base Currency"
+                        },
+                        "to_currency": {
+                            "name": "to_currency",
+                            "description": "Target Currency"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "reverse": {
+                    "name": "reverse",
+                    "description": "Reverses letters",
+                    "arguments": {
+                        "message": {
+                            "name": "message",
+                            "description": "Message to reverse"
+                        },
+                        "in_place": {
+                            "name": "in_place",
+                            "description": "Whether words should stay in place, for example > False: elpamxe rof | True: rof elpamxe"
+                        }
+                    }
+                },
+                "electricity": {
+                    "name": "electricity",
+                    "description": "Calculate averange cost of upkeeping provided amount of watts 24/7",
+                    "arguments": {
+                        "price": {
+                            "name": "price",
+                            "description": "Price of kWh (1000 Watts * Active hours)"
+                        },
+                        "watts": {
+                            "name": "watts",
+                            "description": "Watts"
+                        },
+                        "active_hours": {
+                            "name": "active_hours",
+                            "description": "Hours per day (Default: 24)"
+                        },
+                        "active_days": {
+                            "name": "active_days",
+                            "description": "Days in month (Default: 30)"
+                        }
+                    }
+                },
+                "palette": {
+                    "name": "palette",
+                    "description": "Shows how specified colors looks like on Discord backgrounds",
+                    "arguments": {
+                        "colors": {
+                            "name": "colors",
+                            "description": "Hexadecimal colors to display. Separate multiple with comma (,) or hash (#)"
+                        },
+                        "backgrounds": {
+                            "name": "backgrounds",
+                            "description": "Hexadecimal background color. Separate multiple with comma (,) or hash (#)"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "custom": {
+        "docket": {
+            "name": "docket",
+            "description": "Sends new docket in an embed",
+            "arguments": {
+                "interaction": {
+                    "name": "interaction",
+                    "description": "MISSING DOCSTRING"
+                },
+                "docket": {
+                    "name": "docket",
+                    "description": "Docket code"
+                },
+                "description": {
+                    "name": "description",
+                    "description": "Optional description of docket"
+                },
+                "publish": {
+                    "name": "publish",
+                    "description": "Whether message should be auto published to following channels or not (Works only in announcement)"
+                }
+            }
+        },
+        "bookmark": {
+            "name": "bookmark",
+            "description": "Bookmark a moment in chat to save in your DMs for easy navigation",
+            "arguments": {
+                "title": {
+                    "name": "title",
+                    "description": "title of the bookmark"
+                }
+            }
+        },
+        "loadout": {
+            "name": "loadout",
+            "description": "Losuje ekwipunek",
+            "arguments": {}
+        },
+        "when": {
+            "name": "when",
+            "description": "Shows remaining delta to release",
+            "arguments": {}
+        },
+        "truth": {
+            "name": "truth",
+            "description": "Shows what happened with previous bot",
+            "arguments": {
+                "character": {
+                    "name": "character",
+                    "description": "Who's story to show",
+                    "choices": {
+                        "Ayo": "Ayo",
+                        "Frank": "Frank",
+                        "Hakon": "Hakon"
+                    }
+                },
+                "captions": {
+                    "name": "captions",
+                    "description": "text to place on image"
+                }
+            }
+        },
+        "ak47": {
+            "name": "ak47",
+            "description": "Timeout person for a day!",
+            "arguments": {
+                "user": {
+                    "name": "user",
+                    "description": "user you want to timeout"
+                }
+            }
+        },
+        "serverlist": {
+            "name": "serverlist",
+            "description": "Pokazuje listę serwerów na Northstar z wolnymi miejscami",
+            "arguments": {}
+        },
+        "review": {
+            "name": "review",
+            "description": "Leave a Review!",
+            "arguments": {
+                "score": {
+                    "name": "score",
+                    "description": "Your Score. Value between 1 and 10"
+                },
+                "your_review": {
+                    "name": "your_review",
+                    "description": "34 sentences"
+                }
+            }
+        },
+        "reviews": {
+            "name": "reviews",
+            "description": "Shows average Review score",
+            "arguments": {}
+        },
+        "biomarker": {
+            "name": "biomarker",
+            "description": "Shows your infection state",
+            "arguments": {}
+        },
+        "lfg": {
+            "name": "lfg",
+            "description": "Looking for a Group?",
+            "arguments": {
+                "platform": {
+                    "name": "platform",
+                    "description": "Platform you are looking for poeple to play on",
+                    "choices": {
+                        "PC": "PC",
+                        "PlayStation 4": "PlayStation 4",
+                        "PlayStation 5": "PlayStation 5",
+                        "XBox One": "XBox One",
+                        "XBox S/X": "XBox S/X"
+                    }
+                },
+                "amount": {
+                    "name": "amount",
+                    "description": "How many players are you looking for?",
+                    "choices": {
+                        "One": "One",
+                        "Two": "Two",
+                        "Three": "Three"
+                    }
+                },
+                "when": {
+                    "name": "when",
+                    "description": "When do you want to play?",
+                    "choices": {
+                        "Right Now": "Right Now",
+                        "In 5 minutes": "In 5 minutes",
+                        "In an hour": "In an hour",
+                        "in a day": "in a day"
+                    }
+                },
+                "progress": {
+                    "name": "progress",
+                    "description": "Players with what progression you are looking for?",
+                    "choices": {
+                        "Story Finished": "Story Finished",
+                        "Story not beaten": "Story not beaten",
+                        "New Game": "New Game",
+                        "Achievement Hunt": "Achievement Hunt",
+                        "Collectible Search": "Collectible Search",
+                        "Chill": "Chill"
+                    }
+                },
+                "voice": {
+                    "name": "voice",
+                    "description": "Is a microphone required to play?"
+                },
+                "additional_description": {
+                    "name": "additional_description",
+                    "description": "Anything else you would like to add?"
+                }
+            }
+        }
+    },
+    "db": {
+        "add": {
+            "name": "add",
+            "description": "Adds to or edits existing entry in database",
+            "arguments": {
+                "type": {
+                    "name": "type",
+                    "description": "Type of entry to add",
+                    "choices": {
+                        "Snippet": "Snippet",
+                        "Regex": "Regex",
+                        "Rule": "Rule",
+                        "Emoji": "Emoji",
+                        "Reaction": "Reaction",
+                        "Canned_Response": "Canned_Response",
+                        "Meme": "Meme",
+                        "Quote": "Quote",
+                        "Question": "Question",
+                        "Answer": "Answer",
+                        "Blacklisted_Word": "Blacklisted_Word",
+                        "Whitelisted": "Whitelisted",
+                        "Response_Reaction": "Response_Reaction",
+                        "Stream": "Stream",
+                        "Definition": "Definition",
+                        "DM_Reply": "DM_Reply"
+                    }
+                },
+                "name": {
+                    "name": "name",
+                    "description": "Name of this entry"
+                },
+                "content": {
+                    "name": "content",
+                    "description": "Response of this entry"
+                },
+                "trigger": {
+                    "name": "trigger",
+                    "description": "Regular expression"
+                },
+                "minimum_group": {
+                    "name": "minimum_group",
+                    "description": "Minimal Permission group that is allowed to use this",
+                    "choices": {
+                        "SYSTEM": "SYSTEM",
+                        "OWNER": "OWNER",
+                        "ADMIN": "ADMIN",
+                        "MODERATOR": "MODERATOR",
+                        "HELPER": "HELPER",
+                        "SUPPORT": "SUPPORT",
+                        "PARTNER": "PARTNER",
+                        "NITRO": "NITRO",
+                        "SUPPORTER": "SUPPORTER",
+                        "VIP": "VIP",
+                        "GLOBAL": "GLOBAL",
+                        "DM": "DM",
+                        "MUTED": "MUTED",
+                        "LIMBO": "LIMBO"
+                    }
+                },
+                "required_role": {
+                    "name": "required_role",
+                    "description": "Role that is require to use this"
+                },
+                "cooldown": {
+                    "name": "cooldown",
+                    "description": "Whether this should be executed only once a while"
+                },
+                "locale": {
+                    "name": "locale",
+                    "description": "Language of this entry"
+                }
+            }
+        },
+        "remove": {
+            "name": "remove",
+            "description": "Removes from database",
+            "arguments": {
+                "type": {
+                    "name": "type",
+                    "description": "type to remove",
+                    "choices": {
+                        "Snippet": "Snippet",
+                        "Regex": "Regex",
+                        "Rule": "Rule",
+                        "Emoji": "Emoji",
+                        "Reaction": "Reaction",
+                        "Canned_Response": "Canned_Response",
+                        "Meme": "Meme",
+                        "Quote": "Quote",
+                        "Question": "Question",
+                        "Answer": "Answer",
+                        "Blacklisted_Word": "Blacklisted_Word",
+                        "Whitelisted": "Whitelisted",
+                        "Response_Reaction": "Response_Reaction",
+                        "Stream": "Stream",
+                        "Definition": "Definition",
+                        "DM_Reply": "DM_Reply"
+                    }
+                },
+                "name": {
+                    "name": "name",
+                    "description": "Entry to remove"
+                },
+                "user": {
+                    "name": "user",
+                    "description": "Author that added this snippet. Only Moderators can remove someone elses entry"
+                }
+            }
+        },
+        "stashed": {
+            "name": "stashed",
+            "description": "Stashed snippet to fetch",
+            "arguments": {
+                "type": {
+                    "name": "type",
+                    "description": "type of snippet",
+                    "choices": {
+                        "Snippet": "Snippet",
+                        "Regex": "Regex",
+                        "Rule": "Rule",
+                        "Emoji": "Emoji",
+                        "Reaction": "Reaction",
+                        "Canned_Response": "Canned_Response",
+                        "Meme": "Meme",
+                        "Quote": "Quote",
+                        "Question": "Question",
+                        "Answer": "Answer",
+                        "Blacklisted_Word": "Blacklisted_Word",
+                        "Whitelisted": "Whitelisted",
+                        "Response_Reaction": "Response_Reaction",
+                        "Stream": "Stream",
+                        "Definition": "Definition",
+                        "DM_Reply": "DM_Reply"
+                    }
+                },
+                "name": {
+                    "name": "name",
+                    "description": "name of snippet to fetch. Shows all if none provided"
+                },
+                "search_content": {
+                    "name": "search_content",
+                    "description": "Whether to search contents instead of names"
+                },
+                "detailed": {
+                    "name": "detailed",
+                    "description": "MISSING DOCSTRING"
+                },
+                "show_all": {
+                    "name": "show_all",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "add_spotify": {
+            "name": "add_spotify",
+            "description": "Adds new Artist to observed list",
+            "arguments": {
+                "artist": {
+                    "name": "artist",
+                    "description": "Artist to add"
+                }
+            }
+        },
+        "add_rss": {
+            "name": "add_rss",
+            "description": "Adds new RSS to list",
+            "arguments": {
+                "name": {
+                    "name": "name",
+                    "description": "MISSING DOCSTRING"
+                },
+                "url": {
+                    "name": "url",
+                    "description": "MISSING DOCSTRING"
+                },
+                "feed_language": {
+                    "name": "feed_language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "games": {
+        "game": {
+            "name": "game",
+            "description": "Bot Minigames",
+            "sub_commands": {
+                "rps": {
+                    "name": "rps",
+                    "description": "Plays Rock Paper Scissors!",
+                    "arguments": {
+                        "move": {
+                            "name": "move",
+                            "description": "Move you want to make",
+                            "choices": {
+                                "PAPER": "PAPER",
+                                "SCISSORS": "SCISSORS",
+                                "ROCK": "ROCK"
+                            }
+                        }
+                    }
+                },
+                "hangman": {
+                    "name": "hangman",
+                    "description": "Hangman game",
+                    "arguments": {
+                        "words": {
+                            "name": "words",
+                            "description": "List of words to pick hidden one from for others to guess. Separate with comma"
+                        },
+                        "multiplayer": {
+                            "name": "multiplayer",
+                            "description": "Whether Bot should accept answers from other users"
+                        },
+                        "rounds": {
+                            "name": "rounds",
+                            "description": "Amount of rounds using single Hangman (Not implemented yet)"
+                        },
+                        "lives": {
+                            "name": "lives",
+                            "description": "Amount of lives. Default is sum of unique letters in hidden word"
+                        },
+                        "hints": {
+                            "name": "hints",
+                            "description": "Whether Bot should reveal a letter in case of wrong answer"
+                        }
+                    }
+                },
+                "wordle": {
+                    "name": "wordle",
+                    "description": "Worlde game with random words each time",
+                    "arguments": {
+                        "tries": {
+                            "name": "tries",
+                            "description": "Amount of chances you have to guess the word"
+                        },
+                        "multiplayer": {
+                            "name": "multiplayer",
+                            "description": "Whether you want to allow other people in chat to guess as well"
+                        },
+                        "official": {
+                            "name": "official",
+                            "description": "Whether today's word from official list should used instead"
+                        },
+                        "day": {
+                            "name": "day",
+                            "description": "When using official list, Specific day that should be used instead of today"
+                        },
+                        "hard": {
+                            "name": "hard",
+                            "description": "Whether new attempt should contain previously guessed letters"
+                        },
+                        "accept_invalid": {
+                            "name": "accept_invalid",
+                            "description": "Whether not valid words should be accepted and consume try"
+                        },
+                        "view_letters": {
+                            "name": "view_letters",
+                            "description": "How correct letters should be displayed",
+                            "choices": {
+                                "Colors": "Colors",
+                                "Symbols": "Symbols",
+                                "Letters": "Letters"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "giveaways": {
+        "giveaway": {
+            "name": "giveaway",
+            "description": "Giveaways",
+            "arguments": {
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            },
+            "sub_commands": {
+                "create": {
+                    "name": "create",
+                    "description": "Create new giveaway",
+                    "arguments": {
+                        "prize": {
+                            "name": "prize",
+                            "description": "Giveaway's prize"
+                        },
+                        "duration": {
+                            "name": "duration",
+                            "description": "Digits followed by either s, m, h, d or w. For example: 1d 12h 30m 45s"
+                        },
+                        "description": {
+                            "name": "description",
+                            "description": "[Optional] Description of the giveaway"
+                        },
+                        "winner_count": {
+                            "name": "winner_count",
+                            "description": "Amount of winners, default 1"
+                        },
+                        "reactions": {
+                            "name": "reactions",
+                            "description": "Whether it should use different emoji than 🎉 or multiple (Separate using ,)"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "Channel in which giveaway should be created"
+                        },
+                        "hidden": {
+                            "name": "hidden",
+                            "description": "Whether reactions should be removed"
+                        },
+                        "author": {
+                            "name": "author",
+                            "description": "User in whose name this giveaway is being created"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "delete": {
+                    "name": "delete",
+                    "description": "Deletes Giveaway",
+                    "arguments": {
+                        "message_id": {
+                            "name": "message_id",
+                            "description": "ID of giveaway message to delete"
+                        },
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "end": {
+                    "name": "end",
+                    "description": "Ends Giveaway",
+                    "arguments": {
+                        "message_id": {
+                            "name": "message_id",
+                            "description": "ID of giveaway message to finish"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "reroll": {
+                    "name": "reroll",
+                    "description": "Rerolls giveaway",
+                    "arguments": {
+                        "message_id": {
+                            "name": "message_id",
+                            "description": "ID of giveaway message to reroll"
+                        },
+                        "amount": {
+                            "name": "amount",
+                            "description": "Amount of rewards to reroll, defaults to all"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "info": {
+        "info": {
+            "name": "info",
+            "description": "Shows info",
+            "arguments": {},
+            "sub_commands": {
+                "user": {
+                    "name": "user",
+                    "description": "Shows user info",
+                    "arguments": {
+                        "member": {
+                            "name": "member",
+                            "description": "Member to show info about"
+                        }
+                    }
+                },
+                "server": {
+                    "name": "server",
+                    "description": "Shows server info",
+                    "arguments": {}
+                },
+                "role": {
+                    "name": "role",
+                    "description": "Shows role info",
+                    "arguments": {
+                        "role_id": {
+                            "name": "role_id",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "channel": {
+                    "name": "channel",
+                    "description": "Shows channel info",
+                    "arguments": {
+                        "channel_id": {
+                            "name": "channel_id",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "members": {
+                    "name": "members",
+                    "description": "Lists users with provided role",
+                    "arguments": {
+                        "role": {
+                            "name": "role",
+                            "description": "Role to fetch"
+                        },
+                        "force_update": {
+                            "name": "force_update",
+                            "description": "Whether new users should be pulled before counting (Delays response by around 30 seconds)"
+                        },
+                        "show_id": {
+                            "name": "show_id",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "created": {
+                    "name": "created",
+                    "description": "Shows when the snowflake was created",
+                    "arguments": {
+                        "snowflake": {
+                            "name": "snowflake",
+                            "description": "Snowflake to check"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "leaderboards": {
+        "leaderboard": {
+            "name": "leaderboard",
+            "description": "Shows leaderboard",
+            "arguments": {
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            },
+            "sub_commands": {
+                "exp": {
+                    "name": "exp",
+                    "description": "Shows exp",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "if provided, shows exp of specified user, otherwise your own"
+                        }
+                    }
+                },
+                "top": {
+                    "name": "top",
+                    "description": "Shows leaderboard",
+                    "arguments": {
+                        "limit": {
+                            "name": "limit",
+                            "description": "amount of users to show"
+                        },
+                        "type": {
+                            "name": "type",
+                            "description": "Type of leaderboard to show. Default is Chat and Voice combined",
+                            "choices": {
+                                "Chat": "Chat",
+                                "Voice": "Voice",
+                                "Games": "Games"
+                            }
+                        },
+                        "count": {
+                            "name": "count",
+                            "description": "Whether to show EXP values instead"
+                        },
+                        "activity": {
+                            "name": "activity",
+                            "description": "Whether to show based on recent activity or not"
+                        },
+                        "interval": {
+                            "name": "interval",
+                            "description": "Recent activity period to show. Digits followed by either s, m, h, d or w. For example: 1d 12h 30m 45s"
+                        }
+                    }
+                },
+                "games": {
+                    "name": "games",
+                    "description": "Shows users that played specified game or games played by user",
+                    "arguments": {
+                        "game": {
+                            "name": "game",
+                            "description": "Shows users that played specified game"
+                        },
+                        "user": {
+                            "name": "user",
+                            "description": "Shows games played by specified user"
+                        },
+                        "reverse": {
+                            "name": "reverse",
+                            "description": "Whether to show from most played or not"
+                        },
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "event": {
+                    "name": "event",
+                    "description": "Shows Event leaderboards",
+                    "arguments": {
+                        "event": {
+                            "name": "event",
+                            "description": "Which event to show",
+                            "choices": {
+                                "Easter_Egg_2021": "Easter_Egg_2021",
+                                "Easter_Egg": "Easter_Egg",
+                                "Pumpkin_Hunt": "Pumpkin_Hunt",
+                                "Fear": "Fear",
+                                "Candies": "Candies",
+                                "Moka": "Moka",
+                                "Present_Hunt": "Present_Hunt",
+                                "Sent_Presents": "Sent_Presents",
+                                "Hitted_Snowballs": "Hitted_Snowballs",
+                                "Mostly_Snowballed": "Mostly_Snowballed",
+                                "Grinch": "Grinch",
+                                "Chickens": "Chickens"
+                            }
+                        },
+                        "user_id": {
+                            "name": "user_id",
+                            "description": "Shows stats of another user"
+                        },
+                        "limit": {
+                            "name": "limit",
+                            "description": "How many scores to show"
+                        },
+                        "year": {
+                            "name": "year",
+                            "description": "Leaderboard for which year to show (Default is current year)"
+                        }
+                    }
+                },
+                "aoc": {
+                    "name": "aoc",
+                    "description": "Shows Advent of Code leaderboard",
+                    "arguments": {
+                        "year": {
+                            "name": "year",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "levels": {
+                    "name": "levels",
+                    "description": "Shows levels leaderboard",
+                    "arguments": {
+                        "limit": {
+                            "name": "limit",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "mod": {
+        "say": {
+            "name": "say",
+            "description": "Sends message as a bot",
+            "arguments": {
+                "message": {
+                    "name": "message",
+                    "description": "Message to send"
+                },
+                "channel": {
+                    "name": "channel",
+                    "description": "Channel to which message should be send"
+                },
+                "edit": {
+                    "name": "edit",
+                    "description": "ID of bot's message to edit"
+                },
+                "reply": {
+                    "name": "reply",
+                    "description": "ID or link to message to which is should reply to"
+                },
+                "skip_message": {
+                    "name": "skip_message",
+                    "description": "Whether Message should not be sent (Set if you want to only send embed)"
+                },
+                "title": {
+                    "name": "title",
+                    "description": "Title of an Embed"
+                },
+                "description": {
+                    "name": "description",
+                    "description": "Description of an Embed"
+                },
+                "footer": {
+                    "name": "footer",
+                    "description": "Footer text of an Embed"
+                },
+                "footer_icon": {
+                    "name": "footer_icon",
+                    "description": "URL to an icon used as footer icon (Bottom left)"
+                },
+                "author": {
+                    "name": "author",
+                    "description": "Text above Title"
+                },
+                "author_icon": {
+                    "name": "author_icon",
+                    "description": "URL to an image used as author icon (Small Top Left)"
+                },
+                "author_url": {
+                    "name": "author_url",
+                    "description": "URL available after clicking author's text (Requires Author)"
+                },
+                "url": {
+                    "name": "url",
+                    "description": "URL available after clicking title's text. (Requires Title)"
+                },
+                "image": {
+                    "name": "image",
+                    "description": "URL to an image used as main image (\"Main\" picture)"
+                },
+                "thumbnail": {
+                    "name": "thumbnail",
+                    "description": "URL to an image used as thumbnail (Top right)"
+                },
+                "color": {
+                    "name": "color",
+                    "description": "Color of an embed. Value in hexadecimal notation. For example: #00aaff"
+                },
+                "left_name": {
+                    "name": "left_name",
+                    "description": "Name of Field on the left"
+                },
+                "left_text": {
+                    "name": "left_text",
+                    "description": "Text of Field on the left"
+                },
+                "middle_name": {
+                    "name": "middle_name",
+                    "description": "Name of Field on the middle"
+                },
+                "middle_text": {
+                    "name": "middle_text",
+                    "description": "Text of Field on the middle"
+                },
+                "right_name": {
+                    "name": "right_name",
+                    "description": "Name of Field on the right"
+                },
+                "right_text": {
+                    "name": "right_text",
+                    "description": "Text of Field on the right"
+                }
+            }
+        },
+        "say_long": {
+            "name": "say_long",
+            "description": "Shows Modal to send a multilined message as a bot",
+            "arguments": {
+                "your_message": {
+                    "name": "your_message",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "react": {
+            "name": "react",
+            "description": "Reacts to a message as a bot",
+            "arguments": {
+                "reaction": {
+                    "name": "reaction",
+                    "description": "Reaction(s) which should be used to react."
+                },
+                "message_id": {
+                    "name": "message_id",
+                    "description": "Message to which bot should react"
+                },
+                "channel": {
+                    "name": "channel",
+                    "description": "Use it if Message is in a different channel"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "modmail": {
+        "dm": {
+            "name": "dm",
+            "description": "DMs user with specified message",
+            "arguments": {
+                "user": {
+                    "name": "user",
+                    "description": "User to which Message should be send"
+                },
+                "message": {
+                    "name": "message",
+                    "description": "Message to send"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "nitro": {
+        "nitro": {
+            "name": "nitro",
+            "description": "Create self role. Only one per booster",
+            "arguments": {
+                "hex_color": {
+                    "name": "hex_color",
+                    "description": "Value in hexadecimal notation. For example: #00aaff"
+                },
+                "name": {
+                    "name": "name",
+                    "description": "Name of role"
+                },
+                "emoji": {
+                    "name": "emoji",
+                    "description": "Icon for this role. Can be Emoji or a link to picture"
+                }
+            }
+        },
+        "remove_invalid": {
+            "name": "remove_invalid",
+            "description": "Clears invalid roles from DB",
+            "arguments": {}
+        }
+    },
+    "polls": {
+        "poll": {
+            "name": "poll",
+            "description": "Creates a poll",
+            "arguments": {
+                "question": {
+                    "name": "question",
+                    "description": "Poll's Question"
+                },
+                "options": {
+                    "name": "options",
+                    "description": "Answer Option(s)  Separate multiple with |"
+                },
+                "duration": {
+                    "name": "duration",
+                    "description": "Poll's duration"
+                },
+                "public": {
+                    "name": "public",
+                    "description": "Whether the current scores should be visible before end of poll"
+                }
+            }
+        }
+    },
+    "rand": {
+        "roll": {
+            "name": "roll",
+            "description": "Random Numbers",
+            "sub_commands": {
+                "chance": {
+                    "name": "chance",
+                    "description": "Rolls a percentage chance",
+                    "arguments": {
+                        "statement": {
+                            "name": "statement",
+                            "description": "String to roll"
+                        }
+                    }
+                },
+                "dice": {
+                    "name": "dice",
+                    "description": "Rolls a die",
+                    "arguments": {
+                        "number": {
+                            "name": "number",
+                            "description": "Maximal number dice should have"
+                        },
+                        "times": {
+                            "name": "times",
+                            "description": "How many dices should be rolled"
+                        }
+                    }
+                },
+                "ball": {
+                    "name": "ball",
+                    "description": "Asks 8 ball a question",
+                    "arguments": {
+                        "question": {
+                            "name": "question",
+                            "description": "Question you seek answer to"
+                        }
+                    }
+                },
+                "coin": {
+                    "name": "coin",
+                    "description": "Flips coin"
+                },
+                "quote": {
+                    "name": "quote",
+                    "description": "Sends random quote"
+                },
+                "xkcdpassword": {
+                    "name": "xkcdpassword",
+                    "description": "Generates random xkcd 936 styled password"
+                },
+                "ratio": {
+                    "name": "ratio",
+                    "description": "Get Ratioed",
+                    "arguments": {
+                        "severity": {
+                            "name": "severity",
+                            "description": "Severity of the ratio"
+                        }
+                    }
+                },
+                "spin": {
+                    "name": "spin",
+                    "description": "Pick random word(s) from selection",
+                    "arguments": {
+                        "terms": {
+                            "name": "terms",
+                            "description": "Terms to choose from, split using comma (,). Leave empty for any English word"
+                        },
+                        "k": {
+                            "name": "k",
+                            "description": "Amount of words to choose."
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "role_shop": {
+        "redeem": {
+            "name": "redeem",
+            "description": "Redeem your code for a role!",
+            "arguments": {
+                "order_number": {
+                    "name": "order_number",
+                    "description": "MISSING DOCSTRING"
+                },
+                "associated_email": {
+                    "name": "associated_email",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "add_codes": {
+            "name": "add_codes",
+            "description": "Add new codes to database",
+            "arguments": {
+                "codes": {
+                    "name": "codes",
+                    "description": "codes to add"
+                },
+                "role": {
+                    "name": "role",
+                    "description": "Role to award for specified codes"
+                }
+            }
+        },
+        "retrieve": {
+            "name": "retrieve",
+            "description": "Check who redeemed that order number",
+            "arguments": {
+                "order_number": {
+                    "name": "order_number",
+                    "description": "Order number to check"
+                }
+            }
+        },
+        "unclaim": {
+            "name": "unclaim",
+            "description": "Unclaim code claimed by specified user",
+            "arguments": {
+                "user": {
+                    "name": "user",
+                    "description": "User who's code should be unclaimed"
+                },
+                "order_number": {
+                    "name": "order_number",
+                    "description": "Specific code to unclaim. Leave empty to unclaim all codes associated with user"
+                }
+            }
+        },
+        "make_button": {
+            "name": "make_button",
+            "description": "Create button that acts like /redeem",
+            "arguments": {
+                "label": {
+                    "name": "label",
+                    "description": "Name of the button"
+                },
+                "style": {
+                    "name": "style",
+                    "description": "Style of button to use",
+                    "choices": {
+                        "Primary": "Primary",
+                        "Secondary": "Secondary",
+                        "Success": "Success",
+                        "Danger": "Danger"
+                    }
+                },
+                "emoji": {
+                    "name": "emoji",
+                    "description": "Emoji to put into the button"
+                },
+                "text": {
+                    "name": "text",
+                    "description": "Optional message before button"
+                }
+            }
+        }
+    },
+    "roles": {
+        "role": {
+            "name": "role",
+            "description": "Manages Roles",
+            "arguments": {
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            },
+            "sub_commands": {
+                "button": {
+                    "name": "button",
+                    "description": "Description to use with help command",
+                    "arguments": {
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    },
+                    "sub_commands": {
+                        "create": {
+                            "name": "create",
+                            "description": "Adds new interaction role button/option",
+                            "arguments": {
+                                "role": {
+                                    "name": "role",
+                                    "description": "Role that should be toggled on click"
+                                },
+                                "message_id": {
+                                    "name": "message_id",
+                                    "description": "ID of bot's Message that should have this interaction role assigned to"
+                                },
+                                "label": {
+                                    "name": "label",
+                                    "description": "Name of this button or option (Defaults to Role's name)"
+                                },
+                                "emoji": {
+                                    "name": "emoji",
+                                    "description": "Emoji to use as an icon for button or option"
+                                },
+                                "group": {
+                                    "name": "group",
+                                    "description": "[Select] Selection group for this role (for example for One of or Unique)"
+                                },
+                                "style": {
+                                    "name": "style",
+                                    "description": "[Button] Style of the button",
+                                    "choices": {
+                                        "Primary": "Primary",
+                                        "Secondary": "Secondary",
+                                        "Success": "Success",
+                                        "Danger": "Danger",
+                                        "Select": "Select"
+                                    }
+                                },
+                                "description": {
+                                    "name": "description",
+                                    "description": "[Select] Description of this role for option"
+                                },
+                                "disabled": {
+                                    "name": "disabled",
+                                    "description": "Whether this button or Selection should be disabled by default"
+                                },
+                                "default": {
+                                    "name": "default",
+                                    "description": "[Select] Whether this option should be default in selection"
+                                },
+                                "placeholder": {
+                                    "name": "placeholder",
+                                    "description": "[Select] Selection's default name when no choice is specified"
+                                },
+                                "min_picks": {
+                                    "name": "min_picks",
+                                    "description": "[Select] Minimal amount of roles to pick in this selection (025)"
+                                },
+                                "max_picks": {
+                                    "name": "max_picks",
+                                    "description": "[Select] Maximal amount of roles to pick in this selection (025)"
+                                },
+                                "update": {
+                                    "name": "update",
+                                    "description": "Whether to update existing values"
+                                }
+                            }
+                        },
+                        "edit": {
+                            "name": "edit",
+                            "description": "Edits existing interaction roles",
+                            "arguments": {
+                                "role": {
+                                    "name": "role",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "message_id": {
+                                    "name": "message_id",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "group": {
+                                    "name": "group",
+                                    "description": "[Select] Selection group to edit"
+                                },
+                                "description": {
+                                    "name": "description",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "emoji": {
+                                    "name": "emoji",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "placeholder": {
+                                    "name": "placeholder",
+                                    "description": "[Select] Selection's default name when no choice is specified"
+                                },
+                                "min_picks": {
+                                    "name": "min_picks",
+                                    "description": "[Select] Minimal amount of roles to pick in this selection (025)"
+                                },
+                                "max_picks": {
+                                    "name": "max_picks",
+                                    "description": "[Select] Maximal amount of roles to pick in this selection (025)"
+                                }
+                            }
+                        },
+                        "empty_option": {
+                            "name": "empty_option",
+                            "description": "Adds \"Clear all\" selection option that does nothing (Allows clearing roles from selection)",
+                            "arguments": {
+                                "select_group": {
+                                    "name": "select_group",
+                                    "description": "Group to which option should be added"
+                                },
+                                "message_id": {
+                                    "name": "message_id",
+                                    "description": "Message to which option should be added"
+                                },
+                                "label": {
+                                    "name": "label",
+                                    "description": "Name of option (Default: None)"
+                                },
+                                "description": {
+                                    "name": "description",
+                                    "description": "Description of option"
+                                },
+                                "emoji": {
+                                    "name": "emoji",
+                                    "description": "Emoji of option"
+                                }
+                            }
+                        },
+                        "info": {
+                            "name": "info",
+                            "description": "Shows info about Interaction Roles associated with this message",
+                            "arguments": {
+                                "message_id": {
+                                    "name": "message_id",
+                                    "description": "Message to query"
+                                },
+                                "language": {
+                                    "name": "language",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        }
+                    }
+                },
+                "reaction": {
+                    "name": "reaction",
+                    "description": "Manages Reaction Roles",
+                    "arguments": {
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    },
+                    "sub_commands": {
+                        "create": {
+                            "name": "create",
+                            "description": "Adds new reaction role",
+                            "arguments": {
+                                "emoji": {
+                                    "name": "emoji",
+                                    "description": "Emoji to use as a reaction"
+                                },
+                                "role": {
+                                    "name": "role",
+                                    "description": "Role that should be given for reacting"
+                                },
+                                "group": {
+                                    "name": "group",
+                                    "description": "Whether this RR should belong to a group"
+                                },
+                                "channel": {
+                                    "name": "channel",
+                                    "description": "Channel in which RR should be created. Empty means current channel"
+                                },
+                                "message_id": {
+                                    "name": "message_id",
+                                    "description": "Message ID under which RR should be created. Empty means last message in channel"
+                                },
+                                "args": {
+                                    "name": "args",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "language": {
+                                    "name": "language",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "kwargs": {
+                                    "name": "kwargs",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "remove": {
+                            "name": "remove",
+                            "description": "Removes existing reaction role",
+                            "arguments": {
+                                "emoji": {
+                                    "name": "emoji",
+                                    "description": "Emoji to remove from being reaction emoji"
+                                },
+                                "role": {
+                                    "name": "role",
+                                    "description": "Role to remove from being reaction role"
+                                },
+                                "group": {
+                                    "name": "group",
+                                    "description": "Whether this RR should be removed from belonging to a group"
+                                },
+                                "channel": {
+                                    "name": "channel",
+                                    "description": "Channel from which RR should be removed. Empty means current channel"
+                                },
+                                "message_id": {
+                                    "name": "message_id",
+                                    "description": "Message ID under which RR should be removed. Empty means last message in channel"
+                                },
+                                "args": {
+                                    "name": "args",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "language": {
+                                    "name": "language",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "kwargs": {
+                                    "name": "kwargs",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        }
+                    }
+                },
+                "level": {
+                    "name": "level",
+                    "description": "Management of Level roles",
+                    "sub_commands": {
+                        "create": {
+                            "name": "create",
+                            "description": "Create/Update level role",
+                            "arguments": {
+                                "role": {
+                                    "name": "role",
+                                    "description": "Role which should be awarded for reaching these values"
+                                },
+                                "exp": {
+                                    "name": "exp",
+                                    "description": "Chat exp required to gain this role"
+                                }
+                            }
+                        },
+                        "list": {
+                            "name": "list",
+                            "description": "Shows list of current level roles",
+                            "arguments": {}
+                        },
+                        "remove": {
+                            "name": "remove",
+                            "description": "Removes level role",
+                            "arguments": {
+                                "role": {
+                                    "name": "role",
+                                    "description": "role to remove"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "search": {
+        "search": {
+            "name": "search",
+            "description": "Searches things",
+            "arguments": {},
+            "sub_commands": {
+                "api": {
+                    "name": "api",
+                    "description": "Search for API",
+                    "arguments": {
+                        "category": {
+                            "name": "category",
+                            "description": "Category of an API"
+                        },
+                        "random": {
+                            "name": "random",
+                            "description": "Whether Should fetch random API"
+                        },
+                        "desc": {
+                            "name": "desc",
+                            "description": "Description of API"
+                        },
+                        "title": {
+                            "name": "title",
+                            "description": "Title of API"
+                        },
+                        "cors": {
+                            "name": "cors",
+                            "description": "Cross Origin Reasource Sharing"
+                        },
+                        "https": {
+                            "name": "https",
+                            "description": "Whether API should support HTTPS"
+                        },
+                        "auth": {
+                            "name": "auth",
+                            "description": "Authorization method"
+                        }
+                    }
+                },
+                "stack": {
+                    "name": "stack",
+                    "description": "Search Stack Overflow",
+                    "arguments": {
+                        "search": {
+                            "name": "search",
+                            "description": "Query to search"
+                        }
+                    }
+                },
+                "spotify": {
+                    "name": "spotify",
+                    "description": "Search Spotify",
+                    "arguments": {
+                        "query": {
+                            "name": "query",
+                            "description": "Artist to search for"
+                        }
+                    }
+                },
+                "urban": {
+                    "name": "urban",
+                    "description": "Searches Urban Dictionary for provided phrase",
+                    "arguments": {
+                        "phrase": {
+                            "name": "phrase",
+                            "description": "Phrase to search definition of"
+                        }
+                    }
+                },
+                "fileext": {
+                    "name": "fileext",
+                    "description": "Shows file extension details",
+                    "arguments": {
+                        "ext": {
+                            "name": "ext",
+                            "description": "File Extension to search for"
+                        }
+                    }
+                },
+                "google": {
+                    "name": "google",
+                    "description": "Searches google",
+                    "arguments": {
+                        "query": {
+                            "name": "query",
+                            "description": "Query to search"
+                        }
+                    }
+                },
+                "lyrics": {
+                    "name": "lyrics",
+                    "description": "Sends Lyrics for provided song",
+                    "arguments": {
+                        "artist": {
+                            "name": "artist",
+                            "description": "Artist of the song"
+                        },
+                        "song": {
+                            "name": "song",
+                            "description": "Song to fetch lyrics of"
+                        }
+                    }
+                },
+                "steam": {
+                    "name": "steam",
+                    "description": "Search Steam Index",
+                    "arguments": {
+                        "game": {
+                            "name": "game",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "word": {
+                    "name": "word",
+                    "description": "Search for a word",
+                    "arguments": {
+                        "search": {
+                            "name": "search",
+                            "description": "Definition of word to show. Leave empty for random"
+                        }
+                    }
+                },
+                "fuzzy_word": {
+                    "name": "fuzzy_word",
+                    "description": "Returns list of words matching the query.",
+                    "arguments": {
+                        "word": {
+                            "name": "word",
+                            "description": "Word to search. Use * as a wildcard character"
+                        },
+                        "letter_count": {
+                            "name": "letter_count",
+                            "description": "Amount of letters word should have"
+                        }
+                    }
+                },
+                "chord": {
+                    "name": "chord",
+                    "description": "Shows guitar chord(s) diagram(s)",
+                    "arguments": {
+                        "chords": {
+                            "name": "chords",
+                            "description": "Chords to show. Separate multiple with space"
+                        },
+                        "all": {
+                            "name": "all",
+                            "description": "Whether to show all combinations or not"
+                        }
+                    }
+                },
+                "tuning": {
+                    "name": "tuning",
+                    "description": "Shows chords on frets for specified tuning",
+                    "arguments": {
+                        "tuning": {
+                            "name": "tuning",
+                            "description": "Base tuning. Example: EBGDAE"
+                        }
+                    }
+                },
+                "anagram": {
+                    "name": "anagram",
+                    "description": "Assembles english words from provided letters/solves anagrams",
+                    "arguments": {
+                        "letters": {
+                            "name": "letters",
+                            "description": "Letters to use for anagram"
+                        },
+                        "exact_amount": {
+                            "name": "exact_amount",
+                            "description": "Whether to show only anagrams containing same amount of letters"
+                        }
+                    }
+                },
+                "mac_adress": {
+                    "name": "mac_adress",
+                    "description": "Search for a manufacturer of specified MAC address",
+                    "arguments": {
+                        "address": {
+                            "name": "address",
+                            "description": "Addres st:os:ea:rc hf:or"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "settings": {
+        "settings": {
+            "name": "settings",
+            "description": "Management of server related bot settings",
+            "sub_commands": {
+                "language": {
+                    "name": "language",
+                    "description": "Management of language bot settings",
+                    "arguments": {
+                        "new_language": {
+                            "name": "new_language",
+                            "description": "New language that should be set"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "Channel of which language should be changed. Leave empty if serverwide"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "tracking": {
+                    "name": "tracking",
+                    "description": "Management of bot's tracking settings",
+                    "arguments": {
+                        "type": {
+                            "name": "type",
+                            "description": "Tracking type to switch"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "Whether this channel should be disabled from tracking"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "webhooks": {
+                    "name": "webhooks",
+                    "description": "Management of webhooks related bot settings",
+                    "sub_commands": {
+                        "subscribe": {
+                            "name": "subscribe",
+                            "description": "Subscribe webhook to specified source",
+                            "arguments": {
+                                "source": {
+                                    "name": "source",
+                                    "description": "Source to which this webhook/channel should be subscribed to"
+                                },
+                                "channel": {
+                                    "name": "channel",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "webhook": {
+                                    "name": "webhook",
+                                    "description": "Webhook URL to subscribe to. If empty, creates one"
+                                },
+                                "content": {
+                                    "name": "content",
+                                    "description": "Content of message to send alongside"
+                                },
+                                "regex": {
+                                    "name": "regex",
+                                    "description": "Whether it should only be sent if there is matching pattern"
+                                },
+                                "language": {
+                                    "name": "language",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "unsubscribe": {
+                            "name": "unsubscribe",
+                            "description": "Unsubscribe this channel from provided source",
+                            "arguments": {
+                                "source": {
+                                    "name": "source",
+                                    "description": "Source to unsubscribe from"
+                                },
+                                "webhook": {
+                                    "name": "webhook",
+                                    "description": "Webhook which should be unsubscribed"
+                                },
+                                "language": {
+                                    "name": "language",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        }
+                    }
+                },
+                "roles": {
+                    "name": "roles",
+                    "description": "Management of role related bot settings"
+                },
+                "channels": {
+                    "name": "channels",
+                    "description": "Management of channel related bot settings",
+                    "sub_commands": {
+                        "type": {
+                            "name": "type",
+                            "description": "Sets type to specified channel",
+                            "arguments": {
+                                "type": {
+                                    "name": "type",
+                                    "description": "type of channel"
+                                },
+                                "channel": {
+                                    "name": "channel",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "name": {
+                                    "name": "name",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "parent_or_buffer_id": {
+                                    "name": "parent_or_buffer_id",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "bitrate": {
+                                    "name": "bitrate",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "user_limit": {
+                                    "name": "user_limit",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "postion": {
+                                    "name": "postion",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "language": {
+                                    "name": "language",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        }
+                    }
+                },
+                "slowmode": {
+                    "name": "slowmode",
+                    "description": "Sets a slowmode on a channel",
+                    "arguments": {
+                        "limit": {
+                            "name": "limit",
+                            "description": "Slowmode duration"
+                        },
+                        "duration": {
+                            "name": "duration",
+                            "description": "How long slowmode should last"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "Channel to slowmode"
+                        },
+                        "all": {
+                            "name": "all",
+                            "description": "Whether slowmode should be serverwide or not"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "lockdown": {
+                    "name": "lockdown",
+                    "description": "Sets a lockdown on a channel",
+                    "arguments": {
+                        "duration": {
+                            "name": "duration",
+                            "description": "How long lockdown should last"
+                        },
+                        "channel": {
+                            "name": "channel",
+                            "description": "Channel to lockdown"
+                        },
+                        "all": {
+                            "name": "all",
+                            "description": "Whether lockdown should be serverwide or not"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "statistics": {
+        "bot": {
+            "name": "bot",
+            "description": "Shows Information about bot",
+            "arguments": {
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            },
+            "sub_commands": {
+                "ping": {
+                    "name": "ping",
+                    "description": "Shows ping",
+                    "arguments": {
+                        "detailed": {
+                            "name": "detailed",
+                            "description": "Whether it should show extended ping information"
+                        },
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "status": {
+                    "name": "status",
+                    "description": "Shows statistics related to bot and system",
+                    "arguments": {
+                        "show_ping": {
+                            "name": "show_ping",
+                            "description": "whether it should show ping or not"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "version": {
+                    "name": "version",
+                    "description": "Shows bot's version",
+                    "arguments": {}
+                },
+                "stats": {
+                    "name": "stats",
+                    "description": "Shows received events & registered commands",
+                    "arguments": {}
+                },
+                "support": {
+                    "name": "support",
+                    "description": "Shows information about bot's support",
+                    "arguments": {
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "donate": {
+                    "name": "donate",
+                    "description": "Shows information about donating to bot Development",
+                    "arguments": {
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "credits": {
+                    "name": "credits",
+                    "description": "Shows credits and what was used to make bot",
+                    "arguments": {
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "source": {
+                    "name": "source",
+                    "description": "Sends URL to source code of bot",
+                    "arguments": {}
+                }
+            }
+        },
+        "count": {
+            "name": "count",
+            "description": "Counters",
+            "sub_commands": {
+                "memberchange": {
+                    "name": "memberchange",
+                    "description": "Shows how many users joined and left server within last period",
+                    "arguments": {
+                        "period": {
+                            "name": "period",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "members": {
+                    "name": "members",
+                    "description": "Show how many current users where present on specified day",
+                    "arguments": {
+                        "stat": {
+                            "name": "stat",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "year": {
+                            "name": "year",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "month": {
+                            "name": "month",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "day": {
+                            "name": "day",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "names": {
+                    "name": "names",
+                    "description": "Shows how many users have value in either their nick or username",
+                    "arguments": {
+                        "value": {
+                            "name": "value",
+                            "description": "value to count"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "steam": {
+        "refreshAppIndex": {
+            "name": "refreshAppIndex",
+            "description": "Updates Index of Steam Games",
+            "arguments": {
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "data": {
+                    "name": "data",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "steam": {
+            "name": "steam",
+            "description": "Fetches data on games",
+            "arguments": {
+                "interaction": {
+                    "name": "interaction",
+                    "description": "MISSING DOCSTRING"
+                },
+                "args": {
+                    "name": "args",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                },
+                "kwargs": {
+                    "name": "kwargs",
+                    "description": "MISSING DOCSTRING"
+                }
+            },
+            "sub_commands": {
+                "playercount": {
+                    "name": "playercount",
+                    "description": "Fetches playercount for specified game",
+                    "arguments": {
+                        "game": {
+                            "name": "game",
+                            "description": "Steam game's title(s). Separate using comma `,`"
+                        },
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "game": {
+                    "name": "game",
+                    "description": "Shows Steam's game data",
+                    "arguments": {
+                        "interaction": {
+                            "name": "interaction",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "game": {
+                            "name": "game",
+                            "description": "Steam game title(s). Separate using comma `,`"
+                        },
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "steamcalc": {
+                    "name": "steamcalc",
+                    "description": "Steam Calculator. Similiar to Steamdb one (With few differences).",
+                    "arguments": {
+                        "steam_id": {
+                            "name": "steam_id",
+                            "description": "Your Steam ID or Vanity URL"
+                        },
+                        "country": {
+                            "name": "country",
+                            "description": "Provide Country Code for currency. For example GB for Pounds"
+                        },
+                        "args": {
+                            "name": "args",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "kwargs": {
+                            "name": "kwargs",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "hltb": {
+                    "name": "hltb",
+                    "description": "Shows How Long To Beat statistics for provided game",
+                    "arguments": {
+                        "game": {
+                            "name": "game",
+                            "description": "Game Name"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "story": {
+        "story": {
+            "name": "story",
+            "description": "Story Executor",
+            "arguments": {
+                "name": {
+                    "name": "name",
+                    "description": "MISSING DOCSTRING"
+                },
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        },
+        "modapp": {
+            "name": "modapp",
+            "description": "Apply for a mod!",
+            "arguments": {}
+        }
+    },
+    "suggestions": {
+        "suggestion": {
+            "name": "suggestion",
+            "description": "Make a `Server Suggestion`!",
+            "arguments": {
+                "title": {
+                    "name": "title",
+                    "description": "MISSING DOCSTRING"
+                },
+                "your_suggestion": {
+                    "name": "your_suggestion",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "todo": {
+        "todo": {
+            "name": "todo",
+            "description": "Make a new todo task!",
+            "arguments": {
+                "title": {
+                    "name": "title",
+                    "description": "Title of task"
+                },
+                "description": {
+                    "name": "description",
+                    "description": "description of task"
+                }
+            }
+        }
+    }
+}

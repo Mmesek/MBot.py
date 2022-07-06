@@ -1,0 +1,69 @@
+{
+    "general": {
+        "christmas": {
+            "name": "christmas",
+            "description": "Christmas Event commands",
+            "arguments": {
+                "cls": {
+                    "name": "cls",
+                    "description": "MISSING DOCSTRING"
+                },
+                "should_register": {
+                    "name": "should_register",
+                    "description": "MISSING DOCSTRING"
+                }
+            },
+            "sub_commands": {
+                "advent": {
+                    "name": "advent",
+                    "description": "Claim today's Advent",
+                    "arguments": {
+                        "language": {
+                            "name": "language",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    }
+                },
+                "story": {
+                    "name": "story",
+                    "description": "Christmas Gatherer's Story made by Command Sergeant Major Cock#0001",
+                    "arguments": {}
+                }
+            }
+        },
+        "csummary": {
+            "name": "csummary",
+            "description": "Summary of event",
+            "arguments": {
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "snowballs": {
+        "snowball": {
+            "name": "snowball",
+            "description": "Snowball throwing event commands",
+            "arguments": {},
+            "sub_commands": {
+                "throw": {
+                    "name": "throw",
+                    "description": "Throw a snowball at someone!",
+                    "arguments": {
+                        "target": {
+                            "name": "target",
+                            "description": "user to throw to"
+                        }
+                    }
+                },
+                "gather": {
+                    "name": "gather",
+                    "description": "Gather snowballs to throw at someone later!",
+                    "arguments": {}
+                }
+            }
+        }
+    }
+}

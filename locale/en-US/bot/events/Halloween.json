@@ -1,0 +1,424 @@
+{
+    "general": {
+        "halloween": {
+            "name": "halloween",
+            "description": "Halloween Event commands",
+            "arguments": {},
+            "sub_commands": {
+                "settings": {
+                    "name": "settings",
+                    "description": "Shows settings for Halloween Event",
+                    "sub_commands": {
+                        "roles": {
+                            "name": "roles",
+                            "description": "Create and/or add roles related to Halloween Event",
+                            "arguments": {
+                                "delete": {
+                                    "name": "delete",
+                                    "description": "Delete Event roles (*Only ones that were made by bot)"
+                                },
+                                "update_permissions": {
+                                    "name": "update_permissions",
+                                    "description": "Sets permissions for commands to be only used by appropriate race"
+                                }
+                            }
+                        }
+                    }
+                },
+                "humans": {
+                    "name": "humans",
+                    "description": "Commands related to humans",
+                    "arguments": {
+                        "cls": {
+                            "name": "cls",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "should_register": {
+                            "name": "should_register",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    },
+                    "sub_commands": {
+                        "enlist": {
+                            "name": "enlist",
+                            "description": "Enlist as a hunter",
+                            "arguments": {
+                                "guild": {
+                                    "name": "guild",
+                                    "description": "Hunter's guild you want to join",
+                                    "choices": {
+                                        "Any": "Any",
+                                        "Dawnguards": "Dawnguards",
+                                        "Rangers": "Rangers",
+                                        "Inquisition": "Inquisition"
+                                    }
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "this_user": {
+                                    "name": "this_user",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "drink": {
+                            "name": "drink",
+                            "description": "Drink an unknown beverage to become a monster",
+                            "arguments": {
+                                "type": {
+                                    "name": "type",
+                                    "description": "Drink you want to drink",
+                                    "choices": {
+                                        "Nightmare": "Nightmare",
+                                        "Wine": "Wine",
+                                        "Moonshine": "Moonshine",
+                                        "Vodka": "Vodka"
+                                    }
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "this_user": {
+                                    "name": "this_user",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        }
+                    }
+                },
+                "monsters": {
+                    "name": "monsters",
+                    "description": "Commands related to Monster's factions",
+                    "arguments": {
+                        "cls": {
+                            "name": "cls",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "should_register": {
+                            "name": "should_register",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    },
+                    "sub_commands": {
+                        "bite": {
+                            "name": "bite",
+                            "description": "Bite your target to turn into one of your own kin",
+                            "arguments": {
+                                "target": {
+                                    "name": "target",
+                                    "description": "Target you want to bite"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "this_user": {
+                                    "name": "this_user",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        }
+                    }
+                },
+                "hunters": {
+                    "name": "hunters",
+                    "description": "Commands related to Hunter's factions",
+                    "arguments": {
+                        "cls": {
+                            "name": "cls",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "should_register": {
+                            "name": "should_register",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    },
+                    "sub_commands": {
+                        "cure": {
+                            "name": "cure",
+                            "description": "Cure your target from the darkness back into human being",
+                            "arguments": {
+                                "target": {
+                                    "name": "target",
+                                    "description": "Target you want to cure"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "this_user": {
+                                    "name": "this_user",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "defend": {
+                            "name": "defend",
+                            "description": "Protect fellow hunter from being bitten",
+                            "arguments": {
+                                "target": {
+                                    "name": "target",
+                                    "description": "Target you want to protect"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "this_user": {
+                                    "name": "this_user",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "betray": {
+                            "name": "betray",
+                            "description": "Attempt to convince a monster you are hunting to join the cause and fight with the darkness instead",
+                            "arguments": {
+                                "target": {
+                                    "name": "target",
+                                    "description": "Target you want to convince"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "this_user": {
+                                    "name": "this_user",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        }
+                    }
+                },
+                "leaderboard": {
+                    "name": "leaderboard",
+                    "description": "Shows Event leaderboard based on amount of turns",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "Shows stats of another user"
+                        },
+                        "limit": {
+                            "name": "limit",
+                            "description": "How many scores to show"
+                        }
+                    }
+                },
+                "history": {
+                    "name": "history",
+                    "description": "Shows turn history",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "User's history to show"
+                        },
+                        "limit": {
+                            "name": "limit",
+                            "description": "How many turns to show"
+                        }
+                    }
+                },
+                "statistics": {
+                    "name": "statistics",
+                    "description": "Shows event related statistics",
+                    "arguments": {}
+                },
+                "info": {
+                    "name": "info",
+                    "description": "Shows user's event info",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "User whose statistics to show"
+                        }
+                    }
+                },
+                "summary": {
+                    "name": "summary",
+                    "description": "Shows event summary",
+                    "arguments": {}
+                },
+                "fear": {
+                    "name": "fear",
+                    "description": "Base command related to fear system",
+                    "arguments": {
+                        "cls": {
+                            "name": "cls",
+                            "description": "MISSING DOCSTRING"
+                        },
+                        "should_register": {
+                            "name": "should_register",
+                            "description": "MISSING DOCSTRING"
+                        }
+                    },
+                    "sub_commands": {
+                        "carve": {
+                            "name": "carve",
+                            "description": "Carve owned pumpkins into Jack-o-Laterns!",
+                            "arguments": {
+                                "quantity": {
+                                    "name": "quantity",
+                                    "description": "Quantity of pumpkins you want to carve"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "kwargs": {
+                                    "name": "kwargs",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "summon": {
+                            "name": "summon",
+                            "description": "Summon an entity to fight for you in your army",
+                            "arguments": {
+                                "monster": {
+                                    "name": "monster",
+                                    "description": "Monster you want to summon. Leave empty to check prices",
+                                    "choices": {
+                                        "Imp": "Imp",
+                                        "Poltergeist": "Poltergeist",
+                                        "Skeleton": "Skeleton",
+                                        "Mummy": "Mummy",
+                                        "Shoggoth": "Shoggoth"
+                                    }
+                                },
+                                "quantity": {
+                                    "name": "quantity",
+                                    "description": "Amount of entities you want to summon at once"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "this_user": {
+                                    "name": "this_user",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "kwargs": {
+                                    "name": "kwargs",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "scare": {
+                            "name": "scare",
+                            "description": "Scare user using your army!",
+                            "arguments": {
+                                "target": {
+                                    "name": "target",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "kwargs": {
+                                    "name": "kwargs",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "scout": {
+                            "name": "scout",
+                            "description": "Take a pick at someone elses army!",
+                            "arguments": {
+                                "target": {
+                                    "name": "target",
+                                    "description": "User you want to scout"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "kwargs": {
+                                    "name": "kwargs",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "raid": {
+                            "name": "raid",
+                            "description": "Send your army on a raid!",
+                            "arguments": {
+                                "boss": {
+                                    "name": "boss",
+                                    "description": "boss you want to attack",
+                                    "choices": {
+                                        "Troll": "Troll",
+                                        "Moka": "Moka",
+                                        "Volatile": "Volatile",
+                                        "Dracula": "Dracula",
+                                        "Dark_Enchanter": "Dark_Enchanter",
+                                        "Wild_Moderator": "Wild_Moderator",
+                                        "Ancient_One": "Ancient_One",
+                                        "Champion": "Champion"
+                                    }
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "kwargs": {
+                                    "name": "kwargs",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        },
+                        "sacrifice": {
+                            "name": "sacrifice",
+                            "description": "Sacrifice your Army units for Reinforced Fear™",
+                            "arguments": {
+                                "monster": {
+                                    "name": "monster",
+                                    "description": "Monster you want to sacrifice.",
+                                    "choices": {
+                                        "Imp": "Imp",
+                                        "Poltergeist": "Poltergeist",
+                                        "Skeleton": "Skeleton",
+                                        "Mummy": "Mummy",
+                                        "Shoggoth": "Shoggoth"
+                                    }
+                                },
+                                "quantity": {
+                                    "name": "quantity",
+                                    "description": "Amount of entities you want to sacrifice at once"
+                                },
+                                "session": {
+                                    "name": "session",
+                                    "description": "MISSING DOCSTRING"
+                                },
+                                "kwargs": {
+                                    "name": "kwargs",
+                                    "description": "MISSING DOCSTRING"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "crossref": {
+            "name": "crossref",
+            "description": "Description to use with help command",
+            "arguments": {
+                "language": {
+                    "name": "language",
+                    "description": "MISSING DOCSTRING"
+                }
+            }
+        }
+    },
+    "fear": {
+        "convert_fear": {
+            "name": "convert_fear",
+            "description": "Converts fear to Reinforced Fear",
+            "arguments": {}
+        }
+    }
+}

@@ -1,0 +1,243 @@
+{
+    "commands": {
+        "infraction": {
+            "name": "infraction",
+            "description": "Base command for infractions",
+            "arguments": {
+                "type_": {
+                    "name": "type_",
+                    "description": "Type of Infraction",
+                    "choices": {
+                        "Warn": "Warn",
+                        "Timeout": "Timeout",
+                        "Kick": "Kick",
+                        "Ban": "Ban",
+                        "Unban": "Unban",
+                        "Report": "Report"
+                    }
+                },
+                "user": {
+                    "name": "user",
+                    "description": "User to take action upon"
+                },
+                "reason": {
+                    "name": "reason",
+                    "description": "Reason of action"
+                },
+                "duration": {
+                    "name": "duration",
+                    "description": "Digits followed by either s, m, h, d or w. For example: 1d 12h 30m 45s"
+                },
+                "weight": {
+                    "name": "weight",
+                    "description": "Weight of this infraction"
+                }
+            },
+            "sub_commands": {
+                "warn": {
+                    "name": "warn",
+                    "description": "Warn User",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "User to take action upon"
+                        },
+                        "reason": {
+                            "name": "reason",
+                            "description": "Reason of action"
+                        },
+                        "weight": {
+                            "name": "weight",
+                            "description": "Weight of this infraction"
+                        }
+                    }
+                },
+                "timeout": {
+                    "name": "timeout",
+                    "description": "Timeout user",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "User to take action upon"
+                        },
+                        "duration": {
+                            "name": "duration",
+                            "description": "Digits followed by either s, m, h, d or w. For example: 1d 12h 30m 45s"
+                        },
+                        "reason": {
+                            "name": "reason",
+                            "description": "Reason of action"
+                        },
+                        "weight": {
+                            "name": "weight",
+                            "description": "Weight of this infraction"
+                        }
+                    }
+                },
+                "kick": {
+                    "name": "kick",
+                    "description": "Kick User",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "User to take action upon"
+                        },
+                        "reason": {
+                            "name": "reason",
+                            "description": "Reason of action"
+                        }
+                    }
+                },
+                "ban": {
+                    "name": "ban",
+                    "description": "Ban User",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "User to take action upon"
+                        },
+                        "reason": {
+                            "name": "reason",
+                            "description": "Reason for the ban"
+                        },
+                        "delete_messages": {
+                            "name": "delete_messages",
+                            "description": "Number of days to delete message for"
+                        }
+                    }
+                },
+                "unban": {
+                    "name": "unban",
+                    "description": "Unban User",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "User to take action upon"
+                        },
+                        "reason": {
+                            "name": "reason",
+                            "description": "Reason of action"
+                        }
+                    }
+                },
+                "expire": {
+                    "name": "expire",
+                    "description": "Expires an infraction",
+                    "arguments": {
+                        "infraction_id": {
+                            "name": "infraction_id",
+                            "description": "Infraction to expire"
+                        }
+                    }
+                },
+                "list": {
+                    "name": "list",
+                    "description": "Lists user's infractions",
+                    "arguments": {
+                        "user": {
+                            "name": "user",
+                            "description": "User to display infractions of. Can only be used by Moderators"
+                        }
+                    }
+                },
+                "graph": {
+                    "name": "graph",
+                    "description": "Plot infractions over days",
+                    "arguments": {
+                        "type": {
+                            "name": "type",
+                            "description": "Type of infraction to plot. Defaults to all",
+                            "choices": {
+                                "Warn": "Warn",
+                                "Timeout": "Timeout",
+                                "Kick": "Kick",
+                                "Ban": "Ban",
+                                "Unban": "Unban",
+                                "Report": "Report"
+                            }
+                        },
+                        "resample": {
+                            "name": "resample",
+                            "description": "Range to group together. D = Day, W = Week, M = Month"
+                        },
+                        "locator": {
+                            "name": "locator",
+                            "description": "How often a locator should be placed. Minute, hour, day, week, month or year"
+                        },
+                        "interval": {
+                            "name": "interval",
+                            "description": "Interval of locator"
+                        },
+                        "moderator": {
+                            "name": "moderator",
+                            "description": "Moderator whose actions to plot exclusively"
+                        },
+                        "user": {
+                            "name": "user",
+                            "description": "User whose infractions to plot exclusively"
+                        },
+                        "growth": {
+                            "name": "growth",
+                            "description": "Whether resample should NOT be applied"
+                        }
+                    }
+                },
+                "mod_summary": {
+                    "name": "mod_summary",
+                    "description": "Summary of actions taken by moderators in specified month",
+                    "arguments": {
+                        "month": {
+                            "name": "month",
+                            "description": "Number of Month to summarize. 0 to create summary of entire year"
+                        }
+                    }
+                },
+                "Warn": "Warn",
+                "Mute": "Mute",
+                "Ban": "Ban",
+                "Unmute": "Unmute",
+                "Unban": "Unban",
+                "Temp_Mute": "Tempmute",
+                "Temp_Ban": "Tempban",
+                "Kick": "Kick",
+                "Timeout": "Timeout",
+                "for_duration": "for %{duration}",
+                "active": "🟢",
+                "inactive": "🔴",
+                "row": "%{active} %{link}`{id:%{id_width}}` [<t:%{timestamp}:d>] `[{type:%{width}}]` \"%{reason}\" by <@%{moderator_id}> %{duration}%{active}",
+                "title": "%{username}'s infractions",
+                "total": "Total infractions",
+                "total_description": "%{active}/%{total}",
+                "counter": "[%{currently_active}] | Active: %{active} | Total: %{total}",
+                "no_infractions": "No Infractions"
+            }
+        },
+        "report": {
+            "name": "report",
+            "description": "Report situation on server to Moderators",
+            "arguments": {
+                "msg": {
+                    "name": "msg",
+                    "description": "Message about what's happening"
+                }
+            },
+            "processing": "I'm on my way to notify moderators!",
+            "report_author": "Report made by %{username}",
+            "reference_author": "Referenced Message from %{username}",
+            "attachments": "Attachments",
+            "jump_to_message": "Jump to Message",
+            "result": "Notified %{amount} Moderator(s) in %{duration}s!",
+            "no_online": "Couldn't find any moderator online, falling back to regular ping",
+            "report_waiting": "<@&%{moderator_id}>, There is a report waiting!"
+        },
+        "no_reason": "No reason",
+        "expire_placeholder": "Expire Infractions",
+        "active_infractions": "%{active} active infractions",
+        "success": "Infraction added successfully",
+        "error_target_moderator": "Can't add infraction to a moderator!",
+        "error_dm": "Couldn't deliver DM message",
+        "default_reason": "Infraction made by %{moderator}",
+        "not_found": "Infraction not found!",
+        "already_expired": "Infraction has already expired!"
+    }
+}
