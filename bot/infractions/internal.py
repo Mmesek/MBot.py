@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from MFramework import Cache, Snowflake, User
+from MFramework import Bot, Cache, Snowflake, User
 
 from . import models
 
@@ -36,3 +36,19 @@ async def log_action(
     await _.log_dm(
         type=type, guild_id=guild_id or cache.guild_id, user_id=user_id, reason=dm_reason or reason, duration=duration
     )
+
+
+async def kick_user(bot: Bot, guild_id: int, user_id: int, reason: str = "Possible Raid", dm_reason="Possible Raid"):
+    try:
+        log_action(
+            cache=bot.cache[guild_id],
+            logger="auto_mod",
+            user_id=user_id,
+            reason=reason,
+            dm_reason=dm_reason,
+            type=models.Types.Kick,
+        )
+    except:
+        pass
+
+    await bot.remove_guild_member(guild_id, user_id, reason=reason)
