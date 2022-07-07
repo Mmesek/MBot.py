@@ -36,7 +36,9 @@ async def direct_message_create(self: Bot, data: Message):
 
     guild_id = guilds[0].guild_id if len(guilds) == 1 else self.primary_guild
 
-    if "find this life-changing" in data.content:
+    hijacked = {"heyy ummm idk what happened", "find this life-changing"}
+
+    if any(i in data.content for i in hijacked):
         await kick_user(self, guild_id, data.author.id, "Possible Raid: Modmail")
 
         return True
