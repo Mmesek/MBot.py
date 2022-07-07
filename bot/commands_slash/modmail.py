@@ -20,33 +20,6 @@ from ..infractions.interactions import instant_actions
 
 @onDispatch
 async def direct_message_create(self: Bot, data: Message):
-    if "find this life-changing" in data.content:
-        from ..infractions.models import Types as InfractionTypes
-
-        _ = self.cache[self.primary_guild].logging.get("auto_mod", None)
-        if _:
-            await _(
-                guild_id=self.primary_guild,
-                channel_id=None,
-                message_id=None,
-                moderator=self.cache[self.primary_guild].bot.user,
-                user_id=data.author.id,
-                reason="Possible Raid: Modmail",
-                duration=None,
-                type=InfractionTypes.Kick,
-            )
-            try:
-                r = await _.log_dm(
-                    type=InfractionTypes.Kick,
-                    guild_id=self.primary_guild,
-                    user_id=data.author.id,
-                    reason="Possible Raid",
-                    duration=None,
-                )
-            except Exception as ex:
-                r = None
-        return await self.remove_guild_member(self.primary_guild, data.author.id, reason="Possible Raid")
-
     guilds = list(
         filter(
             lambda x: data.author.id in x.members,
