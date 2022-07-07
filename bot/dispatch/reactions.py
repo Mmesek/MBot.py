@@ -5,11 +5,6 @@ from MFramework import Bot, Message_Reaction_Add, Message_Reaction_Remove, onDis
 async def message_reaction_add(self: Bot, data: Message_Reaction_Add):
     if data.guild_id == 0 or data.member and data.member.user.bot:
         return
-    if data.message_id in self.cache[data.guild_id].giveaway_messages:
-        await self.delete_user_reaction(
-            data.channel_id, data.message_id, f"{data.emoji.name}:{data.emoji.id}", data.user_id
-        )
-        # TODO: check if already in DB, otherwise add
 
     roles = self.cache[data.guild_id].reaction_roles
     if roles == {}:

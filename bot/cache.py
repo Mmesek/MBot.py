@@ -12,11 +12,9 @@ from .database import types
 
 class Tasks:
     tasks: Dict[db.types.Task, Dict[Snowflake, asyncio.Task]]
-    giveaway_messages: List[Snowflake]
 
     def __init__(self, *, guild: Guild, **kwargs) -> None:
         self.tasks = {}
-        self.giveaway_messages = []
         super().__init__(guild=guild, **kwargs)
 
 

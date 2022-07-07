@@ -759,12 +759,7 @@
         "giveaway": {
             "name": "giveaway",
             "description": "Giveaways",
-            "arguments": {
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
-                }
-            },
+            "arguments": {},
             "sub_commands": {
                 "create": {
                     "name": "create",
@@ -801,12 +796,9 @@
                         "author": {
                             "name": "author",
                             "description": "User in whose name this giveaway is being created"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
-                    }
+                    },
+                    "success": "Giveaway Created sucessfully"
                 },
                 "delete": {
                     "name": "delete",
@@ -815,18 +807,6 @@
                         "message_id": {
                             "name": "message_id",
                             "description": "ID of giveaway message to delete"
-                        },
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 },
@@ -837,12 +817,9 @@
                         "message_id": {
                             "name": "message_id",
                             "description": "ID of giveaway message to finish"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
-                    }
+                    },
+                    "success": "Giveaway ended sucessfully"
                 },
                 "reroll": {
                     "name": "reroll",
@@ -855,13 +832,44 @@
                         "amount": {
                             "name": "amount",
                             "description": "Amount of rewards to reroll, defaults to all"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
-                    }
+                    },
+                    "success": "Giveaway rerolled sucessfully"
                 }
+            },
+            "end_time": "Ends at",
+            "end_time_finished": {
+                "zero": "Ended at",
+                "one": "Chance: %{chance} | Ended at",
+                "many": "Chance: %{chance} x %{count} | Ended at"
+            },
+            "title": {
+                "one": "%{prize}",
+                "many": "%{prize} x %{count}"
+            },
+            "title_finished": {
+                "zero": "[NO WINNER] %{prize}",
+                "one": "[ENDED] %{prize}",
+                "many": "[ENDED] %{prize} x %{count}"
+            },
+            "embed_description": {
+                "one": "React with \ud83c\udf89 to join giveaway!",
+                "many": "React with \ud83c\udf89 to join giveaway!\nAmount of Prizes: %{count}"
+            },
+            "embed_description_finished": {
+                "zero": "Could not determine winner :(",
+                "one": "Winner: %{winners}\nHosted by: %{host}",
+                "many": "Winners: %{winners}\nHosted by: %{host}"
+            },
+            "end_message": {
+                "zero": "Could not determine winner for giveaway https://discordapp.com/channels/%{server}/%{channel}/%{message}",
+                "one": "Congratulations to %{winners}!\nYou won **%{prize}**!\n\nTotal participants: %{count}",
+                "many": "Congratulations, %{winners}!\nYou won **%{prize}**!\n\nTotal participants: %{count}"
+            },
+            "reroll_message": {
+                "zero": "Could not reroll winner for giveaway https://discordapp.com/channels/%{server}/%{channel}/%{message}",
+                "one": "Congratulations to %{winners}!\nYou won %{prize} after reroll!\n\nTotal participants: %{count}",
+                "many": "Congratulations, %{winners}!\nYou won %{prize} after reroll!\n\nTotal participants: %{count}"
             }
         }
     },
