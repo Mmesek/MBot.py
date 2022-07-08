@@ -2364,50 +2364,44 @@
                     "arguments": {
                         "game": {
                             "name": "game",
-                            "description": "Steam game's title(s). Separate using comma `,`"
-                        },
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
+                            "description": "Steam game's title"
                         }
-                    }
+                    },
+                    "success": "Playercount for %{game} (%{appid}): %{count}",
+                    "error": "Not found: Game %{game} might be not available, released or an error occured"
                 },
                 "game": {
                     "name": "game",
                     "description": "Shows Steam's game data",
                     "arguments": {
-                        "interaction": {
-                            "name": "interaction",
-                            "description": "MISSING DOCSTRING"
-                        },
                         "game": {
                             "name": "game",
-                            "description": "Steam game title(s). Separate using comma `,`"
-                        },
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
+                            "description": "Steam game title"
                         }
-                    }
+                    },
+                    "release": "Release Date: ",
+                    "f2p": "Free2Play",
+                    "price": "Price",
+                    "BazarPrice": "Bazar",
+                    "CurrentLowPrice": "Current Low",
+                    "HistLowPrice": "Lowest Price",
+                    "recommendations": "Recommendations",
+                    "players": "Currently players",
+                    "achievements": "Achievements",
+                    "age": "Required Age",
+                    "dlc": "DLC Count",
+                    "developers": {
+                        "one": "Developer",
+                        "many": "Developers"
+                    },
+                    "publishers": {
+                        "one": "Publisher",
+                        "many": "Publishers"
+                    },
+                    "open": "Open in Steam"
                 },
-                "steamcalc": {
-                    "name": "steamcalc",
+                "calculator": {
+                    "name": "calculator",
                     "description": "Steam Calculator. Similiar to Steamdb one (With few differences).",
                     "arguments": {
                         "steam_id": {
@@ -2417,20 +2411,17 @@
                         "country": {
                             "name": "country",
                             "description": "Provide Country Code for currency. For example GB for Pounds"
-                        },
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
                         }
-                    }
+                    },
+                    "not_found": "Not Found",
+                    "vanity_url": "Couldn't find specifed User. Please provide either your Vanity URL name or SteamID and make sure profile visibility is set to public",
+                    "private_profile": "Couldn't find any games on specified account. Perhaps profile is set to private?",
+                    "total": "Total",
+                    "total_description": "Playtime: `%{playtime}`h\nPrices: `%{prices}` %{currency}",
+                    "games": "Games",
+                    "games_description": "Total: `%{game_count}`\nPlayed: `%{total_played}` (`%{percent_played}`)\nPricetagged: `%{pricetagged}`\nNot Available: `%{unavailable}`",
+                    "average": "Average",
+                    "average_description": "Hours per game: `%{hours_per_game}`\nPrice per game: `%{price_per_game}` %{currency}\nPrice per hour: `%{price_per_hour}` %{currency}"
                 },
                 "hltb": {
                     "name": "hltb",
@@ -2440,7 +2431,8 @@
                             "name": "game",
                             "description": "Game Name"
                         }
-                    }
+                    },
+                    "similiarity": "Title Similiarity: %{similiarity}"
                 }
             }
         }

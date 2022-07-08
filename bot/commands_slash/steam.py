@@ -1,7 +1,15 @@
+import json
+import os
+from difflib import get_close_matches
 from enum import Enum
 
-from MFramework import Context, Embed, Groups, Interaction, register
-from mlib.localization import tr
+import aiohttp
+import pycountry
+from MFramework import Context, Embed, Groups, register
+from mlib.colors import get_main_color
+from mlib.utils import grouper, truncate
+
+INDEX = {}
 
 
 class URL(Enum):
@@ -9,9 +17,7 @@ class URL(Enum):
     STORE = "https://store.steampowered.com/api/"
 
 
-async def steam_api(path="", query="", method="GET", api=URL.STEAM, **kwargs):
-    import aiohttp
-
+async def aio_request(path: str = "", query: str = "", method: str = "GET", api: URL = URL.STEAM, **kwargs):
     async with aiohttp.ClientSession() as session:
         request = await session.request(method, api.value + path + query, **kwargs)
         try:
@@ -20,358 +26,298 @@ async def steam_api(path="", query="", method="GET", api=URL.STEAM, **kwargs):
             return request.reason
 
 
-def loadSteamIndex(ctx):
-    with open("data/steamstoreindex.json") as fjson:
-        import json
+async def loadAppIndex():
+    """Loads Index of Steam Games"""
+    if not os.path.exists("data/steamstoreindex.json"):
+        await refreshAppIndex()
 
-        ctx.bot.index = json.load(fjson)
+    global INDEX
+
+    with open("data/steamstoreindex.json") as file:
+        INDEX = json.load(file)
 
 
-@register(group=Groups.SYSTEM, interaction=False)
-async def refreshAppIndex(ctx: Context, *args, data, **kwargs):
+async def refreshAppIndex():
     """Updates Index of Steam Games"""
-    apps = await steam_api("ISteamApps/GetAppList/v2")
+    apps = await aio_request("ISteamApps/GetAppList/v2")
     index = {}
     for each in apps["applist"]["apps"]:
         index[each["name"]] = each["appid"]
-    import json
 
     with open("data/steamstoreindex.json", "w", newline="", encoding="utf-8") as file:
-        json.dump(index, file)
+        json.dump(index, file, ensure_ascii=False)
+
+
+async def get_appid(name: str) -> int:
+    if not INDEX:
+        await loadAppIndex()
+    game = get_close_matches(name, INDEX.keys(), 1)[0]
+    return INDEX[game]
+
+
+def country_from_locale(locale: str) -> str:
+    code = locale.split("-", 1)
+    country = pycountry.countries.get(alpha_2=code[-1])
+    language = pycountry.languages.get(alpha_2=code[0])
+    return language.name.lower(), country.alpha_2.lower()
 
 
 @register(group=Groups.GLOBAL)
-async def steam(ctx: Context, interaction: Interaction, *args, language, **kwargs):
-    """Fetches data on games"""
+async def steam():
+    """Fetches data on Steam games"""
     pass
 
 
-async def steamParse(ctx: Context, request, language, game):
-    from difflib import get_close_matches
-
-    # game = " ".join(game)
-    games = game.split(",")
-    if not hasattr(ctx.bot, "index"):
-        loadSteamIndex(ctx)
-    for game in games:
-        try:
-            game = get_close_matches(game, ctx.bot.index.keys(), 1)[0]
-        except IndexError:
-            yield {}, game
-        appid = ctx.bot.index[game]
-        if request == "playercount":
-            playercount = await steam_api("ISteamUserStats/GetNumberOfCurrentPlayers/v1/", f"?appid={appid}")
-            yield playercount, game
-        elif request == "details":
-            if language == "pl":
-                cc, l = "pl", "polish"
-            else:
-                cc, l = "us", "english"
-            page = await steam_api("appdetails/", querry=f"?appids={appid}&l={l}&cc={cc}", api=URL.STORE)
-            yield page[str(appid)].get(
-                "data",
-                {
-                    "short_description": "There was an error searching for data, perhaps Steam page doesn't exist anymore?",
-                    "name": game,
-                },
-            ), appid
-
-
 @register(group=Groups.GLOBAL, main=steam)
-async def playercount(ctx: Context, game: str, *args, language, **kwargs):
-    """Fetches playercount for specified game
+async def playercount(ctx: Context, game: str) -> str:
+    """
+    Fetches playercount for specified game
+
     Params
     ------
     game:
-        Steam game's title(s). Separate using comma `,`"""
-    result = tr("commands.playercount.for", language)
-    async for playercount, game in steamParse(ctx, "playercount", language, *game):
-        try:
-            playercount = playercount.get("response", {}).get("player_count", "Error")
-            result += f"{game}: {playercount}\n"
-        except KeyError:
-            result += f"{game}: " + tr("commands.playercount.error", language)
-    return result[:2000]
+        Steam game's title.
+    """
+    appid = await get_appid(game)
+
+    try:
+        data = await aio_request("ISteamUserStats/GetNumberOfCurrentPlayers/v1/", f"?appid={appid}")
+        count = data.get("response", {}).get("player_count", "Error")
+    except KeyError:
+        return ctx.t("error", game=game)
+    return ctx.t("success", game=game, appid=appid, count=count)
 
 
-def getBazarPrice(game):
-    import requests
-    from bs4 import BeautifulSoup
+@register(group=Groups.GLOBAL, main=steam)
+async def game(ctx: Context, title: str) -> Embed:
+    """
+    Shows Steam's game data
 
-    bazar = "https://bazar.lowcygier.pl/?title="
-    data = requests.get(bazar + game)
-    soup = BeautifulSoup(data.text, "html.parser")
-    lis = soup.find("div", id="w0", class_="list-view")
-    sel = lis.find_all("div", class_="col-md-7 col-sm-4 col-xs-6 nopadding")
-    prc = 0
-    for each in sel:
-        if each.find("h4", class_="media-heading").a.text == game:
-            prc = each.find("p", class_="prc").text.replace(" zł", "zł")
-            url = each.find("h4", class_="media-heading").a.attrs["href"]
-            break
-    if prc != 0:
-        return f"[{prc}](https://bazar.lowcygier.pl{url})"
-    return 0
+    Params
+    ------
+    title:
+        Steam game title.
+    """
+    appid = await get_appid(title)
 
+    language, country_code = country_from_locale(ctx.language)
 
-def getGGDealsLowPrice(game, language):
-    import requests
-    from bs4 import BeautifulSoup
+    game = await aio_request("appdetails/", f"?appids={appid}&l={language}&cc={country_code}", api=URL.STORE)
+    game = game[str(appid)].get("data", {})
 
-    if language == "en":
-        language = "eu"
-    gg = f"https://gg.deals/{language}/region/switch/?return=%2Fgame%2F"  # f'https://gg.deals/{language}/game/'
-    name2 = (
-        game.replace(" ", "-")
-        .replace("!", "-")
-        .replace("?", "-")
-        .replace("'", "-")
-        .replace(".", "")
-        .replace(":", "")
-        .replace(",", " ")
+    embed = (
+        Embed()
+        .set_description(game.get("short_description"))
+        .set_title(game.get("name"))
+        .set_url(f"https://store.steampowered.com/app/{appid}/")
+        .set_footer(text=ctx.t("release") + game.get("release_date", {}).get("date", ""))
+        .set_image(game.get("header_image", ""))
     )
-    data = requests.get(gg + name2)
-    soup = BeautifulSoup(data.text, "html.parser")
-    lis = soup.find("div", class_="price-wrap")
+
+    prc = game.get("price_overview", {}).get("final_formatted")
+    is_free = game.get("is_free", {})
+    if prc or is_free:
+        if is_free:
+            prc = ctx.t("f2p")
+        embed.add_field(ctx.t("price"), prc, True)
+
+    r = game.get("recommendations", {}).get("total")
+    if r:
+        embed.add_field(ctx.t("recommendations"), r, True)
+
+    cp = await aio_request("ISteamUserStats/GetNumberOfCurrentPlayers/v1/", f"?appid={appid}")
+    cp = cp.get("response", {}).get("player_count")
+    if cp:
+        embed.add_field(ctx.t("players"), cp, True)
+
+    ach = game.get("achievements", {}).get("total", 0)
+    if ach:
+        embed.add_field(ctx.t("achievements"), ach, True)
+
+    required_age = game.get("required_age", 0)
+    if required_age:
+        embed.add_field(ctx.t("age"), required_age, True)
+
+    dlc = len(game.get("dlc", []))
+    if dlc:
+        embed.add_field(ctx.t("dlc"), dlc, True)
+
+    f = len(embed.fields)
+    if f and f % 3:
+        embed.add_field("\u200b", "\u200b", True)
+
+    devs = game.get("developers")
+    if devs:
+        embed.add_field(ctx.t("developers", count=len(devs)), ", ".join(devs), True)
+
+    publishers = game.get("publishers")
+    if publishers and publishers != devs:
+        embed.add_field(ctx.t("publishers", count=len(publishers)), ", ".join(publishers), True)
+
     try:
-        prc = lis.find("span", class_="numeric").text.replace("~", "").replace(" zł", "zł")
-        url2 = soup.find("div", class_="list-items").find("a", {"target": "_blank"})["href"]
+        await hltb(ctx, game.get("name"), e=embed)
     except:
-        prc = 0
-    try:
-        li = lis.find("div", class_="lowest-recorded price-widget")
-        prc2 = li.find("span", class_="numeric").text.replace("~", "").replace(" zł", "zł")
-    except:
-        prc2 = 0
-    if prc != "Free" and prc != 0:
-        p1 = f"[{prc}](https://gg.deals{url2})"
-    else:
-        p1 = 0
-    if prc2 != 0:
-        p2 = prc2
-    else:
-        p2 = 0
-    return (p1, p2)
+        pass
+
+    embed.add_field(ctx.t("open"), f"steam://store/{appid}/")
+    return embed
 
 
-@register(group=Groups.GLOBAL, main=steam)
-async def game(ctx: Context, interaction: Interaction, game: str, *args, language, **kwargs):
-    """Shows Steam's game data
-    Params
-    ------
-    game:
-        Steam game title(s). Separate using comma `,`"""
-    await ctx.deferred()
-    _game = game
-    async for game, appid in steamParse(ctx, "details", language, game):
-        embed = Embed()
-        embed.setDescription(game.get("short_description")).setTitle(game.get("name"))
-        embed.setUrl(f"https://store.steampowered.com/app/{appid}/").setFooter(
-            text=tr("commands.game.release", language) + game.get("release_date", {}).get("date", "")
+class Price:
+    def __init__(self, response: dict) -> None:
+        self.available = response.get("success", False)
+        r = response.get("data", {})
+        if not r:
+            r = {}
+        r = r.get("price_overview", {})
+        self.initial = r.get("initial", 0)
+        self.final = r.get("final", 0)
+        self.currency = r.get("currency", None)
+
+
+class SteamProfile:
+    def __init__(self, steam_id: int, token: str, cc: str) -> None:
+        self.country_code = cc
+        self.steam_id = steam_id
+        self._token = token
+        self._prices: dict[int, Price] = {}
+        self.games: dict[int, int] = {}
+
+    async def get_games(self):
+        r = await aio_request(
+            "IPlayerService/GetOwnedGames/v0001/", f"?key={self._token}&steamid={self.steam_id}&format=json"
         )
-        embed.setImage(game.get("header_image", ""))
-        prc = game.get("price_overview", {}).get("final_formatted")
-        is_free = game.get("is_free", {})
-        if prc is not None or is_free:
-            if is_free:
-                prc = tr("commands.game.f2p", language)
-            embed.addField(tr("commands.game.price", language), prc, True)
-        if language == "pl":
-            bazar = getBazarPrice(game.get("name", "Error"))
-            if bazar != 0:
-                embed.addField(tr("commands.game.BazarPrice", language), bazar, True)
-        ggdeals = getGGDealsLowPrice(game.get("name", "Error"), language)
-        if ggdeals[0] != 0:
-            embed.addField(tr("commands.game.CurrentLowPrice", language), ggdeals[0], True)
-        if ggdeals[1] != 0:
-            embed.addField(tr("commands.game.HistLowPrice", language), ggdeals[1], True)
-        r = game.get("recommendations", {}).get("total")
-        if r is not None:
-            embed.addField(tr("commands.game.recommendations", language), r, True)
-        cp = await steam_api("ISteamUserStats/GetNumberOfCurrentPlayers/v1/", f"?appid={appid}")
-        cp = cp.get("response", {}).get("player_count")
-        if cp is not None:
-            embed.addField(tr("commands.game.players", language), cp, True)
-        ach = game.get("achievements", {}).get("total", 0)
-        if ach is not None and ach != 0:
-            embed.addField(tr("commands.game.achievements", language), ach, True)
-        required_age = game.get("required_age", 0)
-        if required_age != 0:
-            embed.addField(tr("commands.game.age", language), required_age, True)
-        dlc = len(game.get("dlc", []))
-        if dlc != 0:
-            embed.addField(tr("commands.game.dlc", language), dlc, True)
-        f = len(embed.fields)
-        if f != 0 and f % 3 != 0:
-            embed.addField("\u200b", "\u200b", True)
-        devs = game.get("developers")
-        if devs is not None:
-            embed.addField(tr("commands.game.developers", language, count=len(devs)), ", ".join(devs), True)
-        publishers = game.get("publishers")
-        if publishers != devs:
-            embed.addField(tr("commands.game.publishers", language, count=len(publishers)), ", ".join(publishers), True)
-        from howlongtobeatpy import HowLongToBeat
+        self.games = {i["appid"]: i["playtime_forever"] for i in r["response"]["games"]}
+        self.total_playtime = sum(list(self.games.values()))
+        self.total_hours = truncate(self.total_playtime / 60, 2)
+        self.total_played = sum([1 for i in self.games.values() if i > 0])
+        self.percent_played = "{:.1%}".format(self.total_played / len(self.games))
+        self.hours_per_game = truncate(((self.total_playtime / 60) / self.total_played), 2)
 
-        results = await HowLongToBeat().async_search(" ".join(_game))
-        if results is not None and len(results) > 0:
-            if len(embed.fields) != 0 and len(embed.fields) % 3 != 0:
-                while len(embed.fields) % 3 != 0:
-                    if len(embed.fields) == 25:
-                        break
-                    embed.addField("\u200b", "\u200b", True)
-            g = max(results, key=lambda element: element.similarity)
-            if g.gameplay_main != -1:
-                embed.addField(g.gameplay_main_label, f"{g.gameplay_main} {g.gameplay_main_unit}", True)
-            if g.gameplay_main_extra != -1:
-                embed.addField(
-                    g.gameplay_main_extra_label, f"{g.gameplay_main_extra} {g.gameplay_main_extra_unit}", True
-                )
-            if g.gameplay_completionist != -1:
-                embed.addField(
-                    g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True
-                )
-        embed.addField(tr("commands.game.open", language), f"steam://store/{appid}/")
-        return embed
+    async def get_prices(self):
+        for chunk in grouper(list(self.games.keys()), 100):
+            r = await aio_request(
+                f"appdetails?appids={','.join([str(i) for i in chunk[:100]])}&filters=price_overview&cc={self.country_code}",
+                api=URL.STORE,
+            )
+            for appid, _game in r.items():
+                self._prices[int(appid)] = Price(_game)
+        self.total_playtime_with_price = sum(
+            [v for k, v in self.games.items() if k in self._prices and self._prices[k].initial > 0]
+        )
+        self.current_total_prices = sum([i.final for i in self._prices.values()])
+        self.has_price = sum([1 for i in self._prices.values() if i.initial])
+        self.available = sum([1 for i in self._prices.values() if i.available])
+        self.currency = [i.currency for i in self._prices.values() if i.currency][0]
+        self.total_price = self.current_total_prices / 100
+        self.price_per_hour = "{:.3}".format(truncate(self.total_price / (self.total_playtime_with_price / 60), 2))
+        self.price_per_game = "{:.3}".format(truncate(self.total_price / self.has_price), 2)
 
 
 @register(group=Groups.GLOBAL, main=steam)
-async def steamcalc(ctx: Context, steam_id: str = None, country: str = "us", *args, language, **kwargs):
-    """Steam Calculator. Similiar to Steamdb one (With few differences).
+async def calculator(ctx: Context, steam_id: str = None, country_code: str = None) -> Embed:
+    """
+    Steam Calculator. Similiar to Steamdb one (With few differences).
+
     Params
     ------
     steam_id:
         Your Steam ID or Vanity URL
-    country:
-        Provide Country Code for currency. For example GB for Pounds"""
-    await ctx.deferred()
+    country_code:
+        Provide Country Code for currency. For example GB for Pounds
+    """
     if not steam_id:
         steam_id = ctx.user.username
+
     token = ctx.bot.cfg.get("Tokens", {}).get("steam", None)
-    uid = await steam_api(f"ISteamUser/ResolveVanityURL/v0001/?key={token}&vanityurl={steam_id}")
-    if uid != tr("commands.steamcalc.notFound", language):
-        uid = uid["response"]
-    else:
-        return tr("commands.steamcalc.vanityURL", language)
-    if uid["success"] == 1:
-        user = uid["steamid"]
-    games = await steam_api("IPlayerService/GetOwnedGames/v0001/", f"?key={token}&steamid={user}&format=json")
-    try:
-        games = games.get("response", {"games": {}})
-    except:
-        return tr("commands.steamcalc.vanityURL", language)
-    if games.get("games", {}) == {}:
-        return tr("commands.steamcalc.privateProfile", language)
-    total_playtime = 0
-    total_played = 0
-    game_ids = []
-    for game in games["games"]:
-        total_playtime += game["playtime_forever"]
-        game_ids += [game["appid"]]
-        if game["playtime_forever"] != 0:
-            total_played += 1
-    total_price = 0
-    has_price = []
-    unavailable = 0
-
-    def calcPrice(prices, total_price, has_price):
-        keys = list(prices.keys())
-        for x, price in enumerate(prices.values()):
-            if price["success"] and price["data"] != []:
-                total_price += price["data"]["price_overview"]["final"]
-                ending = price["data"]["price_overview"]["currency"]  # ['final_formatted'].split(',')[-1][2:]
-                endings = {"USD": "$", "EUR": "€", "PLN": "zł", "GBP": "£"}
-                ending = endings.get(ending, ending)
-                has_price += [int(keys[x])]
-            elif not price["success"]:
-                nonlocal unavailable
-                unavailable += 1
-        return total_price, ending, has_price
+    uid = await aio_request(f"ISteamUser/ResolveVanityURL/v0001/?key={token}&vanityurl={steam_id}")
 
     try:
-        from mlib.utils import grouper
+        user = uid["response"]["steamid"]
+    except KeyError:
+        return ctx.t("vanity_url")
 
-        for chunk in grouper(game_ids, 100):
-            prices = await steam_api(
-                f"appdetails?appids={','.join([str(i) for i in chunk[:100]])}&filters=price_overview&cc={country}",
-                api=URL.STORE,
-            )
-            total_price, ending, has_price = calcPrice(prices, total_price, has_price)
-    except Exception as ex:
-        ending = ""
-        print(ex)
-    from mlib.utils import truncate
+    language, country_code = country_from_locale(country_code or ctx.language)
 
-    total = tr("commands.steamcalc.playtime", language, hours=truncate(total_playtime / 60, 2))
-    if total_price != 0:
-        total += tr("commands.steamcalc.prices", language, prices=f"{total_price/100} {ending}")
-    if len(has_price) != 0:
-        str_prices = tr("commands.steamcalc.pricetaged", language, price_taged=len(has_price))
-    else:
-        str_prices = ""
-    str_prices += tr("commands.steamcalc.notAvailable", language, unavailable=unavailable)
+    profile = SteamProfile(user, token=token, cc=country_code)
+    try:
+        await profile.get_games()
+    except KeyError:
+        return ctx.t("private_profile")
+    await profile.get_prices()
+
+    summary = await aio_request("ISteamUser/GetPlayerSummaries/v2/", f"?key={token}&steamids={user}")
+    summary = summary["response"]["players"][0]
     e = (
         Embed()
-        .addField(tr("commands.steamcalc.total", language), total, True)
-        .addField(
-            tr("commands.steamcalc.games", language),
-            tr("commands.steamcalc.games_desc", language, game_count=games["game_count"], total_played=total_played)
-            + " ({:.1%})".format(total_played / games["game_count"])
-            + str_prices,
+        .add_field(
+            ctx.t("total"),
+            ctx.t(
+                "total_description",
+                playtime=profile.total_hours,
+                prices=profile.total_price,
+                currency=profile.currency,
+            ),
             True,
         )
-    )
-    pt = 0
-    pf = 0
-    for game in games["games"]:
-        if game["appid"] in has_price:
-            if game["playtime_forever"] != 0:
-                pf += 1
-                pt += game["playtime_forever"]
-    avg = tr("commands.steamcalc.hoursPerGame", language, avg=0)
-    if total_playtime != 0:
-        hpg = truncate(((total_playtime / 60) / total_played), 2)
-        avg = tr("commands.steamcalc.hoursPerGame", language, avg=hpg)
-    if total_price != 0:
-        avg += tr(
-            "commands.steamcalc.pricePerGame",
-            language,
-            price="{:.3}".format(truncate((total_price / 100) / len(has_price)), 2) + f"{ending}",
+        .add_field(
+            ctx.t("games"),
+            ctx.t(
+                "games_description",
+                game_count=len(profile.games),
+                total_played=profile.total_played,
+                percent_played=profile.percent_played,
+                pricetagged=profile.has_price,
+                unavailable=len(profile.games) - profile.available,
+                currency=profile.currency,
+            ),
+            True,
         )
-        if pt != 0:
-            avg += tr(
-                "commands.steamcalc.pricePerHour",
-                language,
-                price="{:.3}".format(truncate((total_price / 100) / (pt / 60), 2)) + f"{ending}",
-            )
-    e.setFooter(f"SteamID: {user}").addField(tr("commands.steamcalc.avg", language), avg, True)
-    from mlib.colors import get_main_color
-
-    profile = await steam_api("ISteamUser/GetPlayerSummaries/v2/", f"?key={token}&steamids={user}")
-    profile = profile["response"]["players"][0]
-    e.setThumbnail(profile["avatarfull"]).setAuthor(profile["personaname"], profile["profileurl"], "").setColor(
-        get_main_color(profile["avatar"])
+        .add_field(
+            ctx.t("average"),
+            ctx.t(
+                "average_description",
+                hours_per_game=profile.hours_per_game,
+                price_per_game=profile.price_per_game,
+                price_per_hour=profile.price_per_hour,
+                currency=profile.currency,
+            ),
+            True,
+        )
+        .set_thumbnail(summary["avatarfull"])
+        .set_footer(f"SteamID: {user}")
+        .set_author(summary["personaname"], summary["profileurl"])
+        .set_color(get_main_color(summary["avatar"]))
     )
     return e
 
 
 @register(group=Groups.GLOBAL, main=steam)
-async def hltb(ctx: Context, game: str) -> Embed:
-    """Shows How Long To Beat statistics for provided game
+async def hltb(ctx: Context, game: str, *, e: Embed = None) -> Embed:
+    """
+    Shows How Long To Beat statistics for provided game
+
     Params
     ------
     game:
-        Game Name"""
-    e = Embed().setTitle(game)
+        Game Name
+    """
     from howlongtobeatpy import HowLongToBeat
 
     results = await HowLongToBeat().async_search(game)
-    if results is not None and len(results) > 0:
-        g = max(results, key=lambda element: element.similarity)
-        e.setTitle(g.game_name).setUrl(g.game_web_link).setThumbnail(g.game_image_url)
-        e.addField(g.gameplay_main_label, f"{g.gameplay_main} {g.gameplay_main_unit}", True)
-        e.addField(g.gameplay_main_extra_label, f"{g.gameplay_main_extra} {g.gameplay_main_extra_unit}", True)
-        e.addField(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
-        from mlib.colors import get_main_color
-
-        e.setFooter("", f"Title Similiarity: {g.similarity}").setColor(get_main_color(g.game_image_url))
+    if results is None or len(results) == 0:
+        return ctx.t("error")
+    g = max(results, key=lambda element: element.similarity)
+    if not e:
+        e = (
+            Embed()
+            .set_title(g.game_name)
+            .set_url(g.game_web_link)
+            .set_thumbnail("https://howlongtobeat.com" + g.game_image_url)
+            .set_footer(ctx.t("similiarity", similiarity=g.similarity))
+            .set_color(get_main_color("https://howlongtobeat.com" + g.game_image_url))
+        )
+    e.add_field(g.gameplay_main_label, f"{g.gameplay_main} {g.gameplay_main_unit}", True)
+    e.add_field(g.gameplay_main_extra_label, f"{g.gameplay_main_extra} {g.gameplay_main_extra_unit}", True)
+    e.add_field(g.gameplay_completionist_label, f"{g.gameplay_completionist} {g.gameplay_completionist_unit}", True)
     return e
