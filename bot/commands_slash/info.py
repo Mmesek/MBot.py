@@ -140,7 +140,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
             _stats.append((stat.name.name, stat.value))
         if _stats:
             embed.addField("Statistics", "\n".join(format_values(_stats)), False)
-        from ..dispatch.xp import User_Experience
+        from ..systems.xp import User_Experience
 
         xp = User_Experience.fetch_or_add(s, user_id=member.user.id, server_id=ctx.guild_id)
         if ctx.permission_group.can_use(Groups.MODERATOR) and xp.value:

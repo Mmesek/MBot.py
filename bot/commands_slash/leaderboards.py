@@ -425,7 +425,7 @@ class LeaderboardPosition(Leaderboard):
 @register(group=Groups.GLOBAL, main=leaderboard)
 async def levels(ctx: Context, limit: int = 10) -> Embed:
     """Shows levels leaderboard"""
-    from ..dispatch.xp import User_Experience
+    from ..systems.xp import User_Experience
 
     session = ctx.db.sql.session()
     entries = (
