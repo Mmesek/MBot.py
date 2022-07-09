@@ -1,33 +1,25 @@
 import enum
-from typing import List
 
 from MFramework import (
     Button_Styles,
-    Channel,
-    ChannelID,
     Component_Types,
     Context,
     Emoji,
     Groups,
     Role,
-    RoleID,
     Select_Option,
     Snowflake,
     register,
 )
 from MFramework.commands.components import Button, Option, Row, Select
 
-
-@register(group=Groups.MODERATOR)
-async def role(ctx: Context, *args, language, **kwargs):
-    """Manages Roles"""
-    pass
+from . import role
 
 
 @register(group=Groups.MODERATOR, main=role)
-async def button(ctx: Context, *, language):
+async def button():
     """
-    Description to use with help command
+    Management of Interaction-based roles
     """
     pass
 
@@ -44,7 +36,7 @@ class RoleSelect(Select):
     private_response = True
 
     @classmethod
-    async def execute(cls, ctx: Context, data: str, values: List[str], not_selected: List[Select_Option]) -> str:
+    async def execute(cls, ctx: Context, data: str, values: list[str], not_selected: list[Select_Option]) -> str:
         added = []
         removed = []
         for value in values:
@@ -271,6 +263,7 @@ async def edit(
                     if option.value == str(role.id):
                         option.description = description
                         option.emoji = emoji
+
     await msg.edit()
     return "Role edited!"
 
@@ -301,12 +294,14 @@ async def empty_option(
     """
     if not message_id:
         message_id = ctx.channel.last_message_id
+
     msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
     if emoji:
         emoji = emoji.strip("<>").split(":")
         if len(emoji) == 1:
             emoji.append(None)
         emoji = Emoji(id=emoji[-1], name=emoji[-2], animated="a" == emoji[0])
+
     btn_added = False
     for row in msg.components:
         if (
@@ -323,6 +318,7 @@ async def empty_option(
                 btn_added = True
             else:
                 return "This Selection doesn't have any space left! (25 options)"
+
     if btn_added:
         await msg.edit()
         return "Cleanup selection added!"
@@ -330,7 +326,7 @@ async def empty_option(
 
 
 @register(group=Groups.MODERATOR, main=button, private_response=True)
-async def info(ctx: Context, message_id: Snowflake = None, *, language):
+async def info(ctx: Context, message_id: Snowflake = None):
     """
     Shows info about Interaction Roles associated with this message
     Params
@@ -340,234 +336,13 @@ async def info(ctx: Context, message_id: Snowflake = None, *, language):
     """
     if not message_id:
         message_id = ctx.channel.last_message_id
+
     msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
     components = []
+
     for row in msg.components:
         if row.components and row.components[0].type is Component_Types.SELECT_MENU:
             components.append(row.components[0].custom_id)
             for option in row.components[0].options:
                 components.append(f"{option.label} - {option.value}")
     return "\n".join(components)
-
-
-@register(group=Groups.MODERATOR, main=role)
-async def reaction(ctx: Context, *args, language, **kwargs):
-    """Manages Reaction Roles"""
-    pass
-
-
-@register(group=Groups.MODERATOR, main=reaction, aliases=["rra"])
-async def create(
-    ctx: Context,
-    emoji: str,
-    role: RoleID,
-    group: str = None,
-    channel: ChannelID = None,
-    message_id: Snowflake = None,
-    *args,
-    language,
-    **kwargs,
-):
-    """
-    Adds new reaction role
-    Params
-    ------
-    emoji:
-        Emoji to use as a reaction
-    role:
-        Role that should be given for reacting
-    group:
-        Whether this RR should belong to a group
-    channel:
-        Channel in which RR should be created. Empty means current channel
-    message_id:
-        Message ID under which RR should be created. Empty means last message in channel
-    """
-    from mlib.utils import replaceMultiple
-
-    reaction = f"{emoji}:0" if ":" not in emoji else replaceMultiple(emoji, ["<:", ">"], "")
-    if group not in ctx.cache.reaction_roles:
-        ctx.cache.reaction_roles[group] = {message_id: {reaction: [role]}}
-    else:
-        if message_id not in ctx.cache.reaction_roles[group]:
-            ctx.cache.reaction_roles[group][message_id] = {reaction: [role]}
-        else:
-            ctx.cache.reaction_roles[group][message_id][reaction] = [role]
-    from MFramework.database.alchemy import models, types
-
-    s = ctx.db.sql.session()
-    r = models.Role.fetch_or_add(s, server_id=ctx.guild_id, id=role)
-    r.add_setting(types.Setting.ChannelID, channel)
-    r.add_setting(types.Setting.MessageID, message_id)
-    r.add_setting(types.Setting.Reaction, reaction)
-    if group:
-        r.add_setting(types.Setting.Group, group)
-    s.commit()
-    await ctx.bot.create_reaction(channel, message_id, replaceMultiple(emoji, ["<:", ">"], ""))
-    await ctx.reply(f"Successfully created reaction {emoji} for role <@&{role}>", private=True)
-
-
-# @register(group=Groups.MODERATOR, main=reaction, aliases=['rre'])
-async def edit(
-    ctx: Context,
-    emoji: str,
-    role: RoleID,
-    group: str = None,
-    channel: ChannelID = None,
-    message_id: Snowflake = None,
-    *args,
-    language,
-    **kwargs,
-):
-    """
-    Edits existing reaction role
-    Params
-    ------
-    emoji:
-        Emoji to use as a reaction
-    role:
-        Role that should be given for reacting
-    group:
-        Whether this RR should belong to a group
-    channel:
-        Channel in which RR should be edited. Empty means current channel
-    message_id:
-        Message ID under which RR should be edited. Empty means last message in channel
-    """
-    # FIXME!
-    await ctx.bot.delete_own_reaction(channel, message_id, emoji)
-    await ctx.bot.create_reaction(channel, message_id, emoji)
-    return await ctx.reply("Successfully modified reaction role")
-
-
-@register(group=Groups.MODERATOR, main=reaction, aliases=["rrd"])
-async def remove(
-    ctx: Context,
-    emoji: str = None,
-    role: RoleID = None,
-    group: str = None,
-    channel: ChannelID = None,
-    message_id: Snowflake = None,
-    *args,
-    language,
-    **kwargs,
-):
-    """
-    Removes existing reaction role
-    Params
-    ------
-    emoji:
-        Emoji to remove from being reaction emoji
-    role:
-        Role to remove from being reaction role
-    group:
-        Whether this RR should be removed from belonging to a group
-    channel:
-        Channel from which RR should be removed. Empty means current channel
-    message_id:
-        Message ID under which RR should be removed. Empty means last message in channel
-    """
-    from MFramework.database.alchemy import models, types
-
-    s = ctx.db.sql.session()
-    if role:
-        r = models.Role.filter(s, server_id=ctx.guild_id, id=role).first()
-    elif emoji:
-        from mlib.utils import replaceMultiple
-
-        r = (
-            models.Role.with_setting(types.Setting.Reaction, replaceMultiple(emoji, ["<:", ">"], ""))
-            .filter(server_id=ctx.guild_id)
-            .first()
-        )
-    else:
-        return ctx.reply("Either Emoji or Role has to be specified", private=True)
-    if group:
-        r.remove_setting(types.Setting.Group)
-        s.commit()
-        return
-    emoji = r.remove_setting(types.Setting.Reaction)
-    channel = r.remove_setting(types.Setting.ChannelID)
-    message_id = r.remove_setting(types.Setting.MessageID)
-    group = r.remove_setting(types.Setting.Group)
-    s.commit()
-    ctx.cache.reaction_roles.get(group, {}).get(message_id, {}).pop(emoji, None)
-    if ctx.cache.reaction_roles.get(group, {}).get(message_id, None) == {}:
-        ctx.cache.reaction_roles.get(group, {}).pop(message_id, None)
-        if ctx.cache.reaction_roles.get(group, None) == {}:
-            ctx.cache.reaction_roles.pop(group)
-    await ctx.bot.delete_own_reaction(channel, message_id, emoji)
-    await ctx.reply(
-        f"Successfully deleted <@&{role}> from being a {emoji if ':0' in emoji else '<:'+emoji+'>'} reaction role",
-        private=True,
-    )
-
-
-class RoleTypes:
-    AND = "AND"
-    OR = "OR"
-    COMBINED = "COMBINED"
-
-
-@register(group=Groups.ADMIN, main=role)
-async def level():
-    """Management of Level roles"""
-    pass
-
-
-@register(group=Groups.ADMIN, main=level, private_response=True)
-async def create(ctx: Context, role: Role, exp: int = 0) -> str:
-    # , req_voice: int= 0, type: RoleTypes = RoleTypes.AND, stacked: bool=False) -> str:
-    """Create/Update level role
-
-    Params
-    ------
-    role:
-        Role which should be awarded for reaching these values
-    exp:
-        Chat exp required to gain this role
-    req_voice:
-        Voice exp required to gain this role
-    type:
-        Whether both, either or in total exp should award this role
-    """
-    from MFramework.database.alchemy import Role, types
-
-    session = ctx.db.sql.session()
-    r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
-    r.add_setting(types.Setting.Level, exp)
-    session.commit()
-    ctx.cache.level_roles.append((r.id, exp))
-    ctx.cache.level_roles.sort(key=lambda x: x[1])
-    return f"Level {role.name} added successfully"
-
-
-@register(group=Groups.ADMIN, main=level, private_response=True)
-async def list_(ctx: Context) -> str:
-    """Shows list of current level roles"""
-    return (
-        "\n".join(f"{getattr(ctx.cache.roles.get(i[0]), 'name', None)} - {i[1]}" for i in ctx.cache.level_roles)
-        or "None set"
-    )
-
-
-@register(group=Groups.ADMIN, main=level, private_response=True)
-async def remove(ctx: Context, role: Role) -> str:
-    """
-    Removes level role
-    Params
-    ------
-    role:
-        role to remove
-    """
-    from MFramework.database.alchemy import Role, types
-
-    session = ctx.db.sql.session()
-    r = session.query(Role).filter(Role.server_id == ctx.guild_id, Role.id == role.id).first()
-    if r:
-        ctx.cache.level_roles.remove((r.id, r.get_setting(types.Setting.Level)))
-        ctx.cache.level_roles.sort(key=lambda x: x[1])
-        r.remove_setting(types.Setting.Level)
-        session.commit()
-        return f"Level {role.name} removed successfully"
-    return f"Level role {role.name} doesn't exist!"
