@@ -235,6 +235,8 @@ async def reroll(ctx: Context, message_id: Snowflake, amount: int = 0):
 async def delete(self: Bot, data: Message):
     """Deletes Giveaway"""
     task = self.cache[data.guild_id].tasks.get("giveaways", {}).get(data.id, None)
+    if not task:
+        return
     task.cancel()
 
     s = self.db.sql.session()
