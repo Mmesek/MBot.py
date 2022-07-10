@@ -657,3 +657,21 @@ async def lfg(
             e.addField("Voice Channel", f"<#{channel_id}>", True)
             break
     return e
+
+
+@register(group=Groups.GLOBAL, interaction=False)
+async def pad(url: str) -> Attachment:
+    """
+    Send content of etherpad-based note as text file
+    Params
+    ------
+    url:
+        URL of etherpad to download
+    """
+    import aiohttp
+
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url + "/export/txt") as response:
+            file = await response.text(encoding="utf-8")
+
+    return Attachment(file=file, filename=f"etherpad-{datetime.now()}.txt")
