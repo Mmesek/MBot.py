@@ -591,7 +591,7 @@ async def biomarker(ctx: Interaction) -> Embed:
     """
     Shows your infection state
     """
-    from bot.dispatch.xp import progress
+    from ..systems.xp import progress
 
     return await progress(ctx)
 

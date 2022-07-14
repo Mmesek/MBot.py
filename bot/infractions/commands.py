@@ -305,7 +305,7 @@ async def list_(ctx: Context, user: User = None) -> Embed:
             models.Types.Unban,
             models.Types.Report,
         }:
-            active += _infraction.weight
+            active += _infraction.weight or 0
 
     str_infractions = "\n".join(i.as_string(ctx, width=width, id_width=id_width) for i in infractions[:10])
 

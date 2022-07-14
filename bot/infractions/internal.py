@@ -40,7 +40,7 @@ async def log_action(
 
 async def kick_user(bot: Bot, guild_id: int, user_id: int, reason: str = "Possible Raid", dm_reason="Possible Raid"):
     try:
-        log_action(
+        await log_action(
             cache=bot.cache[guild_id],
             logger="auto_mod",
             user_id=user_id,
