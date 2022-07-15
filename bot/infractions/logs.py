@@ -24,6 +24,17 @@ class Report(Log):
 
 class Infraction(Log):
     username = "Infraction Log"
+    _types = {
+        "warn": "warned",
+        "tempmute": "temporarily muted",
+        "mute": "muted",
+        "kick": "kicked",
+        "tempban": "temporarily banned",
+        "ban": "banned",
+        "unban": "unbanned",
+        "unmute": "unmuted",
+        "timeout": "timed out",
+    }  # HACK
 
     async def log(
         self,
