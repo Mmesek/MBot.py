@@ -120,7 +120,7 @@ async def infraction(
 @register(group=Groups.HELPER, main=infraction, aliases=["warn"])
 # @button(style=Button_Styles.PRIMARY, emoji=Emoji(name="📖"))
 # @menu_user("Warn")
-async def warn(ctx: Context, user: User, reason: str = None, weight: float = 1) -> str:
+async def warn(ctx: Context, user: User, reason: str = None, *, weight: float = 1) -> str:
     """
     Warn User
 
@@ -138,7 +138,9 @@ async def warn(ctx: Context, user: User, reason: str = None, weight: float = 1) 
 
 @register(group=Groups.HELPER, main=infraction, aliases=["timeout", "mute", "tempmute"])
 # @button(style=Button_Styles.SECONDARY, emoji=Emoji(name="🔕"))
-async def timeout(ctx: Context, user: User, duration: timedelta = None, reason: str = None, weight: float = 1) -> str:
+async def timeout(
+    ctx: Context, user: User, duration: timedelta = None, reason: str = None, *, weight: float = 1
+) -> str:
     """
     Timeout user
 
@@ -189,7 +191,7 @@ async def kick(ctx: Context, user: User, reason: str = None) -> str:
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["ban"])
 # @button(style=Button_Styles.DANGER, emoji=Emoji(name="🔨"))
-async def ban(ctx: Context, user: User, reason: str = None, delete_messages: int = None) -> str:
+async def ban(ctx: Context, user: User, reason: str = None, *, delete_messages: int = None) -> str:
     """
     Ban User
 
