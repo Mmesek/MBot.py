@@ -17,6 +17,8 @@ class ExpireInfractions(Select):
         if ctx.permission_group.can_use(Groups.ADMIN):
             from .commands import expire
 
+            ctx = Context(ctx.bot.cache, ctx.bot, ctx.data, expire._cmd)
+
             return await expire(ctx, values[0])
         return "Only Admins can expire infractions!"
 
@@ -33,6 +35,8 @@ class Reason(Modal):
         else:
             user = User(id=data)
         from .commands import ban, kick, timeout, warn
+
+        ctx = Context(ctx.bot.cache, ctx.bot, ctx.data, warn._cmd)
 
         if action == "Warn":
             return await warn(ctx, user, inputs.get("Reason", "Instant Action"))
