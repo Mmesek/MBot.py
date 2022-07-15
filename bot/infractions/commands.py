@@ -114,7 +114,7 @@ async def infraction(
     elif autoban and active >= autoban and type_ is not models.Types.Ban:
         await ban(ctx=ctx, user=user, reason=ctx.t("active_infractions", active=active))
 
-    return ctx.t("success")
+    return ctx.t("success_add", user_id=user.id, reason=reason)
 
 
 @register(group=Groups.HELPER, main=infraction, aliases=["warn"])
@@ -258,7 +258,13 @@ async def expire(ctx: Context, infraction_id: int) -> str:  # TODO: Autocomplete
 
     _infraction.expires_at = now
     session.commit()
-    return ctx.t("success", reason=_infraction.reason, moderator_id=_infraction.moderator_id)
+    return ctx.t(
+        "success_expire",
+        reason=_infraction.reason,
+        moderator_id=_infraction.moderator_id,
+        user_id=_infraction.user_id,
+        id=_infraction.id,
+    )
 
 
 actions = [warn, timeout, kick, ban]
