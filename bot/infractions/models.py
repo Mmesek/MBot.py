@@ -16,10 +16,14 @@ class Types(Permissions):
     "Warns user"
     Timeout: Groups.HELPER = 1
     "Timeouts user"
+    Mute: Groups.MODERATOR = 1
+    Temp_Mute: Groups.MODERATOR = 1
+    Unmute: Groups.MODERATOR = 6
     Kick: Groups.MODERATOR = 2
     "Kicks user"
     Ban: Groups.MODERATOR = 3
     "Bans user"
+    Temp_Ban: Groups.MODERATOR = 3
     Unban: Groups.ADMIN = 4
     "Unbans user"
     Report: Groups.GLOBAL = 5
