@@ -151,15 +151,23 @@ class Infraction_Event(Infraction):
         r = models.Infraction.filter(s, server_id=self.guild_id, user_id=data.user.id, reason=reason, type=type).first()
 
         if r is None:
-            if reason and not "Massbanned by" in reason:
-                u = models.User.fetch_or_add(s, id=data.user.id)
-                duration = None
-                if type is models.Types.Timeout:
-                    duration = data.communication_disabled_until - datetime.now(tz=timezone.utc)
-                    if duration.total_seconds() < 0:
-                        return False, False
-                u.add_infraction(data.guild_id, moderator, type, reason, duration)
-                s.commit()
+            duration = None
+            if type is models.Types.Timeout:
+                duration = data.communication_disabled_until - datetime.now(tz=timezone.utc)
+                if duration.total_seconds() < 0:
+                    return False, False
+            s.add(
+                models.Infraction(
+                    moderator_id=moderator,
+                    user_id=data.user.id,
+                    server_id=data.guild_id,
+                    type=type,
+                    reason=reason,
+                    duration=duration,
+                    weight=1,
+                )
+            )
+            s.commit()
             return reason, moderator
         return False, False
 
