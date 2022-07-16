@@ -101,7 +101,7 @@ async def infraction(
         .first()
     )
     if active:
-        active = round(active[0])
+        active = round(active[0] or 0)
     else:
         active = 0
     automute = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, 4)
