@@ -117,10 +117,18 @@ async def infraction(
     return ctx.t("success_add", user_id=user.id, reason=reason)
 
 
-@register(group=Groups.HELPER, main=infraction, aliases=["warn"])
+@register(group=Groups.HELPER, main=infraction, aliases=["warn"], auto_defer=False)
 # @button(style=Button_Styles.PRIMARY, emoji=Emoji(name="📖"))
 # @menu_user("Warn")
-async def warn(ctx: Context, user: User, reason: str = None, *, weight: float = 1) -> str:
+async def warn(
+    ctx: Context,
+    user: User,
+    reason: str = None,
+    *,
+    weight: float = 1,
+    notify_channel: bool = True,
+    anonymous: bool = False,
+) -> str:
     """
     Warn User
 
@@ -132,8 +140,18 @@ async def warn(ctx: Context, user: User, reason: str = None, *, weight: float = 
         Reason of action
     weight:
         Weight of this infraction
+    notify_channel:
+        Whether public message should be send in a channel
+    anonymous:
+        Whether confirmation should be anonymous
     """
-    return await infraction(ctx, type_=models.Types.Warn, user=user, reason=reason, weight=weight)
+    await ctx.deferred(not notify_channel or anonymous)
+
+    r = await infraction(ctx, type_=models.Types.Warn, user=user, reason=reason, weight=weight)
+    if anonymous:
+        await ctx.reply(r)
+
+    await ctx.send(r, channel_id=ctx.channel_id if anonymous else None)
 
 
 @register(group=Groups.HELPER, main=infraction, aliases=["timeout", "mute", "tempmute"])
