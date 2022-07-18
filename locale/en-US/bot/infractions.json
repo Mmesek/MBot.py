@@ -233,7 +233,7 @@
         "no_reason": "No reason",
         "expire_placeholder": "Expire Infractions",
         "active_infractions": "%{active} active infractions",
-        "success_add": "Infraction for <@%{user_id}> with reason `%{reason}` added successfully",
+        "success_add": "Infraction `%{type}` for <@%{user_id}> with reason `%{reason}` added successfully",
         "success_expire": "Infraction `#%{id}` of <@%{user_id}> with reason `%{reason}` expired successfully",
         "error_target_moderator": "Can't add infraction to a moderator!",
         "error_dm": "Couldn't deliver DM message",

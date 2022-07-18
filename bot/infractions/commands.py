@@ -114,7 +114,7 @@ async def infraction(
     elif autoban and active >= autoban and type_ is not models.Types.Ban:
         await ban(ctx=ctx, user=user, reason=ctx.t("active_infractions", active=active))
 
-    return ctx.t("success_add", user_id=user.id, reason=reason)
+    return ctx.t("success_add", type=ctx.t(type_.name).title(), user_id=user.id, reason=reason)
 
 
 @register(group=Groups.HELPER, main=infraction, aliases=["warn"], auto_defer=False)
