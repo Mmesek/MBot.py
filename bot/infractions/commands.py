@@ -83,8 +83,9 @@ async def infraction(
             duration=duration,
             type=type_,
         )
+        response = ""
     except:
-        await ctx.send(ctx.t("error_dm"))
+        response = ctx.t("error_dm") + "\n"
 
     if detect_group(ctx.bot, user.id, ctx.guild_id, ctx.cache.members.get(user.id, Guild_Member()).roles).can_use(
         Groups.HELPER
@@ -114,7 +115,7 @@ async def infraction(
     elif autoban and active >= autoban and type_ is not models.Types.Ban:
         await ban(ctx=ctx, user=user, reason=ctx.t("active_infractions", active=active))
 
-    return ctx.t("success_add", type=ctx.t(type_.name).title(), user_id=user.id, reason=reason)
+    return response + ctx.t("success_add", type=ctx.t(type_.name).title(), user_id=user.id, reason=reason)
 
 
 @register(group=Groups.HELPER, main=infraction, aliases=["warn"], auto_defer=False)
