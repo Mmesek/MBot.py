@@ -12,7 +12,6 @@ from MFramework import (
 @register(group=Groups.GLOBAL, private_response=True)
 async def Bookmark(ctx: Context, message: Message) -> str:
     """Bookmark a moment in chat to save in your DMs for easy navigation"""
-    await ctx.deferred(private=True)
     e = Embed(title="Your bookmark", description=message.content or None)
     e = message.attachments_as_embed(e)
     try:
@@ -27,7 +26,7 @@ async def Bookmark(ctx: Context, message: Message) -> str:
         return "Couldn't send you a DM message!"
 
 
-@register(group=Groups.GLOBAL)
+@register(group=Groups.GLOBAL, auto_defer=False)
 async def Quote(ctx: Context, message: Message) -> Embed:
     """Quotes a message"""
     if any(

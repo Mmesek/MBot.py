@@ -10,7 +10,6 @@ async def Infractions(ctx: Context, user: User):
     user:
         User which infractions to show
     """
-    await ctx.deferred(private=True)
     from ..infractions.commands import list_
 
     return await list_(ctx, user)
@@ -25,7 +24,6 @@ async def Info(ctx: Context, member: Guild_Member):
     user:
         User to show
     """
-    await ctx.deferred(private=True)
     from ..commands_slash.info import user
 
     return await user(ctx, member)
@@ -40,7 +38,6 @@ async def Experience(ctx: Context, user: User):
     user:
         User's exp to show
     """
-    await ctx.deferred(private=True)
     from ..commands_slash.leaderboards import exp
 
     return await exp(ctx, user)
