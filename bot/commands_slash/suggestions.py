@@ -2,8 +2,12 @@ from MFramework import Context, Embed, Groups, register
 from MFramework.commands.components import TextInput
 
 
-@register(group=Groups.GLOBAL)
-async def suggestion(ctx: Context, title: TextInput[1, 100], your_suggestion: TextInput[1, 4000]) -> str:
+@register(group=Groups.GLOBAL, private_response=True)
+async def suggestion(
+    ctx: Context,
+    title: TextInput[1, 100] = "Title of suggestion",
+    your_suggestion: TextInput[1, 4000] = "Your suggestion",
+) -> str:
     """
     Make a `Server Suggestion`!
     Params
