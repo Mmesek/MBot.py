@@ -110,13 +110,13 @@ async def infraction(
         active = 0
     automute = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, 4)
     autoban = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, None)
-    if automute and active >= automute and active <= (autoban or active + 1) and type_ is not models.Types.Timeout:
+    if autoban and active >= autoban and type_ is not models.Types.Ban:
+        await ban(ctx=ctx, user=user, reason=ctx.t("active_infractions", active=active))
+    elif automute and active >= automute and active <= (autoban or active + 1) and type_ is not models.Types.Timeout:
         duration = ctx.cache.settings.get(types.Setting.Auto_Mute_Duration, "12h")
         await timeout(
             ctx=ctx, user=user, duration=duration, reason=ctx.t("active_infractions", active=active), weight=0
         )
-    elif autoban and active >= autoban and type_ is not models.Types.Ban:
-        await ban(ctx=ctx, user=user, reason=ctx.t("active_infractions", active=active))
 
     return response + ctx.t("success_add", type=ctx.t(type_.name).title(), user_id=user.id, reason=reason)
 
