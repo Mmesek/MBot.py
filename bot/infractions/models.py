@@ -87,7 +87,7 @@ class Infraction(Timestamp, ServerID, ID, Base):
                 if self.duration
                 else "",
                 active="~~"
-                if (not self.expires_at or self.expires_at <= datetime.now(tz=timezone.utc))
+                if (self.expires_at and self.expires_at <= datetime.now(tz=timezone.utc))
                 and self.type
                 not in {
                     Types.Timeout,
