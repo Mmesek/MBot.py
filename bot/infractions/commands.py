@@ -87,6 +87,9 @@ async def infraction(
     except:
         response = ctx.t("error_dm") + "\n"
 
+    if type_ is not models.Types.Warn:
+        return response + ctx.t("success_add", type=ctx.t(type_.name).title(), user_id=user.id, reason=reason)
+
     if detect_group(ctx.bot, user.id, ctx.guild_id, ctx.cache.members.get(user.id, Guild_Member()).roles).can_use(
         Groups.HELPER
     ):
