@@ -33,7 +33,7 @@ class Gladiator_Boss(Base):
     ends_at: datetime = sa.Column(sa.TIMESTAMP(True), nullable=False)
 
     def attack(self, session, user_id: int):
-        player = Gladiator.by_id(session, user_id)
+        player = session.query(Gladiator).filter(Gladiator.id == user_id).first()
         if not player:
             player = Gladiator(id=user_id, bonus=0)
             session.add(player)
@@ -155,7 +155,7 @@ async def bonus(ctx: Context, bonus: int, user_id: int = None, *, session=None):
     if not session:
         session = ctx.db.sql.session()
 
-    player = Gladiator.by_id(session, user_id or ctx.user_id)
+    player = session.query(Gladiator).filter(Gladiator.id == user_id or ctx.user_id).first()
 
     if not player:
         player = Gladiator(id=user_id or ctx.user_id, bonus=0)
