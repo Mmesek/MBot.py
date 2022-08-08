@@ -54,25 +54,24 @@ class Gladiator_Boss(Base):
 
 
 @register(group=Groups.GLOBAL)
-async def arena(ctx: Context):
-    """
-    Description to use with help command
-    Params
-    ------
-    parameter:
-        description
-    """
+async def arena():
     pass
 
 
 @register(group=Groups.ADMIN, main=arena)
-async def create(ctx: Context, name: str, health: int, duration: timedelta):
+async def create(ctx: Context, name: str, health: int, duration: timedelta, image: str = None):
     """
     Create new boss
     Params
     ------
     name:
         Name of the boss
+    health:
+        Starting health of a boss
+    duration:
+        How long the boss should be active
+    image:
+        URL to an image of the boss
     """
     s = ctx.db.sql.session()
 
@@ -124,6 +123,8 @@ async def attack(ctx: Context, name: str = None, user_id: int = None, *, session
     ------
     name:
         Boss to attack
+    user_id:
+        User that should perform the attack
     """
     if not session:
         session = ctx.db.sql.session()
@@ -148,6 +149,8 @@ async def bonus(ctx: Context, bonus: int, user_id: int = None, *, session=None):
     ------
     bonus:
         bonus to add
+    user_id:
+        User that should receive the bonus
     """
     if not session:
         session = ctx.db.sql.session()
