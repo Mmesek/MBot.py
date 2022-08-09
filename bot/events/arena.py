@@ -46,7 +46,6 @@ class Gladiator_History(Base):
     user_id: int = sa.Column(sa.BigInteger)
     guild_id: int = sa.Column(sa.BigInteger)
     gladiator_id: int = sa.Column(sa.ForeignKey("Gladiator.id"))
-    user_id: int = sa.Column(sa.ForeignKey("Gladiator.id"))
     boss_id: int = sa.Column(sa.ForeignKey("Gladiator_Boss.id"))
     damage: int = sa.Column(sa.Integer, default=0)
     bonus: int = sa.Column(sa.Integer, default=0)
@@ -82,7 +81,9 @@ class Gladiator_Boss(Base):
             remaining_cooldown = timedelta()
 
         if remaining_cooldown.total_seconds() > 0:
-            raise Cooldown(f"Cooldown remaining: {remaining_cooldown}")
+            raise Cooldown(
+                f"Cooldown remaining: <t:{int((datetime.now(tz=timezone.utc) + remaining_cooldown).timestamp())}:R>"
+            )
 
         return player.add_attack(self)
 
@@ -239,10 +240,16 @@ async def stats(ctx: Context, user_id: int = None, *, session=None) -> Embed:
     embed.add_field("Current damage bonus", str(player.bonus(get_boss(session, ctx))), True)
     if player.history:
         embed.add_field("Total damage dealt", str(sum([i.damage for i in player.history])), True)
-        embed.add_field("Last attack", str(player.history[-1].timestamp) + " UTC", True)
-        remaining_cooldown = timedelta(minutes=30) - (datetime.now(tz=timezone.utc) - player.history[-1].timestamp)
+        embed.add_field("Last attack", f"<t:{int(player.history[-1].timestamp.timestamp())}:R>", True)
+        remaining_cooldown: timedelta = timedelta(minutes=30) - (
+            datetime.now(tz=timezone.utc) - player.history[-1].timestamp
+        )
         if remaining_cooldown.total_seconds() > 0:
-            embed.add_field("Cooldown remaining", str(remaining_cooldown), True)
+            embed.add_field(
+                "Cooldown remaining",
+                f"<t:{int((datetime.now(tz=timezone.utc) + remaining_cooldown).timestamp())}:R>",
+                True,
+            )
     return embed
 
 
@@ -266,8 +273,7 @@ async def list_bosses(ctx: Context) -> str:
         .order_by(Gladiator_Boss.ends_at)
         .all()
     )
-    bosses: list[Gladiator_Boss] = session.query(Gladiator_Boss).order_by(Gladiator_Boss.ends_at).all()
-    return "\n".join([f"{boss.name} - {boss.health} | {boss.ends_at}" for boss in bosses])
+    return "\n".join([f"{boss.name} - {boss.health} | <t:{int(boss.ends_at.timestamp())}:R>" for boss in bosses])
 
 
 async def list_users(ctx: Context, min_damage: int = 1, *, session=None) -> list:
