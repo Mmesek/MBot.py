@@ -93,7 +93,7 @@ async def arena():
 
 
 @register(group=Groups.ADMIN, main=arena)
-async def create(ctx: Context, name: str, health: int, duration: timedelta, image: str = None):
+async def create(ctx: Context, name: str, health: int, duration: timedelta, image: str = None) -> str:
     """
     Create new boss
     Params
@@ -145,7 +145,7 @@ def get_boss(session, ctx: Context, name: str = None) -> Gladiator_Boss:
 
 
 @register(group=Groups.GLOBAL, main=arena)
-async def check(ctx: Context, name: str = None):
+async def check(ctx: Context, name: str = None) -> int:
     """
     Checks remaining boss's health
     Params
@@ -161,7 +161,7 @@ async def check(ctx: Context, name: str = None):
 
 
 @register(group=Groups.GLOBAL, main=arena)
-async def attack(ctx: Context, name: str = None, user_id: int = None, *, session=None):
+async def attack(ctx: Context, name: str = None, *, user_id: int = None, session=None) -> str:
     """
     Attacks boss
     Params
@@ -187,7 +187,7 @@ async def attack(ctx: Context, name: str = None, user_id: int = None, *, session
 
 
 @register(group=Groups.MODERATOR, main=arena)
-async def bonus(ctx: Context, bonus: int, user_id: int = None, *, session=None):
+async def bonus(ctx: Context, bonus: int, *, user_id: int = None, session=None) -> int:
     """
     Adds damage bonus
     Params
@@ -218,7 +218,7 @@ async def bonus(ctx: Context, bonus: int, user_id: int = None, *, session=None):
 
 
 @register(group=Groups.GLOBAL, main=arena)
-async def stats(ctx: Context, user_id: int = None, *, session=None):
+async def stats(ctx: Context, user_id: int = None, *, session=None) -> Embed:
     """
     Shows player stats
     Params
@@ -247,7 +247,7 @@ async def stats(ctx: Context, user_id: int = None, *, session=None):
 
 
 @register(group=Groups.GLOBAL, main=arena)
-async def leaderboard(ctx: Context, *, session=None):
+async def leaderboard(ctx: Context) -> Embed:
     """
     Shows leaderboards
     """
@@ -255,7 +255,7 @@ async def leaderboard(ctx: Context, *, session=None):
 
 
 @register(group=Groups.GLOBAL, main=arena)
-async def list_bosses(ctx: Context):
+async def list_bosses(ctx: Context) -> str:
     """
     Shows list of boss's and their stats
     """
@@ -270,7 +270,7 @@ async def list_bosses(ctx: Context):
     return "\n".join([f"{boss.name} - {boss.health} | {boss.ends_at}" for boss in bosses])
 
 
-async def list_users(ctx: Context, min_damage: int = 1, *, session=None):
+async def list_users(ctx: Context, min_damage: int = 1, *, session=None) -> list:
     """
     Lists users that dealt any damage
     Params
