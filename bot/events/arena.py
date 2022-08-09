@@ -1,8 +1,22 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
+from random import SystemRandom as random
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
-from MFramework import Context, Embed, Groups, register
+from MFramework import (
+    Bot,
+    Chance,
+    Context,
+    Embed,
+    Emoji,
+    EventBetween,
+    Groups,
+    Message,
+    onDispatch,
+    register,
+)
+from MFramework.commands.components import Button, Modal, Row, TextInput
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.database import Base
 
@@ -212,8 +226,14 @@ async def bonus(ctx: Context, bonus: int, *, user_id: int = None, session=None) 
         player = Gladiator(user_id=user_id or ctx.user_id, guild_id=ctx.guild_id)
         session.add(player)
 
-    player.add_bonus(bonus)
-    session.commit()
+    history = [
+        i for i in player.history if i.timestamp >= (datetime.now(timezone.utc) - timedelta(minutes=1)) and i.bonus
+    ]
+    if not history:
+        player.add_bonus(bonus)
+        session.commit()
+    else:
+        return "Sorry, you've already claimed a damage bonus recently!"
 
     return player.bonus(get_boss(session, ctx))
 
@@ -294,3 +314,74 @@ async def list_users(ctx: Context, min_damage: int = 1, *, session=None) -> list
         .all()
     )
     return [i for i in u if i[1] >= min_damage]
+
+
+class Attack(Button):
+    private_response = True
+    auto_deferred: bool = True
+
+    @classmethod
+    async def execute(cls, ctx: Context, data: str):
+        data, t = data.split("-")
+        if datetime.fromtimestamp(int(t)) <= datetime.now():
+            return "Gladiator has already fled from this fight!"
+        try:
+            return await attack(ctx, data)
+        except Cooldown as ex:
+            return ex
+
+
+# @onDispatch(event="message_create")
+@EventBetween(after_month=8, before_month=9, before_day=14)
+@Chance(5)
+async def spawn_gladiator(bot: Bot, data: Message):
+    session = bot.db.sql.session()
+    boss: Gladiator_Boss = (
+        session.query(Gladiator_Boss)
+        .filter(Gladiator_Boss.guild_id == data.guild_id)
+        .order_by(Gladiator_Boss.ends_at)
+        .first()
+    )
+    t = int((datetime.now(timezone.utc) + timedelta(seconds=60)).timestamp())
+    embed = (
+        Embed()
+        .set_image(boss.image_url)
+        .set_title(boss.name)
+        .set_description("Your chatting attracted some gladiators looking for a fight!")
+        .add_field("Gladiator will flee in", f"<t:{t}:R>")
+    )
+    components = Row(Attack(f"Attack {boss.name}", custom_id=f"{boss.name}-{t}", emoji=Emoji(id=None, name="⚔")))
+
+    msg = await bot.create_message(data.channel_id, embeds=[embed], components=components)
+    await asyncio.sleep(60)
+    await bot.delete_message(msg.channel_id, msg.id)
+
+
+class Bonus(Button):
+    private_response = True
+    auto_deferred: bool = True
+
+    @classmethod
+    async def execute(cls, ctx: Context, data: str):
+        data, t = data.split("-")
+        if datetime.fromtimestamp(int(t)) <= datetime.now():
+            return "This bonus is already expired!"
+        return f"Current bonus: {await bonus(ctx, int(data))}"
+
+
+# @onDispatch(event="message_create")
+@EventBetween(after_month=8, before_month=9, before_day=14)
+@Chance(1)
+async def spawn_bonus(bot: Bot, data: Message):
+    _bonus = random().randint(1, 5)
+    _wait = random().randint(5, 60)
+    t = int((datetime.now(timezone.utc) + timedelta(seconds=_wait)).timestamp())
+    components = Row(Bonus(f"+{_bonus} damage", f"{_bonus}-{t}", emoji=Emoji(name="✨", id=None)))
+
+    msg = await bot.create_message(
+        data.channel_id,
+        content=f"While chatting, you find something to sharpen your weapon! (+{_bonus} damage). All out <t:{t}:R>",
+        components=components,
+    )
+    await asyncio.sleep(_wait)
+    await bot.delete_message(msg.channel_id, msg.id)
