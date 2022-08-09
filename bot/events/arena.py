@@ -125,7 +125,7 @@ async def create(ctx: Context, name: str, health: int, duration: timedelta, imag
     s = ctx.db.sql.session()
 
     if Gladiator_Boss.filter(s, name=name, guild_id=ctx.guild_id).first():
-        return "Boss already exists"
+        return "Gladiator already exists"
 
     s.add(
         Gladiator_Boss(
@@ -155,7 +155,7 @@ def get_boss(session, ctx: Context, name: str = None) -> Gladiator_Boss:
     boss = boss.first()
 
     if not boss:
-        raise Exception("Couldn't find provided boss")
+        raise Exception("Couldn't find provided Gladiator")
     return boss
 
 
@@ -191,9 +191,9 @@ async def attack(ctx: Context, name: str = None, *, user_id: int = None, session
 
     boss = get_boss(session, ctx, name)
     if ctx.data.id.as_date.astimezone(timezone.utc) > boss.ends_at:
-        return "Boss is not available anymore!"
+        return "Gladiator is not available anymore!"
     elif boss.health <= 0:
-        return "Boss has already been slain!"
+        return "Gladiator has already been slain!"
 
     dmg = boss.attack(session, user_id or ctx.user_id)
     session.commit()
