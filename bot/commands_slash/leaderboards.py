@@ -9,7 +9,7 @@ from ..database import items, log, types
 
 
 @register()
-async def leaderboard(ctx: Context, *args, language, **kwargs):
+async def leaderboard():
     """Shows leaderboard"""
     pass
 
@@ -28,11 +28,11 @@ async def exp(ctx: Context, user: User = None) -> Embed:
     t = ""
     for _t in r:
         if _t.name == types.Statistic.Chat:
-            t += tr("commands.exp.chat", language, chat=_t.value)
+            t += ctx.t("chat", chat=_t.value)
         elif _t.name == types.Statistic.Voice:
-            t += tr("commands.exp.voice", language, voice=secondsToText(_t.value, language.upper()))
+            t += ctx.t("voice", voice=secondsToText(_t.value, language.upper()))
     if t == "":
-        t = tr("commands.exp.none", language)
+        t = ctx.t("none")
     return [Embed(title=f"{user.username}", color=ctx.cache.color, description=str(t))]
 
 
@@ -166,7 +166,7 @@ def activity_leaderboard(
 
 
 @register(group=Groups.GLOBAL, main=leaderboard)
-async def games(ctx: Context, game: str = None, user: UserID = None, reverse=True, *args, language, **kwargs):
+async def games(ctx: Context, game: str = None, user: UserID = None, reverse=True):
     """Shows users that played specified game or games played by user
     Params
     ------
@@ -189,12 +189,12 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
     d = ""
     if game and not user:
         game = True
-        embed.setTitle(tr("commands.games.whoPlayed", language, query=game))
+        embed.setTitle(ctx.t("whoPlayed", query=game))
     elif user and not game:
         game = False
-        d = tr("commands.games.playedBy", language, query=user)
+        d = ctx.t("playedBy", query=user)
     else:
-        d = tr("commands.games.GameUser", language, game=game, user=user)
+        d = ctx.t("GameUser", game=game, user=user)
     if r != []:
         t = ""
         a = []
@@ -209,7 +209,7 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
         a = sorted(a, key=lambda x: x[1], reverse=True)
         t = format_leaderboard(a, ctx.user.username, get_name=lambda x: f"`{x[0]}`", get_value=lambda x: x[1])
     else:
-        t = tr("commands.games.none", language)
+        t = ctx.t("none")
     if d != "":
         t = d + "\n".join(t)
     embed.setDescription(t[:2024]).setColor(ctx.cache.color)
@@ -350,7 +350,7 @@ async def aoc(ctx: Context, year: int = None) -> Embed:
             }
         )
     members = sorted(members, key=lambda i: i["score"], reverse=True)
-    t = [tr("commands.aoc.header", language)]
+    t = [ctx.t("header", language)]
 
     for member in members:
         l = f'{member["score"]}. {member["name"]} - {member["stars"]} | <t:{member["last_star"]}:t>'
@@ -362,13 +362,11 @@ async def aoc(ctx: Context, year: int = None) -> Embed:
 
     return (
         Embed()
-        .setFooter(tr("commands.aoc.participants", language, number=len(members)))
+        .setFooter(ctx.t("participants", number=len(members)))
         .setUrl("https://adventofcode.com")
         .setTitle("Advent of Code")
         .setDescription("\n".join(t))
-        .addField(
-            tr("commands.aoc.join_title", language), tr("commands.aoc.join_text", language, invite_code=invite_code)
-        )
+        .addField(ctx.t("join_title"), ctx.t("join_text", invite_code=invite_code))
         .setColor(ctx.cache.color)
     )
 

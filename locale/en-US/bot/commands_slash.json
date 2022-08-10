@@ -831,20 +831,6 @@
         "leaderboard": {
             "name": "leaderboard",
             "description": "Shows leaderboard",
-            "arguments": {
-                "args": {
-                    "name": "args",
-                    "description": "MISSING DOCSTRING"
-                },
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
-                },
-                "kwargs": {
-                    "name": "kwargs",
-                    "description": "MISSING DOCSTRING"
-                }
-            },
             "sub_commands": {
                 "exp": {
                     "name": "exp",
@@ -854,7 +840,10 @@
                             "name": "user",
                             "description": "if provided, shows exp of specified user, otherwise your own"
                         }
-                    }
+                    },
+                    "chat": "\nChat: %{chat}",
+                    "voice": "\nVoice: %{voice}",
+                    "none": "User Not Found or No exp yet"
                 },
                 "top": {
                     "name": "top",
@@ -902,20 +891,11 @@
                         "reverse": {
                             "name": "reverse",
                             "description": "Whether to show from most played or not"
-                        },
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
                         }
-                    }
+                    },
+                    "whoPlayed": "Users that played %{query}",
+                    "playedBy": "**Games played by <@%{query}>:**\n",
+                    "none": "Not Found"
                 },
                 "event": {
                     "name": "event",
@@ -961,7 +941,11 @@
                             "name": "year",
                             "description": "MISSING DOCSTRING"
                         }
-                    }
+                    },
+                    "participants": "Participants: %{number}",
+                    "header": "Score. Nick - Stars | Last\n",
+                    "join_title": "How to join?",
+                    "join_text": "You can join leaderboard [here](https://adventofcode.com/2021/leaderboard/private) using invite code `%{invite_code}`"
                 },
                 "levels": {
                     "name": "levels",
