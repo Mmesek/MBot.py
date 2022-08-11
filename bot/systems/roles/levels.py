@@ -1,5 +1,6 @@
 from MFramework import Context, Groups, Role, register
-from MFramework.database.alchemy import Role, types
+from MFramework.database.alchemy import Role as db_Role
+from MFramework.database.alchemy import types
 
 from . import role
 
@@ -26,7 +27,7 @@ async def create(ctx: Context, role: Role, exp: int = 0) -> str:
         Whether both, either or in total exp should award this role
     """
     session = ctx.db.sql.session()
-    r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
+    r = db_Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
     r.add_setting(types.Setting.Level, exp)
     session.commit()
 
@@ -55,7 +56,7 @@ async def remove(ctx: Context, role: Role) -> str:
         role to remove
     """
     session = ctx.db.sql.session()
-    r = session.query(Role).filter(Role.server_id == ctx.guild_id, Role.id == role.id).first()
+    r = session.query(db_Role).filter(db_Role.server_id == ctx.guild_id, db_Role.id == role.id).first()
     if r:
         ctx.cache.level_roles.remove((r.id, r.get_setting(types.Setting.Level)))
         ctx.cache.level_roles.sort(key=lambda x: x[1])
