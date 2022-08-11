@@ -339,9 +339,13 @@ async def spawn_gladiator(bot: Bot, data: Message):
     boss: Gladiator_Boss = (
         session.query(Gladiator_Boss)
         .filter(Gladiator_Boss.guild_id == data.guild_id)
+        .filter(Gladiator_Boss.ends_at >= data.id.as_date.astimezone(timezone.utc))
+        .filter(Gladiator_Boss.health > 0)
         .order_by(Gladiator_Boss.ends_at)
         .first()
     )
+    if not boss:
+        return
     t = int((datetime.now(timezone.utc) + timedelta(seconds=60)).timestamp())
     embed = (
         Embed()
