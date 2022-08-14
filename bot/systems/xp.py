@@ -225,10 +225,11 @@ async def progress(ctx: Context, user: User = None) -> Embed:
     gained = exp.value - last
     percent = (gained / required) * 100
     progress = f"`[{'🔴' * int(percent / 6.5):🟢<15}]` {percent:.1f}%".replace(".0", "")
-    e = Embed().setDescription(progress).setAuthor(str(ctx.user), icon_url=ctx.user.get_avatar()).setColor("#8c6cff")
+    e = Embed().set_description(progress).set_author(str(ctx.user), icon_url=ctx.user.get_avatar()).set_color("#8c6cff")
     if ctx.permission_group.can_use(Groups.MODERATOR) and user:
-        e.addField("Current XP", str(exp.value), True)
-        e.addField("Remaining XP", str(next - exp.value), True)
+        e.add_field("Current XP", str(exp.value), True)
+        e.add_field("Remaining XP", str(next - exp.value), True)
+    e.set_timestamp(exp.timestamp)
     return e
 
 
