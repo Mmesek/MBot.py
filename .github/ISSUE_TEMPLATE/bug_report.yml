@@ -38,5 +38,5 @@ body:
       render: shell
 
   - type: markdown
-  attributes:
-    value: "Thank you for reporting this bug!"
+    attributes:
+      value: "Thank you for reporting this bug!"
