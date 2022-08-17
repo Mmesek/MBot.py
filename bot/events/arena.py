@@ -346,6 +346,7 @@ async def spawn_gladiator(bot: Bot, data: Message):
     )
     if not boss:
         return
+    session.close()
     t = int((datetime.now(timezone.utc) + timedelta(seconds=60)).timestamp())
     embed = (
         Embed()
@@ -377,6 +378,17 @@ class Bonus(Button):
 @EventBetween(after_month=8, before_month=9, before_day=14)
 @Chance(1)
 async def spawn_bonus(bot: Bot, data: Message):
+    session = bot.db.sql.session()
+    boss = (
+        session.query(Gladiator_Boss)
+        .filter(Gladiator_Boss.ends_at >= data.data.id.as_date.astimezone(timezone.utc))
+        .filter(Gladiator_Boss.guild_id == data.guild_id)
+        .filter(Gladiator_Boss.health > 0)
+    )
+    if not boss:
+        return
+    session.close()
+
     _bonus = random().randint(1, 5)
     _wait = random().randint(5, 60)
     t = int((datetime.now(timezone.utc) + timedelta(seconds=_wait)).timestamp())
