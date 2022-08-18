@@ -1,0 +1,59 @@
+name: Feature Request
+description: Suggest an idea for this project
+title: "[FEATURE]: "
+labels: ["enhancement"]
+body:
+  - type: input
+    attributes:
+      label: Short Description
+      description: Please describe in a nutshell what this feature is about
+      placeholder: Minigame about throwing snowballs at other chatters
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Details
+      description: Please provide as many details as possible regarding how the feature would work
+      placeholder: User can use command to gather snowballs which can later be used to throw at other users
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Commands
+      description: Commands that would be created (if any). Also provide any limitations per command
+      placeholder: |
+        /gather - Used for gathering snow. Can be used once per 30 minutes
+        /throw [user] (count=1) - Used to throw snowballs at another user. Allows throwing multiple snowballs with lower chance of hitting
+        /leaderboard - Shows who hitted most snowballs
+        /stats - Shows user current snowball counts
+  - type: textarea
+    attributes:
+      label: Additional Considerations
+      description: Is there anything else that might be needed to be taken into account?
+      placeholder: Possible command spam.
+  - type: dropdown
+    attributes:
+      label: Feature category
+      description: Which cateogry your idea best fit into?
+      multiple: false
+      options:
+        - Generic
+        - Command
+        - System
+        - Integration
+        - Automation
+        - Minigame
+        - Event
+    validations:
+      required: true
+  - type: checkboxes
+    id: input1
+    attributes:
+      label: "💻"
+      description: |
+        Check this if you would like to implement a PR, we are more than happy to help you go through the process
+      options:
+        - label: Would you like to work on this feature?
+  - type: markdown
+    attributes:
+      value: "Thanks for suggesting this feature!"

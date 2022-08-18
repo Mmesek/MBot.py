@@ -1,0 +1,80 @@
+name: Event Suggestion
+description: Suggest an event for bot
+title: "[EVENT]: "
+labels: ["enhancement"]
+body:
+  - type: input
+    attributes:
+      label: Short Description
+      description: Please describe in a nutshell what this feature is about
+      placeholder: Minigame about throwing snowballs at other chatters
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Associated Holiday
+      description: Is this moving event? If so, Which holiday does it correlate to?
+      placeholder: Halloween
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Start date
+      description: When would this event start?
+      placeholder: DD/MM, Month or date range in which this event would be starting/active
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: End date
+      description: When would this event end?
+      placeholder: DD/MM
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Details
+      description: Please provide as many details regarding how the feature would work as possible
+      placeholder: User can use command to gather snowballs and later use them to throw at other users
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Commands
+      description: Commands that would created (if any). Also provide any limitations per command
+      placeholder: |
+        /gather - Used for gathering snow. Can be used once per 30 minutes
+        /throw [user] (count=1) - Used to throw snowballs at another user. Allows throwing multiple snowballs with lower chance of hitting
+        /leaderboard - Shows who hitted most snowballs
+        /stats - Shows user current snowball counts
+  - type: textarea
+    attributes:
+      label: Additional Considerations
+      description: Is there anything else that might be needed to be taken into account?
+      placeholder: Possible command spam.
+  - type: dropdown
+    attributes:
+      label: Event Systems
+      description: What following features/systems, if any, would be used in this event?
+      multiple: true
+      options:
+        - Informative
+        - Timed Commands
+        - Player vs Player
+        - Item Gathering
+        - Leaderboards
+        - Random Messages
+        - Others
+    validations:
+      required: true
+  - type: checkboxes
+    id: input1
+    attributes:
+      label: "💻"
+      description: |
+        Check this if you would like to implement a PR, we are more than happy to help you go through the process
+      options:
+        - label: Would you like to work on this event?
+  - type: markdown
+    attributes:
+      value: "Thanks for suggesting this event to us!"
