@@ -108,7 +108,17 @@ async def arena():
     pass
 
 
-@register(group=Groups.ADMIN, main=arena)
+@register(group=Groups.GLOBAL, main=arena)
+async def manage():
+    pass
+
+
+@register(group=Groups.GLOBAL, main=arena)
+async def stats():
+    pass
+
+
+@register(group=Groups.ADMIN, main=manage)
 async def create(ctx: Context, name: str, health: int, duration: timedelta, image: str = None) -> str:
     """
     Create new boss
@@ -202,7 +212,7 @@ async def attack(ctx: Context, name: str = None, *, user_id: int = None, session
     return f"Dealt {dmg} to {boss.name}"
 
 
-@register(group=Groups.MODERATOR, main=arena)
+@register(group=Groups.MODERATOR, main=manage)
 async def bonus(ctx: Context, bonus: int, *, user_id: UserID = None, session=None) -> int:
     """
     Adds damage bonus
@@ -239,7 +249,7 @@ async def bonus(ctx: Context, bonus: int, *, user_id: UserID = None, session=Non
     return player.bonus(get_boss(session, ctx))
 
 
-@register(group=Groups.GLOBAL, main=arena)
+@register(group=Groups.GLOBAL, main=stats)
 async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     """
     Shows player stats
@@ -274,7 +284,7 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     return embed
 
 
-@register(group=Groups.GLOBAL, main=arena)
+@register(group=Groups.GLOBAL, main=stats)
 async def leaderboard(ctx: Context) -> Embed:
     """
     Shows leaderboards
@@ -282,8 +292,8 @@ async def leaderboard(ctx: Context) -> Embed:
     return Leaderboard(ctx, ctx.user_id, [Leaderboard_Entry(ctx, i[0], i[1]) for i in await list_users(ctx)]).as_embed()
 
 
-@register(group=Groups.GLOBAL, main=arena)
-async def list_bosses(ctx: Context) -> str:
+@register(group=Groups.GLOBAL, main=stats)
+async def bosses(ctx: Context) -> str:
     """
     Shows list of boss's and their stats
     """
