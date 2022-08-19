@@ -22,6 +22,10 @@ from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.database import Base
 
 
+class Cooldown(Exception):
+    pass
+
+
 class Gladiator(Base):
     id: int = sa.Column(sa.Integer, primary_key=True)
     guild_id: int = sa.Column(sa.BigInteger)
@@ -67,10 +71,6 @@ class Gladiator_History(Base):
     timestamp: datetime = sa.Column(sa.TIMESTAMP(True), server_default=sa.func.now())
 
 
-class Cooldown(Exception):
-    pass
-
-
 class Gladiator_Boss(Base):
     id: int = sa.Column(sa.Integer, primary_key=True)
     guild_id: int = sa.Column(sa.BigInteger)
@@ -103,6 +103,44 @@ class Gladiator_Boss(Base):
         return player.add_attack(self)
 
 
+def get_boss(session, ctx: Context, name: str = None) -> Gladiator_Boss:
+    boss = (
+        session.query(Gladiator_Boss)
+        .filter(Gladiator_Boss.ends_at >= ctx.data.id.as_date.astimezone(timezone.utc))
+        .filter(Gladiator_Boss.guild_id == ctx.guild_id)
+        .filter(Gladiator_Boss.health > 0)
+    )
+
+    if name:
+        boss = boss.filter(Gladiator_Boss.name == name)
+
+    boss = boss.first()
+
+    if not boss:
+        raise Exception("Couldn't find provided Gladiator")
+    return boss
+
+
+async def list_users(ctx: Context, min_damage: int = 1, *, session=None) -> list:
+    """
+    Lists users that dealt any damage
+    Params
+    ------
+    min_damage:
+        minimum damage user dealt
+    """
+    if not session:
+        session = ctx.db.sql.session()
+    u: list[Gladiator_History] = (
+        session.query(Gladiator_History.user_id, sa.func.sum(Gladiator_History.damage))
+        .filter(Gladiator_History.guild_id == ctx.guild_id)
+        .group_by(Gladiator_History.user_id)
+        .order_by(sa.func.sum(Gladiator_History.damage))
+        .all()
+    )
+    return [i for i in u if i[1] >= min_damage]
+
+
 @register(group=Groups.GLOBAL)
 async def arena():
     pass
@@ -110,11 +148,6 @@ async def arena():
 
 @register(group=Groups.GLOBAL, main=arena)
 async def manage():
-    pass
-
-
-@register(group=Groups.GLOBAL, main=arena)
-async def stats():
     pass
 
 
@@ -152,42 +185,8 @@ async def create(ctx: Context, name: str, health: int, duration: timedelta, imag
     return "Success"
 
 
-def get_boss(session, ctx: Context, name: str = None) -> Gladiator_Boss:
-    boss = (
-        session.query(Gladiator_Boss)
-        .filter(Gladiator_Boss.ends_at >= ctx.data.id.as_date.astimezone(timezone.utc))
-        .filter(Gladiator_Boss.guild_id == ctx.guild_id)
-        .filter(Gladiator_Boss.health > 0)
-    )
-
-    if name:
-        boss = boss.filter(Gladiator_Boss.name == name)
-
-    boss = boss.first()
-
-    if not boss:
-        raise Exception("Couldn't find provided Gladiator")
-    return boss
-
-
-@register(group=Groups.GLOBAL, main=arena)
-async def check(ctx: Context, name: str = None) -> int:
-    """
-    Checks remaining boss's health
-    Params
-    ------
-    name:
-        Name of the boss to check
-    """
-    session = ctx.db.sql.session()
-
-    boss = get_boss(session, ctx, name)
-
-    return boss.health
-
-
-@register(group=Groups.GLOBAL, main=arena)
-async def attack(ctx: Context, name: str = None, *, user_id: int = None, session=None) -> str:
+@register(group=Groups.GLOBAL, main=manage)
+async def attack(ctx: Context, name: str = None, *, user_id: UserID = None, session=None) -> str:
     """
     Attacks boss
     Params
@@ -249,7 +248,28 @@ async def bonus(ctx: Context, bonus: int, *, user_id: UserID = None, session=Non
     return player.bonus(get_boss(session, ctx))
 
 
-@register(group=Groups.GLOBAL, main=stats)
+@register(group=Groups.GLOBAL, main=arena)
+async def stats():
+    pass
+
+
+@register(group=Groups.GLOBAL, main=stats, private_response=True)
+async def boss(ctx: Context, name: str = None) -> int:
+    """
+    Checks remaining boss's health
+    Params
+    ------
+    name:
+        Name of the boss to check
+    """
+    session = ctx.db.sql.session()
+
+    boss = get_boss(session, ctx, name)
+
+    return boss.health
+
+
+@register(group=Groups.GLOBAL, main=stats, private_response=True)
 async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     """
     Shows player stats
@@ -284,7 +304,7 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     return embed
 
 
-@register(group=Groups.GLOBAL, main=stats)
+@register(group=Groups.GLOBAL, main=stats, private_response=True)
 async def leaderboard(ctx: Context) -> Embed:
     """
     Shows leaderboards
@@ -292,7 +312,7 @@ async def leaderboard(ctx: Context) -> Embed:
     return Leaderboard(ctx, ctx.user_id, [Leaderboard_Entry(ctx, i[0], i[1]) for i in await list_users(ctx)]).as_embed()
 
 
-@register(group=Groups.GLOBAL, main=stats)
+@register(group=Groups.GLOBAL, main=stats, private_response=True)
 async def bosses(ctx: Context) -> str:
     """
     Shows list of boss's and their stats
@@ -305,26 +325,6 @@ async def bosses(ctx: Context) -> str:
         .all()
     )
     return "\n".join([f"{boss.name} - {boss.health} | <t:{int(boss.ends_at.timestamp())}:R>" for boss in bosses])
-
-
-async def list_users(ctx: Context, min_damage: int = 1, *, session=None) -> list:
-    """
-    Lists users that dealt any damage
-    Params
-    ------
-    min_damage:
-        minimum damage user dealt
-    """
-    if not session:
-        session = ctx.db.sql.session()
-    u: list[Gladiator_History] = (
-        session.query(Gladiator_History.user_id, sa.func.sum(Gladiator_History.damage))
-        .filter(Gladiator_History.guild_id == ctx.guild_id)
-        .group_by(Gladiator_History.user_id)
-        .order_by(sa.func.sum(Gladiator_History.damage))
-        .all()
-    )
-    return [i for i in u if i[1] >= min_damage]
 
 
 class Attack(Button):
