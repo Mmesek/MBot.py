@@ -28,7 +28,6 @@ Some links:
 <https://store.techland.net/> - Techland Store
 <https://techland-merch.com/> - Techland Merch
 <https://techlandgg.com/> - Get in game rewards and complete challenges
-<https://twitch.tv/uncyy> - Check out latest Techland's CM streams
 
 Under any circumstances, do **not** DM or @ping ANY other Techland employee other than <@210060521238560768> on the server.
 
@@ -47,7 +46,6 @@ Quelques liens :
 <https://store.techland.net/> - Techland Store
 <https://techland-merch.com/> - Techland Merch
 <https://techlandgg.com/> - Obtenez des récompenses en jeu et relevez des défis.
-<https://twitch.tv/uncyy> - Consultez les derniers streams CM de Techland (English!)
 
 En toutes circonstances, n'envoyez MP ou @ping à un employé de Techland autre que @Uncy sur le serveur.
 
