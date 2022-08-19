@@ -117,7 +117,7 @@ def get_boss(session, ctx: Context, name: str = None) -> Gladiator_Boss:
     boss = boss.first()
 
     if not boss:
-        raise Exception("Couldn't find provided Gladiator")
+        raise Exception("Couldn't find provided Fighter")
     return boss
 
 
@@ -169,7 +169,7 @@ async def create(ctx: Context, name: str, health: int, duration: timedelta, imag
     s = ctx.db.sql.session()
 
     if Gladiator_Boss.filter(s, name=name, guild_id=ctx.guild_id).first():
-        return "Gladiator already exists"
+        return "Fighter already exists"
 
     s.add(
         Gladiator_Boss(
@@ -201,9 +201,9 @@ async def attack(ctx: Context, name: str = None, *, user_id: UserID = None, sess
 
     boss = get_boss(session, ctx, name)
     if ctx.data.id.as_date.astimezone(timezone.utc) > boss.ends_at:
-        return "Gladiator is not available anymore!"
+        return "Fighter is not available anymore!"
     elif boss.health <= 0:
-        return "Gladiator has already been slain!"
+        return "This fighter has already been slain!"
 
     dmg = boss.attack(session, user_id or ctx.user_id)
     session.commit()
@@ -335,7 +335,7 @@ class Attack(Button):
     async def execute(cls, ctx: Context, data: str):
         data, t = data.split("-")
         if datetime.fromtimestamp(int(t)) <= datetime.now():
-            return "Gladiator has already fled from this fight!"
+            return "Fighter has already fled from this fight!"
         try:
             return await attack(ctx, data)
         except Cooldown as ex:
@@ -364,7 +364,7 @@ async def spawn_fighter(bot: Bot, data: Message, *, _wait: timedelta = None):
         .set_image(boss.image_url)
         .set_title(boss.name)
         .set_description("Your chatting attracted some fighters looking for a fight!")
-        .add_field("Gladiator will flee in", f"<t:{t}:R>")
+        .add_field("Fighter will flee in", f"<t:{t}:R>")
     )
     components = Row(Attack(f"Attack {boss.name}", custom_id=f"{boss.name}-{t}", emoji=Emoji(id=None, name="⚔")))
 
