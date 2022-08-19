@@ -345,7 +345,7 @@ class Attack(Button):
 # @onDispatch(event="message_create")
 @EventBetween(after_month=8, before_month=9, before_day=14)
 @Chance(5)
-async def spawn_fighter(bot: Bot, data: Message):
+async def spawn_fighter(bot: Bot, data: Message, *, _wait: timedelta = None):
     session = bot.db.sql.session()
     boss: Gladiator_Boss = (
         session.query(Gladiator_Boss)
@@ -369,8 +369,9 @@ async def spawn_fighter(bot: Bot, data: Message):
     components = Row(Attack(f"Attack {boss.name}", custom_id=f"{boss.name}-{t}", emoji=Emoji(id=None, name="⚔")))
 
     msg = await bot.create_message(data.channel_id, embeds=[embed], components=components)
-    await asyncio.sleep(60)
+    await asyncio.sleep(_wait or 60)
     await bot.delete_message(msg.channel_id, msg.id)
+    return True
 
 
 class Bonus(Button):
@@ -388,7 +389,7 @@ class Bonus(Button):
 # @onDispatch(event="message_create")
 @EventBetween(after_month=8, before_month=9, before_day=14)
 @Chance(1)
-async def spawn_bonus(bot: Bot, data: Message):
+async def spawn_bonus(bot: Bot, data: Message, *, _wait: timedelta = None):
     session = bot.db.sql.session()
     boss = (
         session.query(Gladiator_Boss)
@@ -401,7 +402,8 @@ async def spawn_bonus(bot: Bot, data: Message):
     session.close()
 
     _bonus = random().randint(1, 5)
-    _wait = random().randint(5, 60)
+    if not _wait:
+        _wait = random().randint(5, 60)
     t = int((datetime.now(timezone.utc) + timedelta(seconds=_wait)).timestamp())
     components = Row(Bonus(f"+{_bonus} damage", f"{_bonus}-{t}", emoji=Emoji(name="✨", id=None)))
 
@@ -412,3 +414,28 @@ async def spawn_bonus(bot: Bot, data: Message):
     )
     await asyncio.sleep(_wait)
     await bot.delete_message(msg.channel_id, msg.id)
+    return True
+
+
+@register(group=Groups.ADMIN, main=manage, private_response=True)
+async def spawn(ctx: Context, type: str, duration: timedelta) -> str:
+    """
+    Spawns Fighter or Bonus
+    Params
+    ------
+    type:
+        type to spawn
+        Choices:
+            Fighter = 0
+            Bonus = 1
+    duration:
+        For how long message should stay active
+    """
+    if type == "0":
+        _spawn = spawn_fighter
+    elif type == "1":
+        _spawn = spawn_bonus
+
+    if await _spawn(ctx.bot, ctx.data, _wait=duration):
+        return "Spawned successfully"
+    return "No active boss to spawn"
