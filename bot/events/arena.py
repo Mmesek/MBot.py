@@ -13,6 +13,7 @@ from MFramework import (
     EventBetween,
     Groups,
     Message,
+    UserID,
     onDispatch,
     register,
 )
@@ -202,7 +203,7 @@ async def attack(ctx: Context, name: str = None, *, user_id: int = None, session
 
 
 @register(group=Groups.MODERATOR, main=arena)
-async def bonus(ctx: Context, bonus: int, *, user_id: int = None, session=None) -> int:
+async def bonus(ctx: Context, bonus: int, *, user_id: UserID = None, session=None) -> int:
     """
     Adds damage bonus
     Params
@@ -239,7 +240,7 @@ async def bonus(ctx: Context, bonus: int, *, user_id: int = None, session=None) 
 
 
 @register(group=Groups.GLOBAL, main=arena)
-async def stats(ctx: Context, user_id: int = None, *, session=None) -> Embed:
+async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     """
     Shows player stats
     Params
