@@ -345,7 +345,7 @@ class Attack(Button):
 # @onDispatch(event="message_create")
 @EventBetween(after_month=8, before_month=9, before_day=14)
 @Chance(5)
-async def spawn_gladiator(bot: Bot, data: Message):
+async def spawn_fighter(bot: Bot, data: Message):
     session = bot.db.sql.session()
     boss: Gladiator_Boss = (
         session.query(Gladiator_Boss)
@@ -363,7 +363,7 @@ async def spawn_gladiator(bot: Bot, data: Message):
         Embed()
         .set_image(boss.image_url)
         .set_title(boss.name)
-        .set_description("Your chatting attracted some gladiators looking for a fight!")
+        .set_description("Your chatting attracted some fighters looking for a fight!")
         .add_field("Gladiator will flee in", f"<t:{t}:R>")
     )
     components = Row(Attack(f"Attack {boss.name}", custom_id=f"{boss.name}-{t}", emoji=Emoji(id=None, name="⚔")))
