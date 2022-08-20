@@ -70,6 +70,26 @@ class Gladiator_History(Base):
     bonus: int = sa.Column(sa.Integer, default=0)
     timestamp: datetime = sa.Column(sa.TIMESTAMP(True), server_default=sa.func.now())
 
+    @classmethod
+    async def list(cls, ctx: Context, min_damage: int = 1, *, session=None) -> list:
+        """
+        Lists users that dealt any damage
+        Params
+        ------
+        min_damage:
+            minimum damage user dealt
+        """
+        if not session:
+            session = ctx.db.sql.session()
+        u: list[Gladiator_History] = (
+            session.query(Gladiator_History.user_id, sa.func.sum(Gladiator_History.damage))
+            .filter(Gladiator_History.guild_id == ctx.guild_id)
+            .group_by(Gladiator_History.user_id)
+            .order_by(sa.func.sum(Gladiator_History.damage))
+            .all()
+        )
+        return [i for i in u if i[1] >= min_damage]
+
 
 class Gladiator_Boss(Base):
     id: int = sa.Column(sa.Integer, primary_key=True)
@@ -102,56 +122,71 @@ class Gladiator_Boss(Base):
 
         return player.add_attack(self)
 
+    async def spawn(self: "Gladiator_Boss", bot: Bot, data: Message, *, _wait: int = 60):
+        t = int((datetime.now(timezone.utc) + timedelta(seconds=60)).timestamp())
+        embed = (
+            Embed()
+            .set_image(self.image_url)
+            .set_title(self.name)
+            .set_description("Your chatting attracted some fighters looking for a fight!")
+            .add_field("Fighter will flee in", f"<t:{t}:R>")
+        )
+        components = Row(Attack(f"Attack {self.name}", custom_id=f"{self.name}-{t}", emoji=Emoji(id=None, name="⚔")))
 
-def get_boss(session, ctx: Context, name: str = None) -> Gladiator_Boss:
-    boss = (
-        session.query(Gladiator_Boss)
-        .filter(Gladiator_Boss.ends_at >= ctx.data.id.as_date.astimezone(timezone.utc))
-        .filter(Gladiator_Boss.guild_id == ctx.guild_id)
-        .filter(Gladiator_Boss.health > 0)
-    )
+        msg = await bot.create_message(data.channel_id, embeds=[embed], components=components)
+        await asyncio.sleep(_wait or 60)
+        await bot.delete_message(msg.channel_id, msg.id)
 
-    if name:
-        boss = boss.filter(Gladiator_Boss.name == name)
+    @classmethod
+    async def bonus(cls: "Gladiator_Boss", bot: Bot, data: Message, *, _wait: int = 60):
+        _bonus = random().randint(1, 5)
+        if not _wait:
+            _wait = random().randint(5, 60)
+        t = int((datetime.now(timezone.utc) + timedelta(seconds=_wait)).timestamp())
+        components = Row(Bonus(f"+{_bonus} damage", f"{_bonus}-{t}", emoji=Emoji(name="✨", id=None)))
 
-    boss = boss.first()
+        msg = await bot.create_message(
+            data.channel_id,
+            content=f"While chatting, you find something to sharpen your weapon! (+{_bonus} damage). All out <t:{t}:R>",
+            components=components,
+        )
+        await asyncio.sleep(_wait)
+        await bot.delete_message(msg.channel_id, msg.id)
+        return True
 
-    if not boss:
-        raise Exception("Couldn't find provided Fighter")
-    return boss
+    @classmethod
+    def get(cls, session, ctx: Context, name: str = None) -> "Gladiator_Boss":
+        now = datetime.now(timezone.utc)
+        boss = (
+            session.query(Gladiator_Boss)
+            .filter(Gladiator_Boss.guild_id == ctx.guild_id)
+            .filter(Gladiator_Boss.health > 0)
+            .filter(Gladiator_Boss.ends_at >= now)
+            .filter(Gladiator_Boss.start_at <= now)
+            .order_by(sa.func.random())
+        )
+
+        if name:
+            boss = boss.filter(Gladiator_Boss.name == name)
+
+        boss = boss.first()
+
+        if not boss:
+            raise Exception("Couldn't find provided Fighter")
+        return boss
 
 
-async def list_users(ctx: Context, min_damage: int = 1, *, session=None) -> list:
-    """
-    Lists users that dealt any damage
-    Params
-    ------
-    min_damage:
-        minimum damage user dealt
-    """
-    if not session:
-        session = ctx.db.sql.session()
-    u: list[Gladiator_History] = (
-        session.query(Gladiator_History.user_id, sa.func.sum(Gladiator_History.damage))
-        .filter(Gladiator_History.guild_id == ctx.guild_id)
-        .group_by(Gladiator_History.user_id)
-        .order_by(sa.func.sum(Gladiator_History.damage))
-        .all()
-    )
-    return [i for i in u if i[1] >= min_damage]
-
-
-@register(group=Groups.GLOBAL)
+@register()
 async def arena():
     pass
 
 
-@register(group=Groups.GLOBAL, main=arena)
+@register(main=arena)
 async def manage():
     pass
 
 
-@register(group=Groups.ADMIN, main=manage)
+@register(main=manage, private_response=True)
 async def create(ctx: Context, name: str, health: int, duration: timedelta, image: str = None) -> str:
     """
     Create new boss
@@ -199,7 +234,7 @@ async def attack(ctx: Context, name: str = None, *, user_id: UserID = None, sess
     if not session:
         session = ctx.db.sql.session()
 
-    boss = get_boss(session, ctx, name)
+    boss = Gladiator_Boss.get(session, ctx, name)
     if ctx.data.id.as_date.astimezone(timezone.utc) > boss.ends_at:
         return "Fighter is not available anymore!"
     elif boss.health <= 0:
@@ -245,7 +280,7 @@ async def bonus(ctx: Context, bonus: int, *, user_id: UserID = None, session=Non
     else:
         return "Sorry, you've already claimed a damage bonus recently!"
 
-    return player.bonus(get_boss(session, ctx))
+    return player.bonus(Gladiator_Boss.get(session, ctx))
 
 
 @register(group=Groups.GLOBAL, main=arena)
@@ -262,9 +297,8 @@ async def boss(ctx: Context, name: str = None) -> int:
     name:
         Name of the boss to check
     """
-    session = ctx.db.sql.session()
-
-    boss = get_boss(session, ctx, name)
+    with ctx.db.sql.session() as session:
+        boss = Gladiator_Boss.get(session, ctx, name)
 
     return boss.health
 
@@ -288,7 +322,7 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     if not player:
         return "No stats"
     embed = Embed()
-    embed.add_field("Current damage bonus", str(player.bonus(get_boss(session, ctx))), True)
+    embed.add_field("Current damage bonus", str(player.bonus(Gladiator_Boss.get(session, ctx))), True)
     if player.history:
         embed.add_field("Total damage dealt", str(sum([i.damage for i in player.history])), True)
         embed.add_field("Last attack", f"<t:{int(player.history[-1].timestamp.timestamp())}:R>", True)
@@ -309,7 +343,9 @@ async def leaderboard(ctx: Context) -> Embed:
     """
     Shows leaderboards
     """
-    return Leaderboard(ctx, ctx.user_id, [Leaderboard_Entry(ctx, i[0], i[1]) for i in await list_users(ctx)]).as_embed()
+    return Leaderboard(
+        ctx, ctx.user_id, [Leaderboard_Entry(ctx, i[0], i[1]) for i in await Gladiator_History.list(ctx)]
+    ).as_embed()
 
 
 @register(group=Groups.GLOBAL, main=stats, private_response=True)
@@ -345,33 +381,10 @@ class Attack(Button):
 # @onDispatch(event="message_create")
 @EventBetween(after_month=8, before_month=9, before_day=14)
 @Chance(5)
-async def spawn_fighter(bot: Bot, data: Message, *, _wait: timedelta = None):
-    session = bot.db.sql.session()
-    boss: Gladiator_Boss = (
-        session.query(Gladiator_Boss)
-        .filter(Gladiator_Boss.guild_id == data.guild_id)
-        .filter(Gladiator_Boss.ends_at >= data.id.as_date.astimezone(timezone.utc))
-        .filter(Gladiator_Boss.health > 0)
-        .order_by(Gladiator_Boss.ends_at)
-        .first()
-    )
-    if not boss:
-        return
-    session.close()
-    t = int((datetime.now(timezone.utc) + timedelta(seconds=60)).timestamp())
-    embed = (
-        Embed()
-        .set_image(boss.image_url)
-        .set_title(boss.name)
-        .set_description("Your chatting attracted some fighters looking for a fight!")
-        .add_field("Fighter will flee in", f"<t:{t}:R>")
-    )
-    components = Row(Attack(f"Attack {boss.name}", custom_id=f"{boss.name}-{t}", emoji=Emoji(id=None, name="⚔")))
-
-    msg = await bot.create_message(data.channel_id, embeds=[embed], components=components)
-    await asyncio.sleep(_wait or 60)
-    await bot.delete_message(msg.channel_id, msg.id)
-    return True
+async def spawn_fighter(bot: Bot, data: Message):
+    with bot.db.sql.session() as session:
+        boss = Gladiator_Boss.get(session, data)
+    await boss.spawn(bot, data)
 
 
 class Bonus(Button):
@@ -389,36 +402,14 @@ class Bonus(Button):
 # @onDispatch(event="message_create")
 @EventBetween(after_month=8, before_month=9, before_day=14)
 @Chance(1)
-async def spawn_bonus(bot: Bot, data: Message, *, _wait: timedelta = None):
-    session = bot.db.sql.session()
-    boss = (
-        session.query(Gladiator_Boss)
-        .filter(Gladiator_Boss.ends_at >= data.data.id.as_date.astimezone(timezone.utc))
-        .filter(Gladiator_Boss.guild_id == data.guild_id)
-        .filter(Gladiator_Boss.health > 0)
-    )
-    if not boss:
-        return
-    session.close()
-
-    _bonus = random().randint(1, 5)
-    if not _wait:
-        _wait = random().randint(5, 60)
-    t = int((datetime.now(timezone.utc) + timedelta(seconds=_wait)).timestamp())
-    components = Row(Bonus(f"+{_bonus} damage", f"{_bonus}-{t}", emoji=Emoji(name="✨", id=None)))
-
-    msg = await bot.create_message(
-        data.channel_id,
-        content=f"While chatting, you find something to sharpen your weapon! (+{_bonus} damage). All out <t:{t}:R>",
-        components=components,
-    )
-    await asyncio.sleep(_wait)
-    await bot.delete_message(msg.channel_id, msg.id)
-    return True
+async def spawn_bonus(bot: Bot, data: Message):
+    with bot.db.sql.session() as session:
+        boss = Gladiator_Boss.get(session, data)
+    await boss.bonus(bot, data)
 
 
 @register(group=Groups.ADMIN, main=manage, private_response=True)
-async def spawn(ctx: Context, type: str, duration: timedelta) -> str:
+async def spawn(ctx: Context, type: str, duration: timedelta, name: str = None) -> str:
     """
     Spawns Fighter or Bonus
     Params
@@ -430,12 +421,16 @@ async def spawn(ctx: Context, type: str, duration: timedelta) -> str:
             Bonus = 1
     duration:
         For how long message should stay active
+    name:
+        Boss to spawn for attacks
     """
-    if type == "0":
-        _spawn = spawn_fighter
-    elif type == "1":
-        _spawn = spawn_bonus
+    session = ctx.db.sql.session()
+    boss = Gladiator_Boss.get(session, ctx, name)
+    if int(type):
+        _spawn = boss.bonus
+    else:
+        _spawn = boss.spawn
 
-    if await _spawn(ctx.bot, ctx.data, _wait=duration):
+    if await _spawn(ctx.bot, ctx.data, _wait=duration.total_seconds()):
         return "Spawned successfully"
     return "No active boss to spawn"
