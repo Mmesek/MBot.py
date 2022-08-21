@@ -22,7 +22,11 @@ from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.database import Base
 
 
-class Cooldown(Exception):
+class NotAvailable(Exception):
+    pass
+
+
+class Cooldown(NotAvailable):
     pass
 
 
@@ -101,6 +105,13 @@ class Gladiator_Boss(Base):
     image_url: str = sa.Column(sa.String)
 
     def attack(self, session, user_id: int) -> int:
+        now = datetime.now(tz=timezone.utc)
+
+        if now > self.ends_at:
+            raise NotAvailable(f"{self.name} is not available anymore!")
+        elif self.health <= 0:
+            raise NotAvailable(f"{self.name} has already been slain!")
+
         player = (
             session.query(Gladiator).filter(Gladiator.user_id == user_id, Gladiator.guild_id == self.guild_id).first()
         )
@@ -111,14 +122,12 @@ class Gladiator_Boss(Base):
         history = [i for i in player.history if i.damage]
 
         if history:
-            remaining_cooldown = timedelta(minutes=30) - (datetime.now(tz=timezone.utc) - history[-1].timestamp)
+            remaining_cooldown = timedelta(minutes=30) - (now - history[-1].timestamp)
         else:
             remaining_cooldown = timedelta()
 
         if remaining_cooldown.total_seconds() > 0:
-            raise Cooldown(
-                f"Cooldown remaining: <t:{int((datetime.now(tz=timezone.utc) + remaining_cooldown).timestamp())}:R>"
-            )
+            raise Cooldown(f"Cooldown remaining: <t:{int((now + remaining_cooldown).timestamp())}:R>")
 
         return player.add_attack(self)
 
@@ -220,7 +229,7 @@ async def create(ctx: Context, name: str, health: int, duration: timedelta, imag
     return "Success"
 
 
-@register(group=Groups.GLOBAL, main=manage)
+@register(group=Groups.ADMIN, main=manage)
 async def attack(ctx: Context, name: str = None, *, user_id: UserID = None, session=None) -> str:
     """
     Attacks boss
@@ -235,10 +244,6 @@ async def attack(ctx: Context, name: str = None, *, user_id: UserID = None, sess
         session = ctx.db.sql.session()
 
     boss = Gladiator_Boss.get(session, ctx, name)
-    if ctx.data.id.as_date.astimezone(timezone.utc) > boss.ends_at:
-        return "Fighter is not available anymore!"
-    elif boss.health <= 0:
-        return "This fighter has already been slain!"
 
     dmg = boss.attack(session, user_id or ctx.user_id)
     session.commit()
