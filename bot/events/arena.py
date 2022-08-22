@@ -383,7 +383,7 @@ class Attack(Button):
             return ex
 
 
-# @onDispatch(event="message_create")
+@onDispatch(event="message_create")
 @EventBetween(after_month=8, before_month=9, before_day=14)
 @Chance(5)
 async def spawn_fighter(bot: Bot, data: Message):
@@ -404,7 +404,7 @@ class Bonus(Button):
         return f"Current bonus: {await bonus(ctx, int(data))}"
 
 
-# @onDispatch(event="message_create")
+@onDispatch(event="message_create")
 @EventBetween(after_month=8, before_month=9, before_day=14)
 @Chance(1)
 async def spawn_bonus(bot: Bot, data: Message):
