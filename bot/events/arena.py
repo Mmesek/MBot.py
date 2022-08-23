@@ -181,7 +181,7 @@ class Gladiator_Boss(Base):
         boss = boss.first()
 
         if not boss:
-            raise Exception("Couldn't find provided Fighter")
+            raise NotAvailable("Couldn't find such Fighter")
         return boss
 
 
@@ -283,7 +283,7 @@ async def bonus(ctx: Context, bonus: int, *, user_id: UserID = None, session=Non
         player.add_bonus(bonus)
         session.commit()
     else:
-        return "Sorry, you've already claimed a damage bonus recently!"
+        raise NotAvailable("Sorry, you've already claimed a damage bonus recently!")
 
     return player.bonus(Gladiator_Boss.get(session, ctx))
 
@@ -379,13 +379,13 @@ class Attack(Button):
             return "Fighter has already fled from this fight!"
         try:
             return await attack(ctx, data)
-        except Cooldown as ex:
+        except NotAvailable as ex:
             return ex
 
 
 @onDispatch(event="message_create")
 @EventBetween(after_month=8, before_month=9, before_day=14)
-@Chance(5)
+@Chance(3)
 async def spawn_fighter(bot: Bot, data: Message):
     with bot.db.sql.session() as session:
         boss = Gladiator_Boss.get(session, data)
@@ -401,7 +401,10 @@ class Bonus(Button):
         data, t = data.split("-")
         if datetime.fromtimestamp(int(t)) <= datetime.now():
             return "This bonus is already expired!"
-        return f"Current bonus: {await bonus(ctx, int(data))}"
+        try:
+            return f"Current bonus: {await bonus(ctx, int(data))}"
+        except NotAvailable as ex:
+            return ex
 
 
 @onDispatch(event="message_create")
