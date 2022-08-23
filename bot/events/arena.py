@@ -388,7 +388,10 @@ class Attack(Button):
 @Chance(3)
 async def spawn_fighter(bot: Bot, data: Message):
     with bot.db.sql.session() as session:
-        boss = Gladiator_Boss.get(session, data)
+        try:
+            boss = Gladiator_Boss.get(session, data)
+        except NotAvailable:
+            return
     await boss.spawn(bot, data)
 
 
@@ -412,7 +415,10 @@ class Bonus(Button):
 @Chance(1)
 async def spawn_bonus(bot: Bot, data: Message):
     with bot.db.sql.session() as session:
-        boss = Gladiator_Boss.get(session, data)
+        try:
+            boss = Gladiator_Boss.get(session, data)
+        except NotAvailable:
+            return
     await boss.bonus(bot, data)
 
 
@@ -442,3 +448,71 @@ async def spawn(ctx: Context, type: str, duration: timedelta, name: str = None) 
     if await _spawn(ctx.bot, ctx.data, _wait=duration.total_seconds()):
         return "Spawned successfully"
     return "No active boss to spawn"
+
+
+class Giveaway_Answer(Modal):
+    private_response = True
+
+    @classmethod
+    async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
+        session = ctx.db.sql.session()
+        return inputs["answer"]  # TODO
+
+
+class Giveaway(Button):
+    private_response = True
+
+    @classmethod
+    async def execute(cls, ctx: Context, data: str):
+        return Giveaway_Answer(
+            Row(TextInput("[Question]?", "answer", placeholder="Your answer")), title="Answer", custom_id=data
+        )
+
+
+"""
+Hellraid
+The Operacutioner
+The MMMadness
+End Game
+Oni the Zombie
+Tango
+SiCK
+Hallscourge Radahn
+Crazy Aussie
+The Gunslinger
+novieXator
+The Truth
+Gazi
+Henio The Cat
+Phantom of the Arena
+The Assertion
+Wizard of Bones
+Contagion
+Amazing Ali
+The Hollow
+Maximus Crowe
+The Deadline
+The Ashes
+Immoral Florence
+Heavy Weapon Dude
+Memory Leak
+The Borsht
+The Maidenless
+No Mesh
+The Leviathan
+Octopunch
+Deadline
+Slime
+Peppermint Suzzy
+El Capitain
+The Brawldanado
+Rad Brad
+The 456
+No Mesh
+The Head Knock
+Dead in the Hay
+The Lumberjack
+The Ground Pound
+Mr. Sunshine
+Smasher
+"""
