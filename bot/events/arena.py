@@ -384,7 +384,7 @@ class Attack(Button):
 
 
 @onDispatch(event="message_create")
-@EventBetween(after_month=8, before_month=9, before_day=14)
+@EventBetween(after_month=8, before_month=10, before_day=13)
 @Chance(3)
 async def spawn_fighter(bot: Bot, data: Message):
     with bot.db.sql.session() as session:
@@ -408,7 +408,7 @@ class Bonus(Button):
 
 
 @onDispatch(event="message_create")
-@EventBetween(after_month=8, before_month=9, before_day=14)
+@EventBetween(after_month=8, before_month=10, before_day=13)
 @Chance(1)
 async def spawn_bonus(bot: Bot, data: Message):
     with bot.db.sql.session() as session:
