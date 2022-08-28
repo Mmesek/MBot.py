@@ -63,52 +63,21 @@
     "contests": {
         "msi": {
             "name": "msi",
-            "description": "Participate in MSI contest",
-            "arguments": {}
+            "description": "Participate in MSI contest"
         },
         "msi_entries": {
             "name": "msi_entries",
-            "description": "Description to use with help command",
-            "arguments": {
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
-                }
-            }
+            "description": "Description to use with help command"
         },
         "msi_activity": {
             "name": "msi_activity",
-            "description": "Description to use with help command",
-            "arguments": {
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
-                }
-            }
+            "description": "Description to use with help command"
         }
     },
     "converters": {
         "convert": {
             "name": "convert",
             "description": "Converts things",
-            "arguments": {
-                "interaction": {
-                    "name": "interaction",
-                    "description": "MISSING DOCSTRING"
-                },
-                "args": {
-                    "name": "args",
-                    "description": "MISSING DOCSTRING"
-                },
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
-                },
-                "kwargs": {
-                    "name": "kwargs",
-                    "description": "MISSING DOCSTRING"
-                }
-            },
             "sub_commands": {
                 "morse": {
                     "name": "morse",
@@ -121,18 +90,6 @@
                         "decode": {
                             "name": "decode",
                             "description": "Whether to decode from or encode to Morse"
-                        },
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 },
@@ -161,10 +118,6 @@
                         "to": {
                             "name": "to",
                             "description": "Opposite to from_unit. Accepts same values"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 },
@@ -183,16 +136,10 @@
                         "timezones": {
                             "name": "timezones",
                             "description": "Targeted timezones"
-                        },
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
-                    }
+                    },
+                    "timezoneNotFound": "Couldn't find timezone %{from_timezone}",
+                    "notFound": "Not Found"
                 },
                 "upside": {
                     "name": "upside",
@@ -267,12 +214,9 @@
                         "to_currency": {
                             "name": "to_currency",
                             "description": "Target Currency"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
-                    }
+                    },
+                    "result": "%{result} %{to_currency} from %{amount} %{currency}"
                 },
                 "reverse": {
                     "name": "reverse",
@@ -362,13 +306,11 @@
         },
         "loadout": {
             "name": "loadout",
-            "description": "Losuje ekwipunek",
-            "arguments": {}
+            "description": "Losuje ekwipunek"
         },
         "when": {
             "name": "when",
-            "description": "Shows remaining delta to release",
-            "arguments": {}
+            "description": "Shows remaining delta to release"
         },
         "truth": {
             "name": "truth",
@@ -401,8 +343,7 @@
         },
         "serverlist": {
             "name": "serverlist",
-            "description": "Pokazuje listę serwerów na Northstar z wolnymi miejscami",
-            "arguments": {}
+            "description": "Pokazuje listę serwerów na Northstar z wolnymi miejscami"
         },
         "review": {
             "name": "review",
@@ -420,13 +361,11 @@
         },
         "reviews": {
             "name": "reviews",
-            "description": "Shows average Review score",
-            "arguments": {}
+            "description": "Shows average Review score"
         },
         "biomarker": {
             "name": "biomarker",
-            "description": "Shows your infection state",
-            "arguments": {}
+            "description": "Shows your infection state"
         },
         "lfg": {
             "name": "lfg",
@@ -759,7 +698,6 @@
         "info": {
             "name": "info",
             "description": "Shows info",
-            "arguments": {},
             "sub_commands": {
                 "user": {
                     "name": "user",
@@ -773,8 +711,7 @@
                 },
                 "server": {
                     "name": "server",
-                    "description": "Shows server info",
-                    "arguments": {}
+                    "description": "Shows server info"
                 },
                 "role": {
                     "name": "role",
@@ -1080,10 +1017,6 @@
                 "channel": {
                     "name": "channel",
                     "description": "Use it if Message is in a different channel"
-                },
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
                 }
             }
         }
@@ -1100,10 +1033,6 @@
                 "message": {
                     "name": "message",
                     "description": "Message to send"
-                },
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
                 }
             }
         }
@@ -1129,8 +1058,7 @@
         },
         "remove_invalid": {
             "name": "remove_invalid",
-            "description": "Clears invalid roles from DB",
-            "arguments": {}
+            "description": "Clears invalid roles from DB"
         }
     },
     "polls": {
@@ -1321,7 +1249,7 @@
         "search": {
             "name": "search",
             "description": "Searches things",
-            "arguments": {},
+            "arguments": { },
             "sub_commands": {
                 "api": {
                     "name": "api",
@@ -1522,10 +1450,6 @@
                         "channel": {
                             "name": "channel",
                             "description": "Channel of which language should be changed. Leave empty if serverwide"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 },
@@ -1540,10 +1464,6 @@
                         "channel": {
                             "name": "channel",
                             "description": "Whether this channel should be disabled from tracking"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 },
@@ -1574,10 +1494,6 @@
                                 "regex": {
                                     "name": "regex",
                                     "description": "Whether it should only be sent if there is matching pattern"
-                                },
-                                "language": {
-                                    "name": "language",
-                                    "description": "MISSING DOCSTRING"
                                 }
                             }
                         },
@@ -1592,10 +1508,6 @@
                                 "webhook": {
                                     "name": "webhook",
                                     "description": "Webhook which should be unsubscribed"
-                                },
-                                "language": {
-                                    "name": "language",
-                                    "description": "MISSING DOCSTRING"
                                 }
                             }
                         }
@@ -1640,10 +1552,6 @@
                                 "postion": {
                                     "name": "postion",
                                     "description": "MISSING DOCSTRING"
-                                },
-                                "language": {
-                                    "name": "language",
-                                    "description": "MISSING DOCSTRING"
                                 }
                             }
                         }
@@ -1668,10 +1576,6 @@
                         "all": {
                             "name": "all",
                             "description": "Whether slowmode should be serverwide or not"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 },
@@ -1690,10 +1594,6 @@
                         "all": {
                             "name": "all",
                             "description": "Whether lockdown should be serverwide or not"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 }
@@ -1704,20 +1604,6 @@
         "bot": {
             "name": "bot",
             "description": "Shows Information about bot",
-            "arguments": {
-                "args": {
-                    "name": "args",
-                    "description": "MISSING DOCSTRING"
-                },
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
-                },
-                "kwargs": {
-                    "name": "kwargs",
-                    "description": "MISSING DOCSTRING"
-                }
-            },
             "sub_commands": {
                 "ping": {
                     "name": "ping",
@@ -1726,18 +1612,6 @@
                         "detailed": {
                             "name": "detailed",
                             "description": "Whether it should show extended ping information"
-                        },
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 },
@@ -1748,81 +1622,32 @@
                         "show_ping": {
                             "name": "show_ping",
                             "description": "whether it should show ping or not"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
                         }
                     }
                 },
                 "version": {
                     "name": "version",
-                    "description": "Shows bot's version",
-                    "arguments": {}
+                    "description": "Shows bot's version"
                 },
                 "stats": {
                     "name": "stats",
-                    "description": "Shows received events & registered commands",
-                    "arguments": {}
+                    "description": "Shows received events & registered commands"
                 },
                 "support": {
                     "name": "support",
-                    "description": "Shows information about bot's support",
-                    "arguments": {
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
-                        }
-                    }
+                    "description": "Shows information about bot's support"
                 },
                 "donate": {
                     "name": "donate",
-                    "description": "Shows information about donating to bot Development",
-                    "arguments": {
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
-                        }
-                    }
+                    "description": "Shows information about donating to bot Development"
                 },
                 "credits": {
                     "name": "credits",
-                    "description": "Shows credits and what was used to make bot",
-                    "arguments": {
-                        "args": {
-                            "name": "args",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "language": {
-                            "name": "language",
-                            "description": "MISSING DOCSTRING"
-                        },
-                        "kwargs": {
-                            "name": "kwargs",
-                            "description": "MISSING DOCSTRING"
-                        }
-                    }
+                    "description": "Shows credits and what was used to make bot"
                 },
                 "source": {
                     "name": "source",
-                    "description": "Sends URL to source code of bot",
-                    "arguments": {}
+                    "description": "Sends URL to source code of bot"
                 }
             }
         },
@@ -1878,43 +1703,11 @@
     "steam": {
         "refreshAppIndex": {
             "name": "refreshAppIndex",
-            "description": "Updates Index of Steam Games",
-            "arguments": {
-                "args": {
-                    "name": "args",
-                    "description": "MISSING DOCSTRING"
-                },
-                "data": {
-                    "name": "data",
-                    "description": "MISSING DOCSTRING"
-                },
-                "kwargs": {
-                    "name": "kwargs",
-                    "description": "MISSING DOCSTRING"
-                }
-            }
+            "description": "Updates Index of Steam Games"
         },
         "steam": {
             "name": "steam",
             "description": "Fetches data on games",
-            "arguments": {
-                "interaction": {
-                    "name": "interaction",
-                    "description": "MISSING DOCSTRING"
-                },
-                "args": {
-                    "name": "args",
-                    "description": "MISSING DOCSTRING"
-                },
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
-                },
-                "kwargs": {
-                    "name": "kwargs",
-                    "description": "MISSING DOCSTRING"
-                }
-            },
             "sub_commands": {
                 "playercount": {
                     "name": "playercount",
@@ -2003,17 +1796,12 @@
                 "name": {
                     "name": "name",
                     "description": "MISSING DOCSTRING"
-                },
-                "language": {
-                    "name": "language",
-                    "description": "MISSING DOCSTRING"
                 }
             }
         },
         "modapp": {
             "name": "modapp",
-            "description": "Apply for a mod!",
-            "arguments": {}
+            "description": "Apply for a mod!"
         }
     },
     "suggestions": {
