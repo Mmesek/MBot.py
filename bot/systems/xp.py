@@ -70,14 +70,6 @@ async def exp(self: Bot, data: Message):
         if exp >= req:
             level_up = role
 
-    if level_up == previous_level:
-        return
-
-    if level_up:
-        await self.add_guild_member_role(data.guild_id, data.author.id, level_up, "Level Role")
-    if previous_level:
-        await self.remove_guild_member_role(data.guild_id, data.author.id, previous_level, "Level Role")
-
     from ..database import log, types
 
     if self.cache[data.guild_id].is_tracking(types.Flags.Chat):
@@ -85,6 +77,14 @@ async def exp(self: Bot, data: Message):
         log.Statistic.increment(session, data.guild_id, data.author.id, types.Statistic.Chat)
     if self.cache[data.guild_id].is_tracking(types.Flags.Activity):
         self.db.influx.commitMessage(data.guild_id, data.channel_id, data.author.id, len(set(data.content.split(" "))))
+
+    if level_up == previous_level:
+        return
+
+    if level_up:
+        await self.add_guild_member_role(data.guild_id, data.author.id, level_up, "Level Role")
+    if previous_level:
+        await self.remove_guild_member_role(data.guild_id, data.author.id, previous_level, "Level Role")
 
 
 from MFramework import Context, Groups, User, register
