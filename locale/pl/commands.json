@@ -1,0 +1,5 @@
+{
+    "dm": {
+        "singleWordError": "Witaj, wygląda na to że twoja wiadomość składa się tylko z jednego słowa, toteż nie przekażę jej dalej. Przekazuję twoje wiadomość tutaj automatycznie i <:%{emoji_success}> pod wiadomością oznacza że została dostarczona. Sforumułuj zdanie i spróbuj ponownie. Miłego mordeczko."
+    }
+}

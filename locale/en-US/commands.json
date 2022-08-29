@@ -1,0 +1,7 @@
+{
+    "dm": {
+        "singleWordError": "Hey, it appears your message consist of mostly single word, therefore I'm not going to forward it. I'm forwarding your messages here automatically and <:%{emoji_success}> under message means it was successfully delivered to mod team. Please form a sentence and try again. Cheers mate.",
+        "sameMessageError": "Please do not send same message multiple times in a row, thanks.",
+        "cannedResponseSent": "Canned response `%{name}` has been sent in return."
+    }
+}
