@@ -21,6 +21,8 @@ from MFramework.commands.components import Button, Modal, Row, TextInput
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.database import Base
 
+from ..commands_slash.answer import Answers_Puzzle, Answers_Registered
+
 
 class NotAvailable(Exception):
     pass
@@ -448,3 +450,72 @@ async def spawn(ctx: Context, type: str, duration: timedelta, name: str = None) 
     if await _spawn(ctx.bot, ctx.data, _wait=duration.total_seconds()):
         return "Spawned successfully"
     return "No active boss to spawn"
+
+
+class Giveaway_Answer(Modal):
+    private_response = True
+
+    @classmethod
+    async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
+        session = ctx.db.sql.session()
+        answer = list(inputs.keys())
+        q = (
+            session.query(Answers_Registered)
+            .filter(Answers_Registered.puzzle == "arena", Answers_Registered.key == answer[0])
+            .first()
+        )
+
+        if not q:
+            return "Question not found. This should not happen."
+
+        if q.value != inputs[answer[0]]:
+            return "Sadly, That is not correct."
+
+        session.add(Answers_Puzzle(user_id=ctx.user_id, key=answer, puzzle="arena"))
+        return "Congratulations! You've entered a giveaway successfully!"
+
+
+class Giveaway(Button):
+    private_response = True
+
+    @classmethod
+    async def execute(cls, ctx: Context, data: str):
+        session = ctx.db.sql.session()
+        gladiator: Gladiator = (
+            session.query(Gladiator)
+            .filter(Gladiator.user_id == ctx.user_id, Gladiator.guild_id == ctx.guild_id)
+            .first()
+        )
+
+        if not gladiator:
+            return "Return once you'll deal some damage!"
+        if gladiator.total_damage(ctx.guild_id) <= 50:
+            return "Return once you'll deal more damage!"
+
+        q: Answers_Registered = (
+            session.query(Answers_Registered)
+            .filter(Answers_Registered.puzzle == "arena")
+            .order_by(sa.func.random())
+            .first()
+        )
+        return Giveaway_Answer(Row(TextInput(q.key, q.key, placeholder="Your answer")), title="Answer", custom_id=data)
+
+
+@register(group=Groups.ADMIN, main=manage, private_response=True)
+async def giveaway(ctx: Context, prize: str, text: str = None, winners: int = 1) -> str:
+    """Sends a button that allows joining a giveaway
+    Params
+    ------
+    prize:
+        Prize to giveaway
+    text:
+        Text to include in a message
+    winners:
+        Amount of winners, default 1
+    """
+    msg = await ctx.send(
+        text,
+        components=Row(Giveaway(label="Click to partake in a giveaway!", emoji=Emoji(name="🎉"))),
+        channel_id=ctx.channel_id,
+    )
+    return "Message sent!"
