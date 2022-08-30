@@ -132,7 +132,7 @@ class Gladiator_Boss(Base):
         return player.add_attack(self)
 
     async def spawn(self: "Gladiator_Boss", bot: Bot, data: Message, *, _wait: int = 60):
-        t = int((datetime.now(timezone.utc) + timedelta(seconds=60)).timestamp())
+        t = int((datetime.now(timezone.utc) + timedelta(seconds=_wait)).timestamp())
         embed = (
             Embed()
             .set_image(self.image_url)
