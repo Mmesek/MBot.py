@@ -531,31 +531,37 @@ async def electricity(
     return f"~{round(((watts * (active_hours * active_days)) / 1000) * price, 2)} / month"
 
 
+def color_to_list(color_list: str) -> list:
+    color_list = color_list.replace(" ", "").split(",")
+    if len(color_list) == 1:
+        color_list = color_list[0].split("#")
+    return [f"#{x}".strip() if not x.startswith("#") else x for x in color_list if x]
+
+
 @register(group=Groups.GLOBAL, main=convert)
-async def palette(ctx: Context, colors: str) -> Attachment:
+async def palette(ctx: Context, colors: str, backgrounds: str = None, mentions: str = "") -> Attachment:
     """
     Shows how specified colors looks like on Discord backgrounds
     Params
     ------
     colors:
         Hexadecimal colors to display. Separate multiple with comma (,) or hash (#)
-    '''
+    backgrounds:
+        Hexadecimal background color. Separate multiple with comma (,) or hash (#)
+    mentions:
+        Hexadecimal mention color. Requires backgrounds. Separate multiple with comma (,) or hash (#)
     """
-    _colors = colors.replace(" ", "").split(",")
-    if len(_colors) == 1:
-        _colors = colors.replace(" ", "").split("#")
-    colors = []
-    for color in _colors:
-        if not color:
-            continue
-        if not color.startswith("#"):
-            color = "#" + str(color)
-        color = color.strip()
-        colors.append(color)
+    colors = color_to_list(colors)
+
     from mlib.colors import buffered_image
     from PIL import Image, ImageDraw, ImageFont
 
-    backgrounds = {"#36393F": "#49443C", "#FFFFFF": "#FEEED1", "#101010": "#261f14"}
+    if not backgrounds:
+        backgrounds = {"#36393F": "#49443C", "#FFFFFF": "#FEEED1", "#101010": "#261f14"}
+    else:
+        backgrounds = color_to_list(backgrounds)
+        mentions = color_to_list(mentions) or [0 for i in range(len(backgrounds))]
+        backgrounds = {x: y for x, y in zip(backgrounds, mentions)}
 
     height = len(colors) * 50
     dst = Image.new("RGBA", (len(backgrounds) * 500, height))
