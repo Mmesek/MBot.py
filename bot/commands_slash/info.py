@@ -145,6 +145,13 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
         xp = User_Experience.fetch_or_add(s, user_id=member.user.id, server_id=ctx.guild_id)
         if ctx.permission_group.can_use(Groups.MODERATOR) and xp.value:
             embed.addField("XP", str(xp.value), True)
+
+        if ctx.permission_group.can_use(Groups.MODERATOR):
+            try:
+                _ban = await ctx.bot.get_guild_ban(ctx.guild_id, member.user.id)
+                embed.addField("Reason of Current Ban", _ban.reason, True)
+            except:
+                pass
     components = []
     if ctx.permission_group.can_use(Groups.MODERATOR):
         from ..infractions.interactions import instant_actions
