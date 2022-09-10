@@ -175,8 +175,14 @@ async def leaderboard(ctx: Context, name: Challenges = None, stage: Stages = Non
             limit=limit,
         )
         .as_embed(f"Leaderboard -{' '+name or ''}{' '+ stage if stage else ''}" if name or stage else "Highscores")
-        .set_footer("Nickname - Points (Stages Done)")
+        .set_footer("Nickname - Points (Completed)")
     )
+
+
+class Highscore(Leaderboard_Entry):
+    @property
+    def name(self) -> str:
+        return self.user_id
 
 
 @register(group=Groups.GLOBAL, main=challenge)
@@ -194,7 +200,34 @@ async def list(ctx: Context, name: Challenges = None):
         q = q.filter(Challenge.name == name)
     challenges = q.all()
 
-    _challenges = [f"- {i.name}: {i.stage}" if i.stage else f"- {i.name}" for i in challenges]
-    if not _challenges:
+    if not challenges:
         return "Couldn't find provided challenge"
-    return "\n".join(_challenges)
+
+    total = (
+        session.query(sa.func.count(Challenge_Score.user_id.distinct()))
+        .filter(Challenge_Score.id.in_([i.id for i in challenges]))
+        .first()
+    ) or [0]
+    per_challenge = {
+        k[0]: k[1]
+        for k in session.query(Challenge_Score.challenge_id, sa.func.count(Challenge_Score.user_id.distinct()))
+        .filter(Challenge_Score.id.in_([i.id for i in challenges]))
+        .group_by(Challenge_Score.challenge_id)
+        .all()
+    }
+
+    rate_challenge = {k: v / total[0] for k, v in per_challenge.items()}
+
+    return Leaderboard(
+        ctx,
+        ctx.user_id,
+        [
+            Highscore(
+                ctx,
+                f"{i.name}{': '+i.stage if i.stage else ''}",
+                rate_challenge.get(i.id, 0),
+                lambda x: f"{rate_challenge.get(x, 0)*100}%",
+            )
+            for i in challenges
+        ],
+    ).as_embed("Completion rates")
