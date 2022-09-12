@@ -1,4 +1,5 @@
 from collections import Counter
+from datetime import datetime
 
 import sqlalchemy as sa
 import sqlalchemy.orm as orm
@@ -31,6 +32,7 @@ class Challenge(Base):
 
 class Challenge_Score(Base):
     id: int = sa.Column(sa.Integer, primary_key=True)
+    timestamp: datetime = sa.Column(sa.TIMESTAMP(True), server_default=sa.func.now())
     challenge_id: int = sa.Column(sa.ForeignKey("Challenge.id"))
     user_id: int = sa.Column(sa.BigInteger)
     score: float = sa.Column(sa.Float, default=1)
