@@ -195,7 +195,7 @@ async def remove_links(self: Bot, data: Message) -> bool:
             except:
                 pass
             await self.remove_guild_member(data.guild_id, data.author.id, "Hijacked account")
-            from ..commands_slash.infractions import InfractionTypes
+            from ..infractions.models import Types
 
             await self.cache[data.guild_id].logging["infraction"](
                 guild_id=data.guild_id,
@@ -205,7 +205,7 @@ async def remove_links(self: Bot, data: Message) -> bool:
                 user_id=data.author.id,
                 reason="Hijacked Account",
                 duration=None,
-                type=InfractionTypes.Kick,
+                type=Types.Kick,
             )
             return True
         try:
