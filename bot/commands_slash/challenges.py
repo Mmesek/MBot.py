@@ -137,7 +137,9 @@ class Challenge_Row(Leaderboard_Entry):
 
 
 @register(group=Groups.GLOBAL, main=challenge)
-async def leaderboard(ctx: Context, name: Challenges = None, stage: Stages = None, limit: int = 10):
+async def leaderboard(
+    ctx: Context, name: Challenges = None, stage: Stages = None, limit: int = 10, reverse: bool = False
+):
     """
     Shows leaderboard of total scores for specified challenge
     Params
@@ -148,6 +150,8 @@ async def leaderboard(ctx: Context, name: Challenges = None, stage: Stages = Non
         Challenge's stage to display
     limit:
         How many rows to show?
+    reverse:
+        Show from least to most instead
     """
     session = ctx.db.sql.session()
     challenges: Challenge = session.query(Challenge).filter(Challenge.guild_id == ctx.guild_id)
@@ -175,6 +179,7 @@ async def leaderboard(ctx: Context, name: Challenges = None, stage: Stages = Non
             ctx.user_id,
             [Challenge_Row(ctx, key, (value, count[key])) for key, value in scores.items()],
             limit=limit,
+            reverse=reverse,
         )
         .as_embed(f"Leaderboard -{' '+name or ''}{' '+ stage if stage else ''}" if name or stage else "Highscores")
         .set_footer("Nickname - Points (Completed)")
@@ -188,13 +193,15 @@ class Highscore(Leaderboard_Entry):
 
 
 @register(group=Groups.GLOBAL, main=challenge)
-async def list(ctx: Context, name: Challenges = None):
+async def list(ctx: Context, name: Challenges = None, reverse: bool = False):
     """
     Lists available challenges alongside average completion
     Params
     ------
     name:
         Lists stages of this challenge
+    reverse:
+        List completion rates from least to most instead
     """
     session = ctx.db.sql.session()
     q = session.query(Challenge).filter(Challenge.guild_id == ctx.guild_id)
@@ -232,4 +239,5 @@ async def list(ctx: Context, name: Challenges = None):
             )
             for i in challenges
         ],
+        reverse=reverse,
     ).as_embed("Completion rates")
