@@ -4,10 +4,15 @@ from MFramework import (
     ChannelID,
     Context,
     Groups,
+    Interaction,
     Overwrite,
+    RoleID,
     Snowflake,
     register,
 )
+from MFramework.database.alchemy import models, types
+from MFramework.utils.log import Log
+from mlib.utils import all_subclasses
 
 
 @register(group=Groups.ADMIN)
@@ -16,8 +21,8 @@ async def settings():
     pass
 
 
-@register(group=Groups.ADMIN, main=settings)
-async def language(ctx: Context, new_language: str = None, channel: ChannelID = None, *, language):
+# @register(group=Groups.ADMIN, main=settings)
+async def language(ctx: Context, new_language: str = None, channel: ChannelID = None):
     """Management of language bot settings
 
     Params
@@ -27,7 +32,7 @@ async def language(ctx: Context, new_language: str = None, channel: ChannelID = 
     channel:
         Channel of which language should be changed. Leave empty if server-wide
     """
-    pass
+    raise NotImplementedError("Not implemented yet!")
 
 
 class Tracking:
@@ -36,8 +41,8 @@ class Tracking:
     Presence = "Presence"
 
 
-@register(group=Groups.ADMIN, main=settings)
-async def tracking(ctx: Context, type: Tracking, channel: ChannelID = None, *, language):
+# @register(group=Groups.ADMIN, main=settings)
+async def tracking(ctx: Context, type: Tracking, channel: ChannelID = None):
     """Management of bot's tracking settings
 
     Params
@@ -47,7 +52,7 @@ async def tracking(ctx: Context, type: Tracking, channel: ChannelID = None, *, l
     channel:
         Whether this channel should be disabled from tracking
     """
-    pass
+    raise NotImplementedError("Not implemented yet!")
 
 
 @register(group=Groups.ADMIN, main=settings)
@@ -56,75 +61,141 @@ async def webhooks():
     pass
 
 
+async def get_logger(interaction: Interaction, current: str):
+    return [i.__name__ for i in all_subclasses(Log) if current in i.__name__]
+
+
+async def configured_loggers(interaction: Interaction, current: str):
+    return [i for i in interaction._Client.cache[interaction.guild_id].webhooks.keys() if current in i]
+
+
 @register(group=Groups.ADMIN, main=webhooks)
-async def subscribe(
-    ctx: Context,
-    source: str,
-    channel: ChannelID = None,
-    webhook: str = None,
-    content: str = None,
-    regex: str = None,
-    *,
-    language,
-):
-    """Subscribe webhook to specified source
+async def subscribe(ctx: Context, logger: get_logger, channel: Channel = None):
+    """Subscribe channel to specified logger source
 
     Params
     ------
-    source:
-        Source to which this webhook/channel should be subscribed to
-    webhook:
-        Webhook URL to subscribe to. If empty, creates one
-    content:
-        Content of message to send alongside
-    regex:
-        Whether it should only be sent if there is matching pattern
+    logger:
+        Source to which this channel should be subscribed to
+    channel:
+        Channel which should subscribe to this logger. Default is current channel
     """
-    from MFramework.database.alchemy import models
+    if channel.type in {10, 11, 12}:
+        thread = channel.id
+        channel_id = channel.parent_id
+    elif channel.type not in {0, 2, 5}:
+        # NOTE: Forum channels require specific behaviour on logger side, therefore they aren't included here
+        return "Specify either a Thread or a regular text channel."
+    else:
+        thread = None
+        channel_id = channel.id
 
-    _w = models.Webhook()
-    if webhook:
-        webhooks = await ctx.bot.get_guild_webhooks(ctx.guild_id)
-        for wh in filter(lambda x: x.channel_id == channel or ctx.channel_id, webhooks):
-            if wh.user.id == ctx.bot.user_id or any(s in wh.name for s in {"RSS", "DM"}):
+    s = ctx.db.sql.session()
+
+    _c = (
+        s.query(models.Channel)
+        .filter(models.Channel.server_id == ctx.guild_id, models.Channel.id == channel_id)
+        .first()
+    )
+    if not _c:
+        s.add(models.Channel(server_id=ctx.guild_id, id=channel_id))
+
+    _w = (
+        s.query(models.Webhook)
+        .filter(models.Webhook.server_id == ctx.guild_id, models.Webhook.channel_id == channel_id)
+        .first()
+    )
+    if not _w:
+        _w = models.Webhook(server_id=ctx.guild_id, channel_id=channel_id)
+
+        webhooks = await ctx.bot.get_channel_webhooks(channel_id or ctx.channel_id)
+        for wh in webhooks:
+            if wh.user.id == ctx.bot.user_id:
                 _w.id = wh.id
                 _w.token = wh.token
                 break
-    if not webhook and not _w.id:
-        if "log" in source.lower():
-            name = "Logging"
-        elif "dm" not in source.lower():
-            name = "RSS"
-        else:
-            name = "DM Inbox"
-        wh = await ctx.bot.create_webhook(channel, name, f"Requested by {ctx.user.username}")
-        _w.id = wh.id
-        _w.token = wh.token
-    _w.channel_id = channel
-    _w.server_id = ctx.guild_id
-    s = ctx.db.sql.session()
-    s.add(_w)
+        if not _w.id:
+            wh = await ctx.bot.create_webhook(
+                channel_id, f"{ctx.bot.username} Logging", f"Requested by {ctx.user.username}"
+            )
+            _w.id = wh.id
+            _w.token = wh.token
+
+        s.add(_w)
+
+    _w.subscriptions.append(models.Subscription(source=f"logging-{logger.lower()}", thread_id=thread))
     s.commit()
+    return f"Channel <#{channel_id}> is now subscribed to {logger}"
 
 
 @register(group=Groups.ADMIN, main=webhooks)
-async def unsubscribe(ctx: Context, source: str, webhook: str = None, *, language):
-    """Unsubscribe this channel from provided source
+async def unsubscribe(ctx: Context, logger: configured_loggers, channel: ChannelID = None):
+    """Unsubscribe this channel from provided logger
 
     Params
     ------
-    source:
+    logger:
         Source to unsubscribe from
-    webhook:
-        Webhook which should be unsubscribed
+    channel:
+        Channel which should unsubscribe
     """
-    pass
+    s = ctx.db.sql.session()
+
+    _w = (
+        s.query(models.Webhook)
+        .filter(models.Webhook.server_id == ctx.guild_id, models.Webhook.channel_id == channel)
+        .first()
+    )
+    if not _w:
+        return "This channel doesn't have any webhooks associated with it"
+    s.delete(
+        s.query(models.Subscription)
+        .filter(models.Subscription.webhook_id == _w.id, models.Subscription.source == f"logging-{logger}")
+        .first()
+    )
+    s.commit()
+    return f"Unsubscribed from {logger} on channel <#{channel}>"
 
 
 @register(group=Groups.ADMIN, main=settings)
 async def roles():
     """Management of role related bot settings"""
     pass
+
+
+@register(group=Groups.OWNER, main=roles, private_response=True)
+async def permission(ctx: Context, role: RoleID, permission_level: Groups = None):
+    """
+    Configure Role permission for bot management
+    Params
+    ------
+    role:
+        Role to configure
+    permission:
+        Permission level this role should have
+    """
+    if not ctx.permission_group.can_use(permission_level or Groups.GLOBAL):
+        return f"You can't set role to permission higher than your own ({ctx.permission_group.name.title()})"
+
+    session = ctx.db.sql.session()
+
+    _role: models.Role = (
+        session.query(models.Role).filter(models.Role.server_id == ctx.guild_id, models.Role.id == role).first()
+    )
+    if not permission_level:
+        if _role:
+            group = Groups.get(_role.get_setting(types.Setting.Permissions))
+        else:
+            group = Groups.GLOBAL
+        return f"Current Permission level for <@&{role}> is `{group.name.title()}`"
+    if not _role:
+        _role = models.Role(server_id=ctx.guild_id, id=role)
+        session.add(_role)
+    session.commit()
+
+    _role.modify_setting(types.Setting.Permissions, permission_level.value)
+    ctx.cache.groups[permission_level].add(role)
+    return f"Permission Level for <@&{role}> is now `{permission_level.name.title()}`"
 
 
 @register(group=Groups.ADMIN, main=settings)
@@ -139,7 +210,7 @@ class ChannelTypes:
     Buffer = "Buffer"
 
 
-@register(group=Groups.ADMIN, main=channels)
+# @register(group=Groups.ADMIN, main=channels)
 async def type(
     ctx: Context,
     type: ChannelTypes,
@@ -149,8 +220,6 @@ async def type(
     bitrate: int = 64000,
     user_limit: int = 0,
     postion: int = 0,
-    *,
-    language,
 ):
     """Sets type to specified channel
 
@@ -159,13 +228,11 @@ async def type(
     type:
         type of channel
     """
-    pass
+    raise NotImplementedError("Not implemented yet!")
 
 
 @register(group=Groups.ADMIN, main=settings)
-async def slowmode(
-    ctx: Context, limit: int = 0, duration: int = 0, channel: ChannelID = None, all: bool = False, *, language
-):
+async def slowmode(ctx: Context, limit: int = 0, duration: int = 0, channel: ChannelID = None, all: bool = False):
     """
     Sets a slowmode on a channel
     Params
@@ -209,7 +276,7 @@ async def slowmode(
 
 
 @register(group=Groups.ADMIN, main=settings)
-async def lockdown(ctx: Context, duration: int = 0, channel: ChannelID = None, all: bool = False, *, language):
+async def lockdown(ctx: Context, duration: int = 0, channel: ChannelID = None, all: bool = False):
     """
     Sets a lockdown on a channel
     Params
