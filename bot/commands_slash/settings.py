@@ -1,3 +1,5 @@
+from enum import Enum
+
 from MFramework import (
     Bitwise_Permission_Flags,
     Channel,
@@ -35,14 +37,16 @@ async def language(ctx: Context, new_language: str = None, channel: ChannelID = 
     raise NotImplementedError("Not implemented yet!")
 
 
-class Tracking:
-    Chat = "Chat"
-    Voice = "Voice"
-    Presence = "Presence"
+class Tracking(Enum):
+    Chat = 1 << 0
+    Voice = 1 << 1
+    Presence = 1 << 2
+    Activity = 1 << 3
+    Nitro = 1 << 4
 
 
-# @register(group=Groups.ADMIN, main=settings)
-async def tracking(ctx: Context, type: Tracking, channel: ChannelID = None):
+@register(group=Groups.ADMIN, main=settings)
+async def tracking(ctx: Context, type: Tracking):
     """Management of bot's tracking settings
 
     Params
@@ -52,7 +56,21 @@ async def tracking(ctx: Context, type: Tracking, channel: ChannelID = None):
     channel:
         Whether this channel should be disabled from tracking
     """
-    raise NotImplementedError("Not implemented yet!")
+    s = ctx.db.sql.session()
+    server: models.Server = s.query(models.Server).filter(models.Server.id == ctx.guild_id).first()
+
+    tracking = server.get_setting(types.Setting.Flags) or 0
+    if not tracking & type.value:
+        state = "enabled"
+        new_tracking = tracking | type.value
+    else:
+        state = "disabled"
+        new_tracking = tracking & ~type.value
+    server.add_setting(types.Setting.Flags, new_tracking)
+    s.commit()
+
+    ctx.cache.load_settings(server)
+    return f"Tracking {state} for {type.name}. Bitflag change: `{tracking}` -> `{new_tracking}`"
 
 
 @register(group=Groups.ADMIN, main=settings)
