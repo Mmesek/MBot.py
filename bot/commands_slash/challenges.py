@@ -96,7 +96,7 @@ async def add(ctx: Context, name: str, stage: str = None, points: int = 1):
 
 
 @register(group=Groups.GLOBAL, main=challenge)
-async def progress(ctx: Context, name: Challenges, stage: Stages = None, score: float = 1):
+async def progress(ctx: Context, name: Challenges, stage: Stages = None, score: float = None):
     """
     Updates your Progress in a challenge
     Params
@@ -126,7 +126,7 @@ async def progress(ctx: Context, name: Challenges, stage: Stages = None, score: 
     if not current_score:
         current_score = Challenge_Score(user_id=ctx.user_id, challenge_id=_challenge.id)
         session.add(current_score)
-    current_score.score = score if score <= _challenge.points else _challenge.points
+    current_score.score = score if score is not None and score <= _challenge.points else _challenge.points
     session.commit()
     return f"Score for {_challenge.name}{': '+_challenge.stage if _challenge.stage else ''} updated! Points from this challenge: {current_score.score}"
 
