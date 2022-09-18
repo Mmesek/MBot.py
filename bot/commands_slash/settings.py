@@ -222,31 +222,35 @@ async def channels():
     pass
 
 
-class ChannelTypes:
-    RPG = "RPG"
-    Dynamic = "Dynamic"
-    Buffer = "Buffer"
-
-
-# @register(group=Groups.ADMIN, main=channels)
-async def type(
-    ctx: Context,
-    type: ChannelTypes,
-    channel: ChannelID = None,
-    name: str = None,
-    parent_or_buffer_id: Snowflake = None,
-    bitrate: int = 64000,
-    user_limit: int = 0,
-    postion: int = 0,
-):
-    """Sets type to specified channel
+@register(group=Groups.ADMIN, main=channels)
+async def rpg(ctx: Context, channel: ChannelID):
+    """Toggles dice roll on *italics* in specified channel
 
     Params
     ------
-    type:
-        type of channel
+    channel:
+        channel to toggle
     """
-    raise NotImplementedError("Not implemented yet!")
+    session = ctx.db.sql.session()
+    _channel = (
+        session.query(models.Channel)
+        .filter(models.Channel.server_id == ctx.guild_id, models.Channel.id == channel)
+        .first()
+    )
+    if not _channel:
+        _channel = models.Channel(server_id=ctx.guild_id, id=channel)
+        session.add(_channel)
+
+    if _channel.get_setting(types.Setting.RPG):
+        state = "disabled"
+        ctx.cache.rpg_channels.remove(channel)
+        _channel.remove_setting(types.Setting.RPG)
+    else:
+        state = "enabled"
+        ctx.cache.rpg_channels.append(channel)
+        _channel.add_setting(types.Setting.RPG, True)
+    session.commit()
+    return f"Dice roll on *italics* is now {state} for <#{channel}>"
 
 
 @register(group=Groups.ADMIN, main=settings)
