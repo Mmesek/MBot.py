@@ -193,7 +193,7 @@ class Highscore(Leaderboard_Entry):
 
 
 @register(group=Groups.GLOBAL, main=challenge)
-async def list(ctx: Context, name: Challenges = None, reverse: bool = False):
+async def list(ctx: Context, name: Challenges = None, reverse: bool = False, limit: int = 10):
     """
     Lists available challenges alongside average completion
     Params
@@ -202,25 +202,30 @@ async def list(ctx: Context, name: Challenges = None, reverse: bool = False):
         Lists stages of this challenge
     reverse:
         List completion rates from least to most instead
+    limit:
+        How many rows to show?
     """
     session = ctx.db.sql.session()
     q = session.query(Challenge).filter(Challenge.guild_id == ctx.guild_id)
     if name:
         q = q.filter(Challenge.name == name)
+
     challenges = q.all()
+    _challenges = [i.id for i in challenges]
 
     if not challenges:
         return "Couldn't find provided challenge"
 
     total = (
         session.query(sa.func.count(Challenge_Score.user_id.distinct()))
-        .filter(Challenge_Score.id.in_([i.id for i in challenges]))
+        .filter(Challenge_Score.challenge_id.in_(_challenges))
         .first()
     ) or [0]
+
     per_challenge = {
         k[0]: k[1]
         for k in session.query(Challenge_Score.challenge_id, sa.func.count(Challenge_Score.user_id.distinct()))
-        .filter(Challenge_Score.id.in_([i.id for i in challenges]))
+        .filter(Challenge_Score.challenge_id.in_(_challenges))
         .group_by(Challenge_Score.challenge_id)
         .all()
     }
@@ -234,10 +239,11 @@ async def list(ctx: Context, name: Challenges = None, reverse: bool = False):
             Highscore(
                 ctx,
                 f"{i.name}{': '+i.stage if i.stage else ''}",
-                rate_challenge.get(i.id, 0),
-                lambda x: f"{rate_challenge.get(x, 0)*100}%",
+                rate_challenge.get(i.id, 0) * 100,
+                lambda x: f"{x or 0} %",
             )
             for i in challenges
         ],
         reverse=reverse,
+        limit=limit,
     ).as_embed("Completion rates")
