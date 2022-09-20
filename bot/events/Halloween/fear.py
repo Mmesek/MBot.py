@@ -204,7 +204,7 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
     Scare user using your army!
     Params
     ------
-    user:
+    target:
         User you want to scare
     """
     if target.id == ctx.user_id:
