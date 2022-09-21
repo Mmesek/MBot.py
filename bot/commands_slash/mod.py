@@ -8,7 +8,7 @@ from MFramework import (
     Snowflake,
     register,
 )
-from MFramework.commands.components import TextInput
+from MFramework.commands.components import Modal, Row, TextInput
 
 
 @register(group=Groups.MODERATOR, private_response=True)
@@ -142,10 +142,37 @@ async def say(
         return f"Exception occured: {ex}"
 
 
-@register(group=Groups.MODERATOR, private_response=True)
-async def say_long(ctx: Context, your_message: TextInput[1, 4000] = "Message to send"):
+class Long_Message(Modal):
+    private_response = True
+
+    @classmethod
+    async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
+        return await say(ctx, inputs["message"], ctx.channel_id, None if data == "None" else data)
+
+
+@register(group=Groups.MODERATOR, private_response=True, auto_defer=False)
+async def say_long(ctx: Context, message_id: Snowflake = None):
     """Shows Modal to send a multilined message as a bot"""
-    return await say(ctx, your_message, channel=ctx.channel_id)
+    if message_id:
+        msg = await ctx.bot.get_channel_message(ctx.channel_id, message_id)
+        content = msg.content
+    else:
+        content = None
+
+    return Long_Message(
+        Row(
+            TextInput(
+                label="Your Message",
+                custom_id="message",
+                min_length=1,
+                required=True,
+                value=content,
+                placeholder="Message to send",
+            )
+        ),
+        title="Multiline Message",
+        custom_id=message_id,
+    )
 
 
 @register(group=Groups.MODERATOR, private_response=True)
