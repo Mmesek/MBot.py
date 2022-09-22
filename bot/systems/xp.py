@@ -206,6 +206,7 @@ async def progress(ctx: Context, user: User = None) -> Embed:
         User's XP progress to show
     """
     user_id = ctx.user_id if not user else user.id
+    user = ctx.user if not user else user
     from ..database import models
 
     session = ctx.db.sql.session()
