@@ -263,6 +263,6 @@ async def reset(ctx: Context, user: User):
         exp = User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
         exp.value = 0
         session.commit()
-        return f"Reseted {user.username} XP back to 0"
+        return f"Reset {user.username} XP back to 0"
     except:
         return "Couldn't find specified user"
