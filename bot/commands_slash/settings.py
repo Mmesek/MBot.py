@@ -141,7 +141,7 @@ async def subscribe(ctx: Context, logger: get_logger, channel: Channel = None):
 
         s.add(_w)
 
-    _w.subscriptions.append(models.Subscription(source=f"logging-{logger.lower()}", thread_id=thread))
+    _w.subscriptions.append(models.Subscription(source=f"logging-{logger.lower()}", thread_id=thread, regex=None))
     s.commit()
     return f"Channel <#{channel_id}> is now subscribed to {logger}"
 
