@@ -9,7 +9,6 @@ from MFramework import (
     Interaction,
     Overwrite,
     RoleID,
-    Snowflake,
     register,
 )
 from MFramework.database.alchemy import models, types
@@ -141,8 +140,10 @@ async def subscribe(ctx: Context, logger: get_logger, channel: Channel = None):
 
         s.add(_w)
 
-    _w.subscriptions.append(models.Subscription(source=f"logging-{logger.lower()}", thread_id=thread, regex=None))
+    _w.subscriptions.append(models.Subscription(source=f"logging-{logger.lower()}", thread_id=thread, regex=""))
     s.commit()
+    ctx.cache.get_Webhooks(s)
+    ctx.cache.set_loggers(ctx.bot)
     return f"Channel <#{channel_id}> is now subscribed to {logger}"
 
 
@@ -172,6 +173,8 @@ async def unsubscribe(ctx: Context, logger: configured_loggers, channel: Channel
         .first()
     )
     s.commit()
+    ctx.cache.get_Webhooks(s)
+    ctx.cache.set_loggers(ctx.bot)
     return f"Unsubscribed from {logger} on channel <#{channel}>"
 
 
