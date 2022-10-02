@@ -1,4 +1,5 @@
 import time
+from asyncio import subprocess
 
 from MFramework import Context, Embed, Groups, register
 
@@ -25,9 +26,9 @@ async def ping(ctx: Context, detailed: bool = False, *args, language, **kwargs):
     end = time.time()
     e = None
     if detailed:
-        discord = ping()
+        discord = await _ping()
         e = Embed().addField("Discord", f"{discord}", True)
-        router = ping("192.168.1.254")
+        router = await _ping("192.168.1.254")
         if router[0] != "0":
             e.addField("Router", f"{router}", True)
         if ctx.bot.latency != None:
@@ -36,16 +37,16 @@ async def ping(ctx: Context, detailed: bool = False, *args, language, **kwargs):
     await ctx.reply(f"Pong! `{int((end-s)*1000)}ms`", e)
 
 
-def ping(host="discord.com"):
-    import os
+async def _ping(host="discord.com"):
     import platform
 
     s = platform.system().lower() == "windows"
     param = "-n" if s else "-c"
     command = ["ping", param, "1", host]
-    r = os.popen(" ".join(command))
-    for line in r:
-        last = line
+    r = await subprocess.create_subprocess_shell(" ".join(command), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = await r.communicate()
+    last = out.decode().splitlines()
+    last = last[-1]
     try:
         if s:
             ping = last.split("=", 1)[1].split("=", 2)[2]
@@ -91,9 +92,9 @@ async def status(ctx: Context, show_ping: bool = False, *, language="en") -> Emb
     embed.addField("Bot Uptime", secondsToText(proc_uptime, language), True)
     embed.addField("Session", secondsToText(int(time.time() - ctx.bot.start_time), language), True)
     if show_ping:
-        discord = ping()
+        discord = await _ping()
         api = 0  # ping("")
-        cdn = ping("cdn.discordapp.com")
+        cdn = await _ping("cdn.discordapp.com")
         embed.addField("Ping", f"Discord: {discord}\nAPI: {api}ms\nCDN: {cdn}", True)
     if ctx.bot.latency != None:
         embed.addField("Latency", "{0:.2f}ms".format(ctx.bot.latency), True)
