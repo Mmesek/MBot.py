@@ -11,6 +11,7 @@ from MFramework import (
     Embed_Thumbnail,
     Groups,
     Interaction,
+    User,
     register,
 )
 from MFramework.commands.decorators import Chance
@@ -594,6 +595,16 @@ async def biomarker(ctx: Interaction) -> Embed:
     from ..systems.xp import progress
 
     return await progress(ctx)
+
+
+@register(group=Groups.GLOBAL, private_response=True, guild=289739584546275339)
+async def Biomarker(ctx: Context, user: User):
+    """
+    Shows user infection state
+    """
+    from ..systems.xp import progress
+
+    return await progress(ctx, user)
 
 
 @register(group=Groups.GLOBAL, guild=289739584546275339)
