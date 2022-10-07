@@ -5,7 +5,7 @@ from enum import Enum
 
 import aiohttp
 import pycountry
-from MFramework import Context, Embed, Groups, register
+from MFramework import Context, Embed, Groups, Interaction, register
 from mlib.colors import get_main_color
 from mlib.utils import grouper, truncate
 
@@ -62,6 +62,16 @@ def country_from_locale(locale: str) -> str:
     return language.name.lower(), country.alpha_2.lower()
 
 
+async def Game(interaction: Interaction, current: str) -> list[str]:
+    if not INDEX:
+        await loadAppIndex()
+    _index = [i for i in INDEX.keys() if i.strip()]
+    matches = get_close_matches(current, _index, 25)
+    if not matches or matches[0] == "":
+        matches = list(filter(lambda x: current in x, _index))[:25]
+    return matches
+
+
 @register(group=Groups.GLOBAL)
 async def steam():
     """Fetches data on Steam games"""
@@ -69,7 +79,7 @@ async def steam():
 
 
 @register(group=Groups.GLOBAL, main=steam)
-async def playercount(ctx: Context, game: str) -> str:
+async def playercount(ctx: Context, game: Game) -> str:
     """
     Fetches playercount for specified game
 
@@ -89,7 +99,7 @@ async def playercount(ctx: Context, game: str) -> str:
 
 
 @register(group=Groups.GLOBAL, main=steam)
-async def game(ctx: Context, title: str) -> Embed:
+async def game(ctx: Context, title: Game) -> Embed:
     """
     Shows Steam's game data
 
@@ -293,7 +303,7 @@ async def calculator(ctx: Context, steam_id: str = None, country_code: str = Non
 
 
 @register(group=Groups.GLOBAL, main=steam)
-async def hltb(ctx: Context, game: str, *, e: Embed = None) -> Embed:
+async def hltb(ctx: Context, game: Game, *, e: Embed = None) -> Embed:
     """
     Shows How Long To Beat statistics for provided game
 
