@@ -32,7 +32,7 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
         return True
 
 
-@register(group=Groups.ADMIN)
+@register(group=Groups.ADMIN, interaction=False)
 async def ar_whitelist(ctx: Context, user: User):
     """
     Whitelist user in case of false-positive
