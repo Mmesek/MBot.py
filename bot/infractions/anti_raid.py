@@ -1,12 +1,23 @@
 from datetime import timedelta
 
-from MFramework import Bot, Guild_Member_Add, Message, onDispatch
+from MFramework import (
+    Bot,
+    Context,
+    Groups,
+    Guild_Member_Add,
+    Message,
+    User,
+    onDispatch,
+    register,
+)
 
 from .internal import kick_user
 
 
 @onDispatch
 async def guild_member_add(self: Bot, data: Guild_Member_Add):
+    if data.user.id in getattr(self.cache[data.guild_id], "anti_raid_whitelist", []):
+        return
     _last = self.cache[data.guild_id].last_join
     self.cache[data.guild_id].last_join = data.user.id
 
@@ -19,6 +30,21 @@ async def guild_member_add(self: Bot, data: Guild_Member_Add):
             pass
 
         return True
+
+
+@register(group=Groups.ADMIN)
+async def ar_whitelist(ctx: Context, user: User):
+    """
+    Whitelist user in case of false-positive
+    Params
+    ------
+    user:
+        User to whitelist
+    """
+    if not hasattr(ctx.cache, "anti_raid_whitelist"):
+        ctx.cache.anti_raid_whitelist = []
+    ctx.cache.anti_raid_whitelist.append(user.id)
+    return f"Currently whitelisted: {len(ctx.cache.anti_raid_whitelist)} users"
 
 
 @onDispatch
