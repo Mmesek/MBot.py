@@ -478,15 +478,15 @@
             "one": "zombie",
             "many": "zombies"
         },
-        "vampire_hunter": {
+        "hunter": {
             "one": "vampire hunter",
             "many": "vampire hunters"
         },
-        "huntsman": {
+        "huntsmen": {
             "one": "huntsman",
             "many": "huntsmen"
         },
-        "zombie_slayer": {
+        "enchanter": {
             "one": "zombie slayer",
             "many": "zombie slayers"
         },
@@ -506,15 +506,15 @@
             "one": "zombie's",
             "many": "zombie's"
         },
-        "denominator_vampire_hunter": {
+        "denominator_hunter": {
             "one": "vampire hunter's",
             "many": "vampire hunters's"
         },
-        "denominator_huntsman": {
+        "denominator_huntsmen": {
             "one": "huntsman's",
             "many": "huntsmen's"
         },
-        "denominator_zombie_slayer": {
+        "denominator_enchanter": {
             "one": "zombie slayer's",
             "many": "zombie slayers's"
         },
