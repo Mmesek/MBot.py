@@ -7,7 +7,7 @@ from mlib.localization import tr
 
 
 def _t(key: str, language: str = "en", **kwargs):
-    return tr("events.halloween." + key, language, **kwargs)
+    return tr("bot.events.Halloween.translations." + key, language, **kwargs)
 
 
 import sqlalchemy as sa
