@@ -829,7 +829,7 @@ async def statistics(ctx: Context) -> Embed:
     return [e]
 
 
-@register(group=Groups.GLOBAL, main=halloween)
+@register(group=Groups.GLOBAL, main=halloween, private_response=True)
 async def info(ctx: Context, user: User = None):
     """
     Shows user's event info
