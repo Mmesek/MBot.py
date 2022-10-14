@@ -47,6 +47,7 @@ class HalloweenCooldown(CacheCooldown):
         func_args: Dict[str, Any],
         target_user: Optional[Snowflake] = None,
         *args,
+        **kwargs,
     ) -> None:
         super().__init__(ctx=ctx, cooldown=cooldown, cooldown_type=cooldown_type)
         s = func_args.get("session", None)
