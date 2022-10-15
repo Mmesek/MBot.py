@@ -1117,8 +1117,9 @@ async def summary(ctx: Context):
 
     graphing.set_locator(ax, "Day", 3)
     fig.autofmt_xdate()
+    now = datetime.now()
 
-    graphing.set_legend(ax, "Halloween 2021 Summary", "Population", "Days", "upper left", framealpha=0)
+    graphing.set_legend(ax, f"Halloween {now.year} Summary", "Population", "Days", "upper left", framealpha=0)
     fig.tight_layout()
 
     img = graphing.create_image(fig)
