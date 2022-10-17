@@ -805,10 +805,10 @@ async def statistics(ctx: Context) -> Embed:
     Shows event related statistics
     """
     s = ctx.db.sql.session()
-    e = Embed().setTitle("Server Statistics")
-    total = sorted(Halloween.get_total(s, ctx.guild_id).items(), key=lambda x: x[1], reverse=True)
-    total = "\n".join([f"`{i[0]:10}`: `{i[1]:>5}`" for i in total])
-    e.addField("Members", total, True)
+    e = Embed().set_title("Server Statistics")
+    _total = sorted(Halloween.get_total(s, ctx.guild_id).items(), key=lambda x: x[1], reverse=True)
+    total = "\n".join([f"`{i[0]:10}`: `{i[1]:>5}`" for i in _total])
+    e.add_field("Members", total, True)
     turns_to = (
         s.query(sa.func.count(HalloweenLog.race), HalloweenLog.race)
         .filter(HalloweenLog.server_id == ctx.guild_id)
@@ -817,7 +817,7 @@ async def statistics(ctx: Context) -> Embed:
         .all()
     )
     turns_to = "\n".join([f"`{i[1]:10}`: `{i[0]:>5}`" for i in turns_to])
-    e.addField("Mostly Turned Into", turns_to, True)
+    e.add_field("Mostly Turned Into", turns_to, True)
     turns_from = (
         s.query(sa.func.count(HalloweenLog.previous), HalloweenLog.previous)
         .filter(HalloweenLog.server_id == ctx.guild_id)
@@ -826,8 +826,28 @@ async def statistics(ctx: Context) -> Embed:
         .all()
     )
     turns_from = "\n".join([f"`{i[1]:10}`: `{i[0]:>5}`" for i in turns_from])
-    e.addField("Mostly Turned From", turns_from, True)
-    return [e]
+    e.add_field("Mostly Turned From", turns_from, True)
+
+    active_players = (
+        s.query(sa.func.count(HalloweenLog.user_id))
+        .filter(
+            HalloweenLog.server_id == ctx.guild_id,
+            HalloweenLog.user_id != HalloweenLog.target_id,
+            HalloweenLog.race != HalloweenLog.previous,
+        )
+        .group_by(HalloweenLog.user_id)
+        .all()
+    )
+    total_players = (
+        s.query(sa.func.count(HalloweenLog.user_id))
+        .filter(HalloweenLog.server_id == ctx.guild_id)
+        .group_by(HalloweenLog.user_id)
+        .all()
+    )
+    e.set_footer(
+        f"Active/Total/Participants: {len([i for i in active_players if i[0] > 1])}/{len(total_players)}/{sum([i[1] for i in _total])}"
+    )
+    return e
 
 
 @register(group=Groups.GLOBAL, main=halloween, private_response=True)
