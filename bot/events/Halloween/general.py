@@ -850,6 +850,75 @@ async def statistics(ctx: Context) -> Embed:
     return e
 
 
+@register(group=Groups.GLOBAL, main=halloween)
+async def cooldowns(ctx: Context):
+    """
+    Shows current faction cooldowns
+    """
+    s = ctx.db.sql.session()
+    e = Embed().set_title("Current Cooldowns")
+    t = Halloween.get_total(s, ctx.guild_id)
+
+    def cooldown_var(race, a, b):
+        diff = t.get(race) - ((t.get(a) + t.get(b)) // 2)
+        if ((t.get(a) + t.get(b)) // 2) > t.get(race):
+            diff *= 2
+        return timedelta(minutes=diff * 3)
+
+    def get(cooldown: COOLDOWNS, race: Race, other1: Race, other2: Race, multipler=1):
+        c = (cooldown.value + cooldown_var(race, other1, other2)) * multipler
+        return c if c.total_seconds() > 300 else timedelta(minutes=5)
+
+    def ratio(hunter: Race):
+        return 1 / (t.get(CURE_TABLE[hunter], 1) / t.get(hunter, 1))
+
+    top = sorted(filter(lambda x: x[0] in HUNTERS, t.items()), key=lambda x: x[1], reverse=True)[0]
+    r = 1 / (t.get(CURE_TABLE[top[0]], 1) / top[1])
+    top = top[0]
+
+    e.add_field(
+        "Monsters",
+        "\n".join(
+            [
+                f"Vampire ({t.get(Race.Vampire)}): {get(COOLDOWNS.BITE, Race.Vampire, Race.Werewolf, Race.Zombie)}",
+                f"Werewolf ({t.get(Race.Werewolf)}): {get(COOLDOWNS.BITE, Race.Werewolf, Race.Vampire, Race.Zombie)}",
+                f"Zombie ({t.get(Race.Zombie)}): {get(COOLDOWNS.BITE, Race.Zombie, Race.Werewolf, Race.Vampire)}",
+            ]
+        ),
+    )
+    e.add_field(
+        f"Hunters ({t.get(Race.Hunter)})",
+        "\n".join(
+            [
+                f"Cure: {get(COOLDOWNS.CURE, Race.Hunter, Race.Huntsmen, Race.Enchanter, 1 - (r - ratio(Race.Hunter)))}",
+                f"Betray: {get(COOLDOWNS.BETRAY, Race.Hunter, Race.Huntsmen, Race.Enchanter, 1 - (r - ratio(Race.Hunter)))}",
+                f"Defend: {get(COOLDOWNS.DEFEND, Race.Hunter, Race.Huntsmen, Race.Enchanter, 1 - (r - ratio(Race.Hunter)))}",
+            ]
+        ),
+    )
+    e.add_field(
+        f"Huntsmen ({t.get(Race.Huntsmen)})",
+        "\n".join(
+            [
+                f"Cure: {get(COOLDOWNS.CURE, Race.Huntsmen, Race.Hunter, Race.Enchanter, 1 - (r - ratio(Race.Huntsmen)))}",
+                f"Betray: {get(COOLDOWNS.BETRAY, Race.Huntsmen, Race.Hunter, Race.Enchanter, 1 - (r - ratio(Race.Huntsmen)))}",
+                f"Defend: {get(COOLDOWNS.DEFEND, Race.Huntsmen, Race.Hunter, Race.Enchanter, 1 - (r - ratio(Race.Huntsmen)))}",
+            ]
+        ),
+    )
+    e.add_field(
+        f"Enchanters ({t.get(Race.Enchanter)})",
+        "\n".join(
+            [
+                f"Cure: {get(COOLDOWNS.CURE, Race.Enchanter, Race.Huntsmen, Race.Hunter, 1 - (r - ratio(Race.Enchanter)))}",
+                f"Betray: {get(COOLDOWNS.BETRAY, Race.Enchanter, Race.Huntsmen, Race.Hunter, 1 - (r - ratio(Race.Enchanter)))}",
+                f"Defend: {get(COOLDOWNS.DEFEND, Race.Enchanter, Race.Huntsmen, Race.Hunter, 1 - (r - ratio(Race.Enchanter)))}",
+            ]
+        ),
+    )
+    return e
+
+
 @register(group=Groups.GLOBAL, main=halloween, private_response=True)
 async def info(ctx: Context, user: User = None):
     """
