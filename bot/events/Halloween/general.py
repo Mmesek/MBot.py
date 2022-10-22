@@ -65,7 +65,8 @@ class HalloweenCooldown(CacheCooldown):
 
     @property
     def cooldown(self) -> timedelta:
-        return (self._cooldown + self.cooldown_var) * self.multipler
+        c = (self._cooldown + self.cooldown_var) * self.multipler
+        return c if c.total_seconds() > 300 else timedelta(minutes=5)
 
     @property
     def is_top_faction(self) -> bool:
