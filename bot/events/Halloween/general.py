@@ -628,6 +628,27 @@ async def betray(ctx: Context, target: User, *, session: sa.orm.Session, this_us
     return await turn(ctx, session, this_user, target.id, this_user.race, action="betray")
 
 
+@hunters
+@cooldown(hours=2, logic=HalloweenCooldown)
+@Chance(30, fail_message="Couldn't find any monster nearby!")
+async def track(ctx: Context, *, session: sa.orm.Session, this_user: Halloween) -> str:
+    """Attempt to track a monster's footprints
+    Params
+    ------
+    target:
+        Target you want to convince"""
+    # NOTE: Alternative would be to also check monsters this hunter hunts for
+    # TODO: Weighted chance, prioritize users that are inactive/have less xp/were active long ago
+    r = (
+        session.query(Halloween)
+        .filter(Halloween.race.in_(list(IMMUNE_TABLE.keys())), Halloween.server_id == ctx.guild_id)
+        .order_by(sa.func.random())
+        .limit(1)
+        .first()
+    )
+    return f"You find signs of struggle. Investigating spilled blood leads you to a {r.race.name}: <@{r.user_id}>"
+
+
 # @register(group=Groups.GLOBAL, name="Defend or Betray")
 @hunters(should_register=False)
 async def defend_or_betray(ctx: Context, user: User, *, session: sa.orm.Session, this_user: Halloween):
