@@ -878,7 +878,7 @@ async def cooldowns(ctx: Context):
     Shows current faction cooldowns
     """
     s = ctx.db.sql.session()
-    e = Embed().set_title("Current Cooldowns")
+    e = Embed().set_title("Current Cooldowns").set_footer("Illustrative only. Actual cooldowns might differ")
     t = Halloween.get_total(s, ctx.guild_id)
 
     def cooldown_var(race, a, b):
