@@ -1041,9 +1041,13 @@ async def message_create(self: Bot, data: Message):
 
 
 @register(group=Groups.SYSTEM, main=halloween, interaction=False)
-async def summary(ctx: Context):
+async def summary(ctx: Context, include_humans: bool = False):
     """
     Shows event summary
+    Params
+    ------
+    include_humans:
+        Whether to draw line for humans as well or not
     """
     await ctx.deferred()
     e = Embed()
@@ -1179,13 +1183,14 @@ async def summary(ctx: Context):
 
     counters = Counter(list(Race))
     races = {i: {"y": [], "t": []} for i in list(Race)}
+    counters[Race.Human] = stats[1][1]
 
     import pandas as pd
 
     for entry in history:
         counters[entry.race] += 1
         counters[entry.previous] -= 1
-        if entry.race is Race.Human:
+        if not include_humans and entry.race is Race.Human:
             continue
         t = pd.to_datetime(entry.timestamp).tz_convert(None)
         races[entry.race]["y"].append(counters[entry.race])
@@ -1198,7 +1203,7 @@ async def summary(ctx: Context):
     plt.style.use(["dark_background"])
 
     LINE_STYLES = {
-        Race.Human: "",
+        Race.Human: "dashed",
         Race.Vampire: "dotted",
         Race.Werewolf: "dotted",
         Race.Zombie: "dotted",
@@ -1218,7 +1223,7 @@ async def summary(ctx: Context):
     }
 
     for race, v in races.items():
-        if race is Race.Human:
+        if not include_humans and race is Race.Human:
             continue
         y, t = v.values()
         df = pd.Series(y, index=t)
