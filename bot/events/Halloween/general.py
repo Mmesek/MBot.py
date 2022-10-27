@@ -649,6 +649,14 @@ async def track(ctx: Context, *, session: sa.orm.Session, this_user: Halloween) 
     return f"You find signs of struggle. Investigating spilled blood leads you to a {r.race.name}: <@{r.user_id}>"
 
 
+@hunters
+@cooldown(hours=2, logic=HalloweenCooldown)
+@Chance(50, fail_message="You are trying to do WHAT?! KEEP FIGHTING!")
+async def desert(ctx: Context, *, session: sa.orm.Session, this_user: Halloween) -> str:
+    """Attempt to desert from being a hunter"""
+    return await turn(ctx, session, this_user, ctx.user_id, Race.Human, action="desert")
+
+
 # @register(group=Groups.GLOBAL, name="Defend or Betray")
 @hunters(should_register=False)
 async def defend_or_betray(ctx: Context, user: User, *, session: sa.orm.Session, this_user: Halloween):
@@ -761,8 +769,10 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
         elif entry.user_id == entry.target_id:
             if entry.race in IMMUNE_TABLE:
                 line = f"Drank potion and became `{entry.race}`"
-            else:
+            elif entry.race in HUNTERS:
                 line = f"Enlisted as `{entry.race}`"
+            else:
+                line = f"Deserted from `{entry.previous}`"
         elif entry.previous in IMMUNE_TABLE and entry.race in HUNTERS:
             line = f"Convinced to fight as `{entry.race}`"
         else:

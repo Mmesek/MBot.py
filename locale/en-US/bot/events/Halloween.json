@@ -524,6 +524,7 @@
         "success_cure": "<@%{author}>, Successfully cured <@%{target}> from %{previousClass}",
         "success_defend": "<@%{target}> is protected for next %{duration} minutes",
         "success_betray": "<@%{author}>, Successfuly convinced <@%{target}> to betray their kind and join hunters",
+        "sucess_desert": "<@%{author}>, ~~Cowardly,~~ You've successfully... resigned from being a %{previousClass}",
         "success_generic": "",
         "cant_enlist": "You have to be human to use that!",
         "cant_drink": "Sorry. Drinks are only available to freshbloods",
