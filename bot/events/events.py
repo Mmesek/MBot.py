@@ -4,7 +4,7 @@ from .Christmas import general, snowballs  # noqa: F401
 from .Halloween import fear, general  # noqa: F401
 
 
-@register(group=Groups.GLOBAL)
+##@register(group=Groups.GLOBAL)
 async def event(ctx: Context, *, language):
     """Event related commands"""
     pass
