@@ -59,8 +59,8 @@ async def direct_message_create(self: Bot, data: Message):
     self.cache[data.guild_id][data.channel_id].store(data)
 
 
-@register(group=Groups.MODERATOR)
-async def dm(ctx: Context, user: UserID, message: str, *, language):
+@register(group=Groups.MODERATOR, private_response=True)
+async def dm(ctx: Context, user: UserID, message: str) -> str:
     """
     DMs user with specified message
     Params
@@ -73,10 +73,11 @@ async def dm(ctx: Context, user: UserID, message: str, *, language):
     try:
         dm = await ctx.bot.create_dm(user)
         msg = await ctx.bot.create_message(dm.id, message)
+    except Exception as ex:
+        return "Couldn't Deliver message to specified user."
+    try:
         msg.author = ctx.user
         log = ctx.cache.logging["direct_message"]
-        if not log:
-            return
         e = log._create_embed(msg)
         e.setColor("#0fc130")
         threads = {v: k for k, v in ctx.cache.dm_threads.items()}
@@ -88,10 +89,9 @@ async def dm(ctx: Context, user: UserID, message: str, *, language):
             avatar=ctx.user.get_avatar(),
             thread_id=thread_id,
         )
-        if ctx.is_interaction:
-            await ctx.reply(f"Message sent.\nChannelID: {dm.id}\nMessageID: {msg.id}", private=True)
-    except Exception as ex:
-        await ctx.reply("Couldn't Deliver message to specified user.", private=True)
+    except:
+        pass
+    return f"Message sent.\nChannelID: {dm.id}\nMessageID: {msg.id}"
 
 
 @onDispatch(event="message_create")
