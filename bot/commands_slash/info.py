@@ -11,6 +11,7 @@ from MFramework import (
     RoleID,
     Snowflake,
     User_Flags,
+    menu_user,
     register,
 )
 
@@ -21,6 +22,7 @@ async def info(ctx: Context):
     pass
 
 
+@menu_user("Info", private_response=True)
 @register(group=Groups.GLOBAL, main=info)
 async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     """Shows user info

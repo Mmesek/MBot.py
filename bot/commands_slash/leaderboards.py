@@ -1,6 +1,15 @@
 from typing import Callable, List
 
-from MFramework import Embed, Event, Groups, Snowflake, User, UserID, register
+from MFramework import (
+    Embed,
+    Event,
+    Groups,
+    Snowflake,
+    User,
+    UserID,
+    menu_user,
+    register,
+)
 from MFramework.bot import Context
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.localization import secondsToText
@@ -14,6 +23,7 @@ async def leaderboard():
     pass
 
 
+@menu_user("Experience", private_response=True)
 @register(group=Groups.GLOBAL, main=leaderboard)
 async def exp(ctx: Context, user: User = None) -> Embed:
     """Shows exp
