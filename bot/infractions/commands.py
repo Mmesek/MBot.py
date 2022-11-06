@@ -13,7 +13,7 @@ from MFramework import (
     Message_Reference,
     Presence_Update,
     User,
-    menu_user,
+    menu,
     onDispatch,
     register,
 )
@@ -295,7 +295,7 @@ async def expire(ctx: Context, infraction_id: int) -> str:  # TODO: Autocomplete
 actions = [warn, timeout, kick, ban]
 
 
-@menu_user("Infractions")
+@menu("Infractions")
 @register(group=Groups.GLOBAL, main=infraction, aliases=["infractions"], private_response=True)
 async def list_(ctx: Context, user: User = None) -> Embed:
     """
