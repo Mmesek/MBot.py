@@ -10,7 +10,7 @@ from MFramework import (
     Context,
     Embed,
     Emoji,
-    EventBetween,
+    Event,
     Groups,
     Message,
     UserID,
@@ -386,9 +386,11 @@ class Attack(Button):
 
 
 @onDispatch(event="message_create")
-@EventBetween(after_month=8, before_month=10, before_day=13)
+@Event(month=11)
 @Chance(3)
 async def spawn_fighter(bot: Bot, data: Message):
+    if data.guild_id != 289739584546275339 or data.channel_id in {498444387143909396}:
+        return
     with bot.db.sql.session() as session:
         try:
             boss = Gladiator_Boss.get(session, data)
@@ -413,9 +415,11 @@ class Bonus(Button):
 
 
 @onDispatch(event="message_create")
-@EventBetween(after_month=8, before_month=10, before_day=13)
+@Event(month=11)
 @Chance(1)
 async def spawn_bonus(bot: Bot, data: Message):
+    if data.guild_id != 289739584546275339 or data.channel_id in {498444387143909396}:
+        return
     with bot.db.sql.session() as session:
         try:
             boss = Gladiator_Boss.get(session, data)
