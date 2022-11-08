@@ -23,6 +23,8 @@ from mlib.database import Base
 
 from ..commands_slash.answer import Answers_Puzzle, Answers_Registered
 
+ATTACK_COOLDOWN = timedelta(seconds=10)
+
 
 class NotAvailable(Exception):
     pass
@@ -124,7 +126,7 @@ class Gladiator_Boss(Base):
         history = [i for i in player.history if i.damage]
 
         if history:
-            remaining_cooldown = timedelta(minutes=30) - (now - history[-1].timestamp)
+            remaining_cooldown = ATTACK_COOLDOWN - (now - history[-1].timestamp)
         else:
             remaining_cooldown = timedelta()
 
@@ -333,9 +335,7 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     if player.history:
         embed.add_field("Total damage dealt", str(sum([i.damage for i in player.history])), True)
         embed.add_field("Last attack", f"<t:{int(player.history[-1].timestamp.timestamp())}:R>", True)
-        remaining_cooldown: timedelta = timedelta(minutes=30) - (
-            datetime.now(tz=timezone.utc) - player.history[-1].timestamp
-        )
+        remaining_cooldown: timedelta = ATTACK_COOLDOWN - (datetime.now(tz=timezone.utc) - player.history[-1].timestamp)
         if remaining_cooldown.total_seconds() > 0:
             embed.add_field(
                 "Cooldown remaining",
