@@ -1059,7 +1059,6 @@ async def summary(ctx: Context, include_humans: bool = False):
     include_humans:
         Whether to draw line for humans as well or not
     """
-    await ctx.deferred()
     e = Embed()
     e.setTitle("Thanks for Participating!")
     s = ctx.db.sql.session()
@@ -1246,7 +1245,14 @@ async def summary(ctx: Context, include_humans: bool = False):
     fig.autofmt_xdate()
     now = datetime.now()
 
-    graphing.set_legend(ax, f"Halloween {now.year} Summary", "Population", "Days", "upper left", framealpha=0)
+    graphing.set_legend(
+        ax,
+        f"Halloween {now.year} Summary",
+        "Population",
+        "Days",
+        f"upper {'left' if not include_humans else 'right'}",
+        framealpha=0,
+    )
     fig.tight_layout()
 
     img = graphing.create_image(fig)
