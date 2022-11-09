@@ -312,7 +312,10 @@ async def boss(ctx: Context, name: str = None) -> int:
         Name of the boss to check
     """
     with ctx.db.sql.session() as session:
-        boss = Gladiator_Boss.get(session, ctx, name)
+        try:
+            boss = Gladiator_Boss.get(session, ctx, name)
+        except NotAvailable as ex:
+            return ex
 
     return boss.health
 
