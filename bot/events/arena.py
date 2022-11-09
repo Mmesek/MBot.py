@@ -18,12 +18,14 @@ from MFramework import (
     register,
 )
 from MFramework.commands.components import Button, Modal, Row, TextInput
+from MFramework.commands.cooldowns import CacheCooldown, cooldown
+from MFramework.commands.exceptions import CooldownError
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.database import Base
 
 from ..commands_slash.answer import Answers_Puzzle, Answers_Registered
 
-ATTACK_COOLDOWN = timedelta(seconds=10)
+ATTACK_COOLDOWN = timedelta(seconds=30)
 
 
 class NotAvailable(Exception):
@@ -234,6 +236,7 @@ async def create(ctx: Context, name: str, health: int, duration: timedelta, imag
 
 
 @register(group=Groups.ADMIN, main=manage)
+@cooldown(logic=CacheCooldown, seconds=30)
 async def attack(ctx: Context, name: str = None, *, user_id: UserID = None, session=None) -> str:
     """
     Attacks boss
@@ -382,8 +385,10 @@ class Attack(Button):
         if datetime.fromtimestamp(int(t)) <= datetime.now():
             return "Fighter has already fled from this fight!"
         try:
-            return await attack(ctx, data)
+            return await attack(ctx=ctx, name=data)
         except NotAvailable as ex:
+            return ex
+        except CooldownError as ex:
             return ex
 
 
