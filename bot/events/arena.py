@@ -394,7 +394,7 @@ class Attack(Button):
 
 @onDispatch(event="message_create")
 @Event(month=11)
-@Chance(3)
+@Chance(0.75)
 async def spawn_fighter(bot: Bot, data: Message):
     if data.guild_id != 289739584546275339 or data.channel_id in {498444387143909396}:
         return
@@ -423,7 +423,7 @@ class Bonus(Button):
 
 @onDispatch(event="message_create")
 @Event(month=11)
-@Chance(1)
+@Chance(0.15)
 async def spawn_bonus(bot: Bot, data: Message):
     if data.guild_id != 289739584546275339 or data.channel_id in {498444387143909396}:
         return
