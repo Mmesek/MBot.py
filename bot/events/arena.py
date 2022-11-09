@@ -339,7 +339,11 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     embed.add_field("Current damage bonus", str(player.bonus(Gladiator_Boss.get(session, ctx))), True)
     if player.history:
         embed.add_field("Total damage dealt", str(sum([i.damage for i in player.history])), True)
-        embed.add_field("Last attack", f"<t:{int(player.history[-1].timestamp.timestamp())}:R>", True)
+        embed.add_field(
+            "Last attack",
+            f"<t:{int(sorted(player.history, key=lambda x: x.timestamp)[-1].timestamp.timestamp())}:R>",
+            True,
+        )
         remaining_cooldown: timedelta = ATTACK_COOLDOWN - (datetime.now(tz=timezone.utc) - player.history[-1].timestamp)
         if remaining_cooldown.total_seconds() > 0:
             embed.add_field(
