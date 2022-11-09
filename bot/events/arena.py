@@ -251,6 +251,8 @@ async def attack(ctx: Context, name: str = None, *, user_id: UserID = None, sess
 
     dmg = boss.attack(session, user_id or ctx.user_id)
     session.commit()
+    if boss.health <= 0:
+        await ctx.bot.create_message(ctx.channel_id, f"<@{ctx.user_id}> dealt {dmg} and killed {boss.name}!")
 
     return f"Dealt {dmg} to {boss.name}"
 
