@@ -67,6 +67,8 @@ class Gladiator(Base):
         self.history.append(
             Gladiator_History(damage=damage, boss_id=boss.id, user_id=self.user_id, guild_id=self.guild_id)
         )
+        if boss.health <= 0:
+            boss.ends_at = datetime.now(tz=timezone.utc)
         return damage
 
 
