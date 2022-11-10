@@ -526,20 +526,31 @@ from mlib.database import Base
 
 class ReviewScores(Base):
     user_id = sa.Column(sa.BigInteger, primary_key=True)
+    game = sa.Column(sa.String, primary_key=True, default=None, nullable=True)
     score = sa.Column(sa.Integer)
 
 
 from MFramework.commands.components import Modal, TextInput
 
+games = {"938473018500464700": "Dying Light 2: Stay Human", "1040393182548066364": "Dying Light 2: Bloody Ties"}
+
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
 async def review(
-    ctx: Context, score: TextInput[1, 2] = "Number between 1 and 10", your_review: TextInput[1, 250] = "Your Review"
+    ctx: Context,
+    game: str,
+    score: TextInput[1, 2] = "Number between 1 and 10",
+    your_review: TextInput[1, 250] = "Your Review",
 ) -> Modal:
     """
     Leave a Review!
     Params
     ------
+    game:
+        Game to review
+        Choices:
+            Dying Light 2: Stay Human = 938473018500464700
+            Dying Light 2: Bloody Ties = 1040393182548066364
     score:
         Your Score. Value between 1 and 10
     your_review:
@@ -547,7 +558,7 @@ async def review(
     """
     s = ctx.db.sql.session()
 
-    if s.query(ReviewScores).filter(ReviewScores.user_id == ctx.user_id).first():
+    if s.query(ReviewScores).filter(ReviewScores.user_id == ctx.user_id, ReviewScores.game == games[game]).first():
         return "You've already sent your review"
 
     try:
@@ -570,21 +581,28 @@ async def review(
         color = "#FF2929"
     embed.setColor(color)
 
-    s.add(ReviewScores(user_id=ctx.user_id, score=score))
+    s.add(ReviewScores(user_id=ctx.user_id, score=score, game=games[game]))
     s.commit()
 
-    await ctx.bot.create_message(938473018500464700, embeds=[embed])
+    await ctx.bot.create_message(game, embeds=[embed])
     return "Thank you for your review!"
 
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
-async def reviews(ctx: Context):
+async def reviews(ctx: Context, game: str):
     """
     Shows average Review score
+    Params
+    ------
+    game:
+        Game to calculate average of
+        Choices:
+            Dying Light 2: Stay Human = 938473018500464700
+            Dying Light 2: Bloody Ties = 1040393182548066364
     """
     s = ctx.db.sql.session()
-    r = s.query(sa.func.avg(ReviewScores.score)).first()
-    return f"{r[0]:.2f}"
+    r = s.query(sa.func.avg(ReviewScores.score)).filter(ReviewScores.game == games[game]).first()
+    return f"{r[0] or 0:.2f}"
 
 
 @register(group=Groups.GLOBAL, private_response=True, only_interaction=True, bot=572532846678376459)
