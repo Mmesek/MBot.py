@@ -378,7 +378,7 @@ async def bosses(ctx: Context) -> str:
     bosses: list[Gladiator_Boss] = (
         session.query(Gladiator_Boss)
         .filter(Gladiator_Boss.guild_id == ctx.guild_id)
-        .order_by(Gladiator_Boss.ends_at)
+        .order_by(Gladiator_Boss.ends_at, Gladiator_Boss.health)
         .all()
     )
     return "\n".join([f"{boss.name} - {boss.health} | <t:{int(boss.ends_at.timestamp())}:R>" for boss in bosses])
