@@ -127,7 +127,7 @@ class Gladiator_Boss(Base):
             player = Gladiator(user_id=user_id, guild_id=self.guild_id)
             session.add(player)
 
-        history = [i for i in player.history if i.damage]
+        history = sorted([i for i in player.history if i.damage], key=lambda x: x.timestamp)
 
         if history:
             remaining_cooldown = ATTACK_COOLDOWN - (now - history[-1].timestamp)
