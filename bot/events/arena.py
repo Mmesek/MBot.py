@@ -333,15 +333,28 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
     """
     if not session:
         session = ctx.db.sql.session()
+
     player: Gladiator = (
         session.query(Gladiator)
         .filter(Gladiator.user_id == (user_id or ctx.user_id), Gladiator.guild_id == ctx.guild_id)
         .first()
     )
+
     if not player:
         return "No stats"
+    NOW = datetime.now(tz=timezone.utc)
+
+    bosses: list[Gladiator_Boss] = (
+        session.query(Gladiator_Boss)
+        .filter(Gladiator_Boss.guild_id == ctx.guild_id)
+        .filter(Gladiator_Boss.start_at <= NOW, Gladiator_Boss.ends_at >= NOW)
+        .order_by(Gladiator_Boss.ends_at, Gladiator_Boss.health)
+        .all()
+    )
+
     embed = Embed()
-    embed.add_field("Current damage bonus", str(player.bonus(Gladiator_Boss.get(session, ctx))), True)
+    embed.add_field("Current damage bonuses", "\n".join([f"{k.name}: {player.bonus(k)}" for k in bosses]), True)
+
     if player.history:
         embed.add_field("Total damage dealt", str(sum([i.damage for i in player.history])), True)
         embed.add_field(
@@ -349,13 +362,15 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
             f"<t:{int(sorted(player.history, key=lambda x: x.timestamp)[-1].timestamp.timestamp())}:R>",
             True,
         )
-        remaining_cooldown: timedelta = ATTACK_COOLDOWN - (datetime.now(tz=timezone.utc) - player.history[-1].timestamp)
+        remaining_cooldown: timedelta = ATTACK_COOLDOWN - (NOW - player.history[-1].timestamp)
+
         if remaining_cooldown.total_seconds() > 0:
             embed.add_field(
                 "Cooldown remaining",
-                f"<t:{int((datetime.now(tz=timezone.utc) + remaining_cooldown).timestamp())}:R>",
+                f"<t:{int((NOW + remaining_cooldown).timestamp())}:R>",
                 True,
             )
+
     return embed
 
 
