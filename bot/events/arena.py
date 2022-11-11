@@ -405,7 +405,6 @@ async def leaderboard(ctx: Context, limit: int = 10, by_bonus: bool = False) -> 
     by_bonus:
         Whether to show according to total bonus
     """
-    ctx.guild_id = 289739584546275339
     return Leaderboard(
         ctx,
         ctx.user_id,
