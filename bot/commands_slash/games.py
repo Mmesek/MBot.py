@@ -66,9 +66,9 @@ async def hangman(
     else:
         words = [word.strip() for word in words.split(",")]
     msg = await ctx.reply("...")
-    hidden = random.choice(list(words))
+    hidden = random.choice(list(words)).lower()
     uncovered = set()
-    secret = set(hidden.lower())
+    secret = set(hidden)
     steps = range(lives or len(secret))
     missed = []
     wrong = 0
@@ -126,7 +126,7 @@ async def hangman(
             timeout=360,
         )
         answer = last_answer.content.lower().strip()
-        if answer == hidden.lower():
+        if answer == hidden:
             # Guessed word
             await last_answer.reply("You won, congratulations")
             break
@@ -140,7 +140,7 @@ async def hangman(
             # Wrong letter/word
             missed.append(answer)
             wrong += 1
-        secret = set(hidden.lower()).difference(uncovered)
+        secret = set(hidden).difference(uncovered)
         if not secret:
             # All letters are known
             break
