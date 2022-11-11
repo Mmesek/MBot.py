@@ -102,6 +102,26 @@ class Gladiator_History(Base):
         )
         return [i for i in u if i[1] >= min_damage]
 
+    @classmethod
+    async def by_bonus(cls, ctx: Context, min_bonus: int = 1, *, session=None) -> list:
+        """
+        Lists users that received any bonus
+        Params
+        ------
+        min_bonus:
+            minimum bonus user has
+        """
+        if not session:
+            session = ctx.db.sql.session()
+        u: list[Gladiator_History] = (
+            session.query(Gladiator_History.user_id, sa.func.sum(Gladiator_History.bonus))
+            .filter(Gladiator_History.guild_id == ctx.guild_id)
+            .group_by(Gladiator_History.user_id)
+            .order_by(sa.func.sum(Gladiator_History.bonus))
+            .all()
+        )
+        return [i for i in u if i[1] >= min_bonus]
+
 
 class Gladiator_Boss(Base):
     id: int = sa.Column(sa.Integer, primary_key=True)
@@ -375,12 +395,25 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
 
 
 @register(group=Groups.GLOBAL, main=stats, private_response=True)
-async def leaderboard(ctx: Context) -> Embed:
+async def leaderboard(ctx: Context, limit: int = 10, by_bonus: bool = False) -> Embed:
     """
     Shows leaderboards
+    Params
+    ------
+    limit:
+        Amount of entries to show
+    by_bonus:
+        Whether to show according to total bonus
     """
+    ctx.guild_id = 289739584546275339
     return Leaderboard(
-        ctx, ctx.user_id, [Leaderboard_Entry(ctx, i[0], i[1]) for i in await Gladiator_History.list(ctx)]
+        ctx,
+        ctx.user_id,
+        [
+            Leaderboard_Entry(ctx, i[0], i[1])
+            for i in await (Gladiator_History.list(ctx) if not by_bonus else Gladiator_History.by_bonus(ctx))
+        ],
+        limit=limit,
     ).as_embed()
 
 
