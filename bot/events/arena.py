@@ -258,7 +258,7 @@ async def create(ctx: Context, name: str, health: int, duration: timedelta, imag
 
 
 @register(group=Groups.ADMIN, main=manage)
-@cooldown(logic=CacheCooldown, seconds=30)
+@cooldown(logic=CacheCooldown, delta=ATTACK_COOLDOWN)
 async def attack(ctx: Context, name: str = None, *, user_id: UserID = None, session=None) -> str:
     """
     Attacks boss
