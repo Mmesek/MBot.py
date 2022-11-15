@@ -381,8 +381,11 @@ async def user(ctx: Context, user_id: UserID = None, *, session=None) -> Embed:
         .all()
     )
 
+    bonuses = "\n".join([f"{k.name}: {player.bonus(k)}" for k in bosses])
+
     embed = Embed()
-    embed.add_field("Current damage bonuses", "\n".join([f"{k.name}: {player.bonus(k)}" for k in bosses]), True)
+    if bonuses:
+        embed.add_field("Current damage bonuses", bonuses, True)
 
     if player.history:
         embed.add_field("Total damage dealt", str(sum([i.damage for i in player.history])), True)
