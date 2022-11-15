@@ -62,6 +62,7 @@ class Gladiator(Base):
 
     def add_attack(self, boss: "Gladiator_Boss") -> int:
         damage = 1 + self.bonus(boss)
+        damage *= boss.multipler
         damage = damage if damage <= boss.health else boss.health
         boss.health -= damage
         self.history.append(
@@ -128,6 +129,7 @@ class Gladiator_Boss(Base):
     guild_id: int = sa.Column(sa.BigInteger)
     health: int = sa.Column(sa.Integer, nullable=False)
     name: str = sa.Column(sa.String, nullable=False)
+    multipler: float = sa.Column(sa.Float, default=1.0, server_default=1.0)
     start_at: datetime = sa.Column(sa.TIMESTAMP(True), server_default=sa.func.now())
     ends_at: datetime = sa.Column(sa.TIMESTAMP(True), nullable=False)
     image_url: str = sa.Column(sa.String)
@@ -224,7 +226,9 @@ async def manage():
 
 
 @register(main=manage, private_response=True)
-async def create(ctx: Context, name: str, health: int, duration: timedelta, image: str = None) -> str:
+async def create(
+    ctx: Context, name: str, health: int, duration: timedelta, image: str = None, multipler: float = 1.0
+) -> str:
     """
     Create new boss
     Params
@@ -237,6 +241,8 @@ async def create(ctx: Context, name: str, health: int, duration: timedelta, imag
         How long the boss should be active
     image:
         URL to an image of the boss
+    multipler:
+        Default damage multipler for this boss
     """
     s = ctx.db.sql.session()
 
@@ -250,6 +256,7 @@ async def create(ctx: Context, name: str, health: int, duration: timedelta, imag
             ends_at=ctx.data.id.as_date.astimezone(timezone.utc) + duration,
             guild_id=ctx.guild_id,
             image_url=image,
+            mulitipler=multipler,
         )
     )
     s.commit()
