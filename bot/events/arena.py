@@ -175,10 +175,11 @@ class Gladiator_Boss(Base):
         msg = await bot.create_message(data.channel_id, embeds=[embed], components=components)
         await asyncio.sleep(_wait or 60)
         await bot.delete_message(msg.channel_id, msg.id)
+        return True
 
     @classmethod
-    async def bonus(cls: "Gladiator_Boss", bot: Bot, data: Message, *, _wait: int = 60):
-        _bonus = random().randint(1, 5)
+    async def bonus(cls: "Gladiator_Boss", bot: Bot, data: Message, *, _wait: int = 60, _bonus: int = None):
+        _bonus = _bonus or random().randint(1, 5)
         if not _wait:
             _wait = random().randint(5, 60)
         t = int((datetime.now(timezone.utc) + timedelta(seconds=_wait)).timestamp())
@@ -499,7 +500,7 @@ async def spawn_bonus(bot: Bot, data: Message):
 
 
 @register(group=Groups.ADMIN, main=manage, private_response=True)
-async def spawn(ctx: Context, type: str, duration: timedelta, name: str = None) -> str:
+async def spawn(ctx: Context, type: str, duration: timedelta, name: str = None, bonus: int = None) -> str:
     """
     Spawns Fighter or Bonus
     Params
@@ -513,16 +514,17 @@ async def spawn(ctx: Context, type: str, duration: timedelta, name: str = None) 
         For how long message should stay active
     name:
         Boss to spawn for attacks
+    bonus:
+        Bonus amount to spawn
     """
     session = ctx.db.sql.session()
     boss = Gladiator_Boss.get(session, ctx, name)
     if int(type):
-        _spawn = boss.bonus
+        if await boss.bonus(ctx.bot, ctx.data, _wait=duration.total_seconds(), _bonus=bonus):
+            return "Spawned successfully"
     else:
-        _spawn = boss.spawn
-
-    if await _spawn(ctx.bot, ctx.data, _wait=duration.total_seconds()):
-        return "Spawned successfully"
+        if await boss.spawn(ctx.bot, ctx.data, _wait=duration.total_seconds()):
+            return "Spawned successfully"
     return "No active boss to spawn"
 
 
