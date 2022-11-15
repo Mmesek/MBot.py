@@ -129,7 +129,7 @@ class Gladiator_Boss(Base):
     guild_id: int = sa.Column(sa.BigInteger)
     health: int = sa.Column(sa.Integer, nullable=False)
     name: str = sa.Column(sa.String, nullable=False)
-    multipler: float = sa.Column(sa.Float, default=1.0, server_default=1.0)
+    multipler: float = sa.Column(sa.Float, default=1.0)
     start_at: datetime = sa.Column(sa.TIMESTAMP(True), server_default=sa.func.now())
     ends_at: datetime = sa.Column(sa.TIMESTAMP(True), nullable=False)
     image_url: str = sa.Column(sa.String)
