@@ -64,6 +64,7 @@ class Gladiator(Base):
         damage = 1 + self.bonus(boss)
         damage *= boss.multipler
         damage = damage if damage <= boss.health else boss.health
+        damage = int(damage)
         boss.health -= damage
         self.history.append(
             Gladiator_History(damage=damage, boss_id=boss.id, user_id=self.user_id, guild_id=self.guild_id)
