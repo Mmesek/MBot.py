@@ -30,7 +30,7 @@ async def message_reaction_add(bot: Bot, data: Message_Reaction_Add):
     r = await get(bot, data.user_id)
     try:
         dm = await bot.create_dm(data.user_id)
-        msg = await bot.create_message(dm.id, r)
+        await bot.create_message(dm.id, r)
     except Exception as ex:
         pass
 
@@ -46,7 +46,7 @@ async def get(ctx: Context, user_id: int):
     entry: Dockets = (
         session.query(Dockets)
         .filter(sa.or_(Dockets.user_id == None, Dockets.user_id == user_id))
-        .order_by(sa.func.random())
+        .order_by(Dockets.user_id.asc(), sa.func.random())
         .first()
     )
 
@@ -57,6 +57,7 @@ async def get(ctx: Context, user_id: int):
 
     entry.user_id = user_id
     session.commit()
+
     if entry.snippet:
         return entry.snippet.format(code=entry.docket)
     return entry.code
@@ -91,7 +92,7 @@ async def add(ctx: Context, codes: Attachment, role: Role) -> str:
     i = 0
     for row in c:
         i += 1
-        session.merge(Dockets(code=row[index].strip().upper(), role_id=role.id, email=row[snippet].strip().lower()))
+        session.merge(Dockets(code=row[index].strip().upper(), snippet=row[snippet].strip().lower()))
     session.commit()
     return f"Added {i} row(s) successfully!"
 
