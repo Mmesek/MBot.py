@@ -35,12 +35,12 @@ async def message_reaction_add(bot: Bot, data: Message_Reaction_Add):
         pass
 
 
-@register(group=Groups.HELPER, bot=289739584546275339)
+@register(group=Groups.HELPER, bot=572532846678376459)
 async def docket():
     pass
 
 
-@register(group=Groups.ADMIN, main=docket, private_response=True, bot=289739584546275339)
+@register(group=Groups.ADMIN, main=docket, private_response=True, bot=572532846678376459)
 async def get(ctx: Context, user_id: int):
     session = ctx.db.sql.session()
     entry: Dockets = (
@@ -63,7 +63,7 @@ async def get(ctx: Context, user_id: int):
     return entry.code
 
 
-@register(group=Groups.HELPER, main=docket, private_response=True, bot=289739584546275339)
+@register(group=Groups.HELPER, main=docket, private_response=True, bot=572532846678376459)
 async def add(ctx: Context, codes: Attachment, role: Role) -> str:
     """
     Add new codes to database
@@ -97,7 +97,7 @@ async def add(ctx: Context, codes: Attachment, role: Role) -> str:
     return f"Added {i} row(s) successfully!"
 
 
-@register(group=Groups.MODERATOR, main=docket, private_response=True, bot=289739584546275339)
+@register(group=Groups.MODERATOR, main=docket, private_response=True, bot=572532846678376459)
 async def retrieve(ctx: Context, docket: str) -> str:
     """
     Check who redeemed that docket
@@ -131,7 +131,7 @@ class Button_Types(enum.Enum):
     Danger = Button_Styles.DANGER.name
 
 
-@register(group=Groups.ADMIN, main=docket, private_response=True, bot=963549809447432292)
+@register(group=Groups.ADMIN, main=docket, private_response=True, bot=572532846678376459)
 async def button(ctx: Context, label: str, style: Button_Types, emoji: str = None, text: str = None):
     """
     Create button that acts like /docket get
