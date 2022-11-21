@@ -140,8 +140,7 @@ async def stashed(
         return embed
     if results:
         return "\n> ".join(
-            [""]
-            + [f"**{i.name}**. {i.content}" for i in results if not i.group or ctx.permission_group.can_use(i.group)]
+            [""] + [f"**{i.name}**" for i in results if not i.group or ctx.permission_group.can_use(i.group)]
         )
 
 
