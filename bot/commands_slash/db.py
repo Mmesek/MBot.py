@@ -139,9 +139,10 @@ async def stashed(
         embed.addField("Total", str(len(snippets)))
         return embed
     if results:
-        return "\n> ".join([""] + [i.name for i in results if not i.group or ctx.permission_group.can_use(i.group)])[
-            :2000
-        ]
+        embed = Embed()
+        e = sorted([i.name for i in results if not i.group or ctx.permission_group.can_use(i.group)])
+        embed.set_description("\n".join(e)).set_footer(f"Total: {len(e)}")
+    return embed
 
 
 def rebuild_cache(ctx: Context, s: db.Session = None, type: db.Snippet = None):
