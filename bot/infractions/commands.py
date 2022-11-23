@@ -19,6 +19,7 @@ from MFramework import (
 )
 from MFramework.commands._utils import detect_group
 from MFramework.commands.components import LinkButton, Row, Select_Option
+from MFramework.commands.exceptions import Error
 from MFramework.database.alchemy import types
 from mlib.converters import total_seconds
 
@@ -27,7 +28,7 @@ from .interactions import ExpireInfractions, instant_actions
 from .internal import log_action
 
 
-class UserProtected(Exception):
+class UserProtected(Error):
     pass
 
 
