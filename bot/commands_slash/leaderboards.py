@@ -226,15 +226,15 @@ class Leaderboards(Enum):
     Reinforced_Fear = "Reinforced Fear"
     Candies = "Halloween Treats"
     Moka = "Moka Treats"
-    Present_Hunt = "Presents"
+    Present_Hunt = "Present"
     Sent_Presents = "Sent Present"
     Hitted_Snowballs = "Thrown Snowball"
     Mostly_Snowballed = "Splashed Snowball"
     Grinch = "Stolen Presents"
     Chickens = "Chicken"
-    # Cookies = "Cookie"
+    Cookies = "Cookie"
     # Gifting = "Present"
-    # Advent = "Advent"
+    Advent = "Advent"
     # Aoc = 11
     # Christmas = 12
 
