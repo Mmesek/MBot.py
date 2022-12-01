@@ -27,7 +27,7 @@
                 "story": {
                     "name": "story",
                     "description": "Christmas Gatherer's Story made by Command Sergeant Major Cock#0001",
-                    "arguments": {}
+                    "arguments": { }
                 }
             }
         },
@@ -46,7 +46,7 @@
         "snowball": {
             "name": "snowball",
             "description": "Snowball throwing event commands",
-            "arguments": {},
+            "arguments": { },
             "sub_commands": {
                 "throw": {
                     "name": "throw",
@@ -61,9 +61,52 @@
                 "gather": {
                     "name": "gather",
                     "description": "Gather snowballs to throw at someone later!",
-                    "arguments": {}
+                    "arguments": { }
                 }
             }
         }
+    },
+    "translations": {
+        "present_already_sent": "You have already sent present to this person at %{timestamp}",
+        "not_enough_presents": "You do not have enough presents to sent!",
+        "present_sent_successfully": "Present to %{user} has been sent successfully.",
+        "cant_send_present_to_yourself": "You can not give yourself a gift :(",
+        "user_not_specified": "User was not specified. Make sure to @Mention them",
+        "remaining_cooldown": "Remaining Cooldown: %{cooldown}",
+        "cookie_sent": "Cookie sent successfully!",
+        "cant_send_cookie_to_yourself": "You can not send yourself a cookie :(",
+        "advent_finished": "Advent is currently inactive",
+        "advent_claimed_successfully": "You have claimed successfully. You have claimed %{total} in total.",
+        "advent_already_claimed": "You have already claimed today",
+        "stats_title": "Stats",
+        "total_stats_title": "Total Stats",
+        "stats_description": "Gifts\n---\nSent: %{gifts_sent}\nReceived: %{gifts_recv}\n\nCookies\n---\nSent: %{cookies_sent}\nReceived: %{cookies_recv}\n\nAdvent Progress: %{advent_progress}/25",
+        "stats_gifts_name": "Gifts",
+        "stats_cookies_name": "Cookies",
+        "stats_advent_name": "Advent Progress",
+        "stats_advent": "%{claimed}/25",
+        "stats_advent_total": "Total Advents claimed",
+        "stats_advent_total_claimed": "%{claimed}",
+        "exchanged": "Exchanged: %{exchanged}",
+        "sent_recv": "Sent: %{sent}\nReceived: %{recv}",
+        "leaderboard_title": "Leaderbooard",
+        "leaderboard_gifts_sent_name": "Gifts Sent",
+        "leaderboard_gifts_recv_name": "Gifts Received",
+        "leaderboard_cookies_sent_name": "Cookies Sent",
+        "leaderboard_cookies_recv_name": "Cookies Received",
+        "leaderboard_ranking": "%{amount}. %{user}",
+        "possible_locations": "Possible locations: %{locations}",
+        "rarity_Common": "Common",
+        "rarity_Uncommon": "Uncommon",
+        "rarity_Rare": "Rare",
+        "rarity_Epic": "Epic",
+        "rarity_Legendary": "Legendary",
+        "rarity_Mythic": "Mythic",
+        "rarity_Exotic": "Exotic",
+        "rarity_Mystic": "Mystic",
+        "rarity_Special": "Special",
+        "rarity_Artifact": "Artifact",
+        "rarity_Relic": "Relic",
+        "rarity_Event": "Event"
     }
 }

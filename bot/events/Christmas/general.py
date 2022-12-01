@@ -21,14 +21,7 @@ from ... import database as db
 def _t(key, language="en", **kwargs):
     from mlib.localization import tr
 
-    return tr("events.december." + key, language, **kwargs)
-
-
-@register(group=Groups.GLOBAL)
-@Event(month=12)
-async def christmas(ctx: Context):
-    """Christmas Event commands"""
-    pass
+    return tr("bot.events.Christmas.translations." + key, "en-US", **kwargs)
 
 
 def inner(f, main: object, should_register: bool = True):
@@ -42,7 +35,6 @@ def inner(f, main: object, should_register: bool = True):
 
 
 @register(group=Groups.GLOBAL)
-@Event(month=12)
 def christmas(cls=None, *, should_register: bool = True):
     """Christmas Event commands"""
     i = functools.partial(inner, main=christmas, should_register=should_register)
@@ -256,7 +248,7 @@ class StoryStats(Base):
         s.commit()
 
 
-@register(group=Groups.GLOBAL, main=christmas, private_response=True)
+# @register(group=Groups.GLOBAL, main=christmas, private_response=True)
 @cooldown(hours=3, logic=CacheCooldown)
 async def story(ctx: Context):
     """
@@ -394,7 +386,7 @@ class PresentType(Enum):
     Green = "Green"
 
 
-@christmas
+# @christmas
 @cooldown(minutes=1, logic=CacheCooldown)
 async def open(ctx: Context, type: PresentType):
     """
