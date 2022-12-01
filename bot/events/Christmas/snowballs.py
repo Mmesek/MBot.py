@@ -36,6 +36,8 @@ async def throw(ctx: Context, target: User):
     """
     if target.id == ctx.bot.user_id:
         return f"<@{ctx.user_id}> You've been hit by <@{target.id}> instead!"
+    elif target.id == ctx.user_id:
+        return f"<@{ctx.user_id}> You've successfully snowballed yourself!\nNow you feel very, very snowed and very cold. What are you on and can I have some too?"
     s = ctx.db.sql.session()
     user = models.User.fetch_or_add(s, id=ctx.user_id)
     snowballs = next(filter(lambda x: x.item.name == "Snowball", user.items), None)
