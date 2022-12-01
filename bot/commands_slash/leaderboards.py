@@ -357,7 +357,7 @@ async def aoc(ctx: Context, year: int = None) -> Embed:
             }
         )
     members = sorted(members, key=lambda i: i["score"], reverse=True)
-    t = [ctx.t("header", language)]
+    t = [ctx.t("header")]
 
     for member in members:
         l = f'{member["score"]}. {member["name"]} - {member["stars"]} | <t:{member["last_star"]}:t>'
