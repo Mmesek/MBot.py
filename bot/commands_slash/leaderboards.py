@@ -323,7 +323,7 @@ async def aoc(ctx: Context, year: int = None) -> Embed:
     import requests
 
     with open("data/aoc_cookie.txt", "r", newline="", encoding="utf-8") as file:
-        cookie = file.readline()
+        cookie = file.readline().strip()
 
     with open("data/aoc_leaderboards.json", "r", newline="", encoding="utf-8") as file:
         leaderboards = json.load(file)
