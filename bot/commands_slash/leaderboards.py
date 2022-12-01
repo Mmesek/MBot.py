@@ -336,11 +336,16 @@ async def aoc(ctx: Context, year: int = None) -> Embed:
     if not leaderboard_number:
         return "Sorry, there is no leaderboard configured for this server \:("
 
-    r = requests.get(
-        f"https://adventofcode.com/{year or datetime.now().year}/leaderboard/private/view/{leaderboard_number}.json",
-        cookies={"session": cookie},
-    )
-    r = r.json()
+    try:
+        r = requests.get(
+            f"https://adventofcode.com/{year or datetime.now().year}/leaderboard/private/view/{leaderboard_number}.json",
+            cookies={"session": cookie},
+        )
+        r = r.json()
+    except Exception as ex:
+        s = str(ex).replace(cookie.strip(), "{COOKIE}")
+        return s
+
     members = []
     for member in r["members"]:
         members.append(
