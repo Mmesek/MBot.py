@@ -68,7 +68,7 @@
     },
     "translations": {
         "present_already_sent": "You have already sent present to this person at %{timestamp}",
-        "not_enough_presents": "You do not have enough presents to sent!",
+        "not_enough_presents": "You do not have enough presents to send!",
         "present_sent_successfully": "Present to %{user} has been sent successfully.",
         "cant_send_present_to_yourself": "You can not give yourself a gift :(",
         "user_not_specified": "User was not specified. Make sure to @Mention them",
