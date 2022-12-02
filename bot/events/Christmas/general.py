@@ -62,7 +62,7 @@ async def gift(ctx: Context, user: User, *, language) -> str:
     #    return await ctx.reply(_t('present_already_sent', language, timestamp=user_history.Timestamp.strftime("%Y/%m/%d %H:%M")))
 
     for item in this_user.items:
-        if "Presents" == item.item.name and item.item.name != "Golden Present":
+        if "Present" == item.item.name:
             if item.quantity > 0:
                 own_present = True
             break
@@ -108,7 +108,7 @@ async def steal(ctx: Context, target: User) -> str:
     this_user = db.User.fetch_or_add(s, id=ctx.user_id)
     own_present = False
     for item in target_user.items:
-        if "Presents" == item.item.name:
+        if "Present" == item.item.name:
             if item.quantity > 0:
                 own_present = True
             break
