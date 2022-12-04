@@ -155,22 +155,34 @@ async def advent(ctx: Context, *, language) -> str:
         return _t("advent_finished", language)
 
     advent_type = db.items.Items.Advent
+    advent_item = db.items.Item.fetch_or_add(s, name="Advent", type=advent_type)
+
     _today = datetime(today.year, today.month, today.day, tzinfo=timezone.utc)
     _year = datetime(today.year, 1, 1)
     claimed_total = (
-        s.query(db.Log).filter(db.Log.user_id == ctx.user.id, db.Log.type == "Advent", db.Log.timestamp >= _year).all()
+        s.query(db.Transaction)
+        .filter(db.Transaction.timestamp >= _year)
+        .join(db.log.Transaction_Inventory)
+        .filter(
+            db.log.Transaction_Inventory.user_id == ctx.user.id, db.log.Transaction_Inventory.item_id == advent_item.id
+        )
+        .all()
     )
     claimed_today = False
     for claimed in claimed_total:
-        if claimed.Timestamp >= _today:
+        if claimed.timestamp >= _today:
             claimed_today = True
 
     if not claimed_today:
-        advent_item = db.items.Item.fetch_or_add(s, name="Advent", type=advent_type)
         advent_inventory = db.Inventory(advent_item)
-        this_user.claim_items(ctx.guild_id, [advent_inventory])
+        s.add(this_user.claim_items(ctx.guild_id, [advent_inventory]))
         s.commit()
-        return _t("advent_claimed_successfully", language, total=len(claimed_total) + 1)
+        amount = (
+            s.query(db.Inventory.quantity)
+            .filter(db.Inventory.user_id == ctx.user_id, db.Inventory.item_id == advent_item.id)
+            .first()
+        ) or [0]
+        return _t("advent_claimed_successfully", language, total=amount[0])
     else:
         return _t("advent_already_claimed", language)
 
