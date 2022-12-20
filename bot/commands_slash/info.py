@@ -260,14 +260,18 @@ async def role(ctx: Context, role_id: RoleID = 0) -> Embed:
         )
         .setThumbnail("attachment://color.png")
     )
+    if role.icon:
+        embed.addField("Icon", role.icon, True)
+        embed.setThumbnail(role.icon)
     embed.setColor(role.color)
     f = None
-    if role.color:
+    if role.color and not role.icon:
         from mlib.colors import buffered_image
         from PIL import Image
 
         f = buffered_image(Image.new("RGB", (100, 100), color))
-    await ctx.reply(embeds=[embed], attachments=[Attachment(file=f, filename="color.png")])
+        await ctx.reply(embeds=[embed], attachments=[Attachment(file=f, filename="color.png")])
+    return embed
 
 
 @register(group=Groups.MODERATOR, main=info)
