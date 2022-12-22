@@ -124,11 +124,23 @@ async def dm_thread(ctx: Bot, msg: Message):
 class Direct_Message(MessageLog):
     def __init__(self, bot: Bot, guild_id: Snowflake, type: str, id: Snowflake, token: str) -> None:
         self.channel_id = None
+        self.is_forum = False
+        self.forum_threads = {}
         super().__init__(bot, guild_id, type, id, token)
 
     async def get_wh_channel(self):
         webhook = await self.bot.get_webhook_with_token(self.webhook_id, self.webhook_token)
         self.channel_id = webhook.channel_id
+        channel = await self.bot.get_channel(webhook.channel_id)
+        self.is_forum = channel.type == 15
+        if self.is_forum:
+            threads = await self.bot.list_public_archived_threads(self.channel_id)
+            self.forum_threads = {
+                i.id: int(i.name.split("-")[-1].strip())
+                for i in threads.threads
+                if i.name.split("-")[-1].strip().isdigit()
+            }
+            self.bot.cache[self.guild_id].dm_threads.update(self.forum_threads)
 
     def _create_embed(self, msg: Message):
         embed = self.set_metadata(msg)
@@ -171,34 +183,38 @@ class Direct_Message(MessageLog):
         if reg and reg.lastgroup is not None:
             await msg.reply(canned["responses"][reg.lastgroup])
             content = tr("commands.dm.cannedResponseSent", self.bot.cache[self.guild_id].language, name=reg.lastgroup)
+        if not self.channel_id:
+            await self.get_wh_channel()
         threads = {v: k for k, v in self.bot.cache[self.guild_id].dm_threads.items()}
         thread_id = threads.get(msg.author.id, None)
+        if not thread_id and self.is_forum:
+            thread_id = self.forum_threads.get(msg.author.id, None)
         embeds = []
         if thread_id is None:
-            if not self.channel_id:
-                await self.get_wh_channel()
-            thread = await self.bot.start_thread_without_message(
-                channel_id=self.channel_id,
-                name=f"{msg.author.username} - {msg.author.id}",
-                type=Channel_Types.GUILD_PUBLIC_THREAD,
-                reason="Received DM from new user",
-            )
-            try:
-                from copy import copy
+            if not self.is_forum:
+                thread = await self.bot.start_thread_without_message(
+                    channel_id=self.channel_id,
+                    name=f"{msg.author.username} - {msg.author.id}",
+                    type=Channel_Types.GUILD_PUBLIC_THREAD,
+                    reason="Received DM from new user",
+                )
+                try:
+                    from copy import copy
 
-                _msg = copy(msg)
-                _msg.guild_id = self.guild_id
-                _msg.channel_id = thread.id
-                _msg.id = None
-                _msg.member = self.bot.cache[self.guild_id].members.get(msg.author.id)
-                ctx = Context(self.bot.cache, self.bot, _msg)
-                from .info import user
+                    _msg = copy(msg)
+                    _msg.guild_id = self.guild_id
+                    _msg.channel_id = thread.id
+                    _msg.id = None
+                    _msg.member = self.bot.cache[self.guild_id].members.get(msg.author.id)
+                    ctx = Context(self.bot.cache, self.bot, _msg)
+                    from .info import user
 
-                await user(ctx)
-            except:
-                pass
-            thread_id = thread.id
-            self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
+                    await user(ctx)
+                except:
+                    pass
+                thread_id = thread.id
+                self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
+
             past_messages = await self.bot.get_channel_messages(msg.channel_id, before=msg.id, limit=15)
             if past_messages:
                 _past_messages = []
@@ -220,6 +236,31 @@ class Direct_Message(MessageLog):
                     .setDescription(_past_messages)
                     .setColor("#646363")
                 )
+            if self.is_forum:
+                thread = await self.bot.start_thread_in_forum_channel(
+                    channel_id=self.channel_id,
+                    name=f"{msg.author.username} - {msg.author.id}",
+                    message=Message(embeds=embeds),
+                    # type=Channel_Types.GUILD_PUBLIC_THREAD,
+                    reason="Received DM from new user",
+                )
+                embeds = []
+                try:
+                    from copy import copy
+
+                    _msg = copy(msg)
+                    _msg.guild_id = self.guild_id
+                    _msg.channel_id = thread.id
+                    _msg.id = None
+                    _msg.member = self.bot.cache[self.guild_id].members.get(msg.author.id)
+                    ctx = Context(self.bot.cache, self.bot, _msg)
+                    from .info import user
+
+                    await user(ctx)
+                except:
+                    pass
+                thread_id = thread.id
+                self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
             # for moderator in filter(lambda x: self.channel_id in x["moderated_channels"], self.bot.cache[self.guild_id].moderators):
             #    await self.bot.add_thread_member(thread_id, moderator, "Added User to DM thread")
         embeds.append(embed)
