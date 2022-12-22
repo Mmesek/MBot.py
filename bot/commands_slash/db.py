@@ -98,6 +98,7 @@ async def stashed(
     show_all: bool = True,
     *,
     text_only: str = False,
+    show_content: str = False,
 ) -> Embed:
     """
     Stashed snippet to fetch
@@ -143,7 +144,13 @@ async def stashed(
         return embed
     if results:
         embed = Embed()
-        e = sorted([i.name for i in results if not i.group or ctx.permission_group.can_use(i.group)])
+        e = sorted(
+            [
+                i.name if not show_content else i.content
+                for i in results
+                if not i.group or ctx.permission_group.can_use(i.group)
+            ]
+        )
         embed.set_description("\n".join(e)).set_footer(f"Total: {len(e)}")
     return embed if not text_only else "\n".join(e)
 

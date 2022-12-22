@@ -42,7 +42,9 @@ async def message_create(self: Bot, data: Message):
                 if cmd:
                     args = snippet.group("args")
                     search = True if "search" in (snippet.group("flags") or "") else None
-                    _ = await stashed(ctx, cmd, args, search, detailed=False, show_all=False, text_only=True)
+                    _ = await stashed(
+                        ctx, cmd, args, search, detailed=False, show_all=False, text_only=True, show_content=True
+                    )
                     if _:
                         r.append(_)
             if r:
