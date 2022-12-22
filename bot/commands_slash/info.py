@@ -131,7 +131,8 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
                         for i in infractions
                         if not i.expires_at or i.expires_at >= datetime.now(tz=timezone.utc)
                     ][:5]
-                ),
+                )
+                or "None active",
                 True,
             )
         mod_actions = list(filter(lambda x: x.server_id == ctx.guild_id, u.mod_actions))
