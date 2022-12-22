@@ -1,6 +1,8 @@
 from MFramework import (
+    CDN_URL,
     Attachment,
     Bitwise_Permission_Flags,
+    CDN_Endpoints,
     ChannelID,
     Context,
     Embed,
@@ -262,8 +264,7 @@ async def role(ctx: Context, role_id: RoleID = 0) -> Embed:
         .setThumbnail("attachment://color.png")
     )
     if role.icon:
-        embed.addField("Icon", role.icon, True)
-        embed.setThumbnail(role.icon)
+        embed.setThumbnail(CDN_URL + CDN_Endpoints.Role_Icon.value.format(role_id=role.id, role_icon=role.icon))
     embed.setColor(role.color)
     f = None
     if role.color and not role.icon:
