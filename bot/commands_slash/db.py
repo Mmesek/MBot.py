@@ -96,6 +96,8 @@ async def stashed(
     search_content: bool = False,
     detailed: bool = False,
     show_all: bool = True,
+    *,
+    text_only: str = False,
 ) -> Embed:
     """
     Stashed snippet to fetch
@@ -109,6 +111,7 @@ async def stashed(
         Whether to search contents instead of names
     """
     s = ctx.db.sql.session()
+    e = []
     r = db.Snippet.filter(s, server_id=ctx.guild_id, type=type)
     if name and "," in name:
         names = [i.strip() for i in name.split(",")]
@@ -142,7 +145,7 @@ async def stashed(
         embed = Embed()
         e = sorted([i.name for i in results if not i.group or ctx.permission_group.can_use(i.group)])
         embed.set_description("\n".join(e)).set_footer(f"Total: {len(e)}")
-    return embed
+    return embed if not text_only else "\n".join(e)
 
 
 def rebuild_cache(ctx: Context, s: db.Session = None, type: db.Snippet = None):
