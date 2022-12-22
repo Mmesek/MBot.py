@@ -227,7 +227,7 @@ async def manage():
     pass
 
 
-@register(main=manage, private_response=True)
+@register(group=Groups.ADMIN, main=manage, private_response=True)
 async def create(
     ctx: Context, name: str, health: int, duration: timedelta, image: str = None, multipler: float = 1.0
 ) -> str:
@@ -258,7 +258,7 @@ async def create(
             ends_at=ctx.data.id.as_date.astimezone(timezone.utc) + duration,
             guild_id=ctx.guild_id,
             image_url=image,
-            mulitipler=multipler,
+            multipler=multipler,
         )
     )
     s.commit()
