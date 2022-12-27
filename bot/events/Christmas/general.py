@@ -260,7 +260,8 @@ class StoryStats(Base):
         s.commit()
 
 
-# @register(group=Groups.GLOBAL, main=christmas, private_response=True)
+@register(group=Groups.GLOBAL, main=christmas, private_response=True)
+@Event(month=12)
 @cooldown(hours=3, logic=CacheCooldown)
 async def story(ctx: Context):
     """
@@ -396,6 +397,7 @@ from MFramework import Enum
 class PresentType(Enum):
     Gold = "Gold"
     Green = "Green"
+    Advent = "Advent"
 
 
 # @christmas
