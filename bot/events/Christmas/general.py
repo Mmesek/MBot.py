@@ -475,12 +475,12 @@ async def summary(ctx: Context, display_top: int = 1):
                 continue
             if any(u.user_id == _[1] for _ in robin[:1]):
                 continue
-            x += 1
-            if u.quantity == 0:
+            if u.quantity <= 0:
                 continue
+            x += 1
             boards[board].append(f"{u.quantity} - {ctx.cache.members.get(int(u.user_id)).user.username}")
             tops.append(u.user_id)
-            if x == display_top:
+            if x >= display_top:
                 break
     for u in robin[:1]:
         boards["Robin Hood"].append(f"{u[0]} - {ctx.cache.members.get(int(u[1])).user.username}")
