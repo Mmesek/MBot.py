@@ -488,7 +488,7 @@ async def summary(ctx: Context, display_top: int = 1):
         if boards[board]:
             e.addField(board, "\n".join(boards[board]), True)
     e.setColor(6725829)
-    e.setTitle("Christmas 2021 Event Summary")
+    e.setTitle(f"Christmas {datetime.now().year} Event Summary")
     e.setDescription("**Thanks for Participating!**")
     e.addField(
         "Leaderboard Calculation Rules",
