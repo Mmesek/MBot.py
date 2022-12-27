@@ -411,10 +411,14 @@ async def open(ctx: Context, type: PresentType):
     pass
 
 
-@register(group=Groups.SYSTEM, interaction=False)
-async def csummary(ctx: Context, *, language):
+@register(group=Groups.OWNER, main=christmas, interaction=False)
+async def summary(ctx: Context, display_top: int = 1):
     """
     Summary of event
+    Params
+    ------
+    display_top:
+        Amount of top users to display per leaderboard
     """
     s = ctx.db.sql.session()
     inv = {}
@@ -470,9 +474,11 @@ async def csummary(ctx: Context, *, language):
             if any(u.user_id == _[1] for _ in robin[:1]):
                 continue
             x += 1
+            if u.quantity == 0:
+                continue
             boards[board].append(f"{u.quantity} - {ctx.cache.members.get(int(u.user_id)).user.username}")
             tops.append(u.user_id)
-            if x == 1:
+            if x == display_top:
                 break
     for u in robin[:1]:
         boards["Robin Hood"].append(f"{u[0]} - {ctx.cache.members.get(int(u[1])).user.username}")
