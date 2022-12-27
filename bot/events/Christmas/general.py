@@ -485,7 +485,8 @@ async def summary(ctx: Context, display_top: int = 1):
     for u in robin[:1]:
         boards["Robin Hood"].append(f"{u[0]} - {ctx.cache.members.get(int(u[1])).user.username}")
     for board in boards:
-        e.addField(board, "\n".join(boards[board]), True)
+        if boards[board]:
+            e.addField(board, "\n".join(boards[board]), True)
     e.setColor(6725829)
     e.setTitle("Christmas 2021 Event Summary")
     e.setDescription("**Thanks for Participating!**")
