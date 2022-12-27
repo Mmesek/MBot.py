@@ -1050,7 +1050,7 @@ async def message_create(self: Bot, data: Message):
         await data.delete(reason="Halloween Minigame: Zombified message")
 
 
-@register(group=Groups.SYSTEM, main=halloween, interaction=False)
+@register(group=Groups.OWNER, main=halloween, interaction=False)
 async def summary(ctx: Context, include_humans: bool = False):
     """
     Shows event summary
