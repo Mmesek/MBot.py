@@ -58,6 +58,7 @@ async def handle_drop(
     data: Message,
     reaction: str,
     name: str,
+    instance_id: int,
     min_quantity: float = 1,
     max_quantity: float = 1,
     delete_own: bool = True,
@@ -66,7 +67,7 @@ async def handle_drop(
     active_in_last_msgs: int = None,
     logger: str = None,
     announce_msg: bool = False,
-    require: str = None,
+    require_instance_id: int = None,
     require_min_quantity: float = 1,
     require_max_quantity: float = 1,
     quantity_exchange_ratio: float = 1,
@@ -131,13 +132,14 @@ async def handle_drop(
             return False
 
         try:
-            users = [await ctx.wait_for("message_reaction_add", check=first_only_predicate, timeout=sleep)]
+            user = await ctx.wait_for("message_reaction_add", check=first_only_predicate, timeout=sleep)
+            users = [user.user_id]
         except asyncio.TimeoutError:
             log.debug("No one reacted. Removing reaction")
             return await data.delete_reaction(reaction)
     else:
         await asyncio.sleep(sleep)
-        users = await data.get_reactions(reaction)
+        users = [i.id for i in await data.get_reactions(reaction)]
 
     if active_in_last_msgs:
         # TODO: Get from cache, check if users were active
@@ -152,25 +154,19 @@ async def handle_drop(
     if not users:
         return
 
-    session = ctx.db.sql.session()
-
-    # if statistic:
-    # TODO: Add statistic tracking
-    # pass
-    # TODO: Add "statistic" Item to "server" inventory
-
-    if require:
-        required_item = items.Item.fetch_or_add(session, name=require)
-
-    # TODO: Get item!
-    _claimed_by = []
-    _not_enough = []
-    for user in users[: max_participants or None]:
-        # TODO: Finish iterating over users and managing state of their Invs!
-        uid = getattr(user, "id", None) or getattr(user, "user_id")
+    users = users[: max_participants or None]
+    _claimed_by = await ctx.db.supabase.rpc(
+        "add_item",
+        server_id=data.guild_id,
+        user_ids=users,
+        instance_id=instance_id,
+        quantity=quantity,
+        required_instance_id=require_instance_id,
+        required_quantity=require_quantity,
+    )
+    _not_enough = [user for user in users if user not in _claimed_by]
 
     await ctx.cache[data.guild_id].logging[logger](data, users)
-    session.commit()
 
     result = ""
 
@@ -183,7 +179,7 @@ async def handle_drop(
         if quantity > 1:
             pass
             # result += f" x {quantity}"
-        if require:
+        if require_instance_id:
             pass
             # result += f" for {required_item.emoji} {required_item.name}"
             if require_quantity > 1:
