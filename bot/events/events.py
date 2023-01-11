@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from MFramework import Context, Embed, Groups, Interaction, User, register
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 
@@ -20,31 +22,26 @@ async def help(ctx: Context, *, language):
 
 async def Leaderboards(interaction: Interaction, current: str) -> list[str]:
     return [
-        (i["name"], i["instance_id"])
-        for i in await interaction._Client.db.supabase.rpc("list_leaderboards", server_id=interaction.guild_id)
+        (i["name"], f"{i['instance_id']}&{i['starts']}&{i['ends']}")
+        for i in await interaction._Client.db.supabase.rpc(
+            "list_leaderboards", server_id=interaction.guild_id, name=f"%{current}%" if current else None
+        )
     ]
 
 
 @register(group=Groups.GLOBAL, main=event)
 async def leaderboard(ctx: Context, event: Leaderboards, user: User = None, limit: int = 10, year: int = None) -> Embed:
     """Shows event Leaderboards"""
-    instance_id = event
-    # instance_id, after, before = event.split("&")
-    # events = await ctx.db.supabase.rpc("list_events", instance_id=instance_id)
+    instance_id, after, before = event.split("&")
 
-    # TODO: Find event in events that is within selected year
-
-    # after = datetime.fromtimestamp(after)
-    # before = datetime.fromtimestamp(before)
-    # after.year, before.year = year, year
-    # after, before = after.isoformat(), before.isoformat()
-    # after, before = None, None
+    after = datetime.fromisoformat(after)
+    before = datetime.fromisoformat(before)
+    if year:
+        after.year, before.year = year, year
+    after, before = after.isoformat(), before.isoformat()
 
     results = await ctx.db.supabase.rpc(
-        "get_leaderboard",
-        server_id=ctx.guild_id,
-        instance_id=instance_id,
-        limit_at=limit,  # , after=after, before=before
+        "get_leaderboard", server_id=ctx.guild_id, instance_id=instance_id, limit_at=limit, after=after, before=before
     )
 
     if not any(x["user_id"] == user.id for x in results):
@@ -55,8 +52,8 @@ async def leaderboard(ctx: Context, event: Leaderboards, user: User = None, limi
                 user_id=user.id,
                 instance_id=instance_id,
                 limit_at=limit,
-                # after=after,
-                # before=before,
+                after=after,
+                before=before,
             )
         )
 
