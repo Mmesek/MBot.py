@@ -67,6 +67,7 @@ async def handle_drop(
     active_in_last_msgs: int = None,
     logger: str = None,
     announce_msg: bool = False,
+    consume_on_failure: bool = False,
     require_instance_id: int = None,
     require_min_quantity: float = 1,
     require_max_quantity: float = 1,
@@ -107,6 +108,8 @@ async def handle_drop(
         Logger to use after each
     announce_msg:
         Whether winners should be announced afterwards
+    consume_on_failure:
+        Consume instance instead if user doesn't have enough of required instance
     require_instance_id:
         Instance of item that needs to be in participant inventory
     require_min_quantity:
@@ -194,6 +197,15 @@ async def handle_drop(
         required_quantity=require_quantity,
     )
     _not_enough = [user for user in users if user not in _claimed_by]
+    if consume_on_failure:
+        await ctx.db.supabase.rpc(
+            "remove_item",
+            server_id=data.guild_id,
+            user_ids=_not_enough,
+            instance_id=instance_id,
+            quantity=quantity,
+            minimum=True,
+        )
 
     await ctx.cache[data.guild_id].logging[logger](data, users)
 
