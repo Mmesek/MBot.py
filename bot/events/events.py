@@ -1,4 +1,5 @@
-from MFramework import Context, Groups, User, register
+from MFramework import Context, Embed, Groups, Interaction, User, register
+from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 
 from .Christmas import general, snowballs  # noqa: F401
 from .Halloween import fear, general  # noqa: F401
@@ -17,11 +18,51 @@ async def help(ctx: Context, *, language):
     pass
 
 
+async def Leaderboards(interaction: Interaction, current: str) -> list[str]:
+    return [
+        (i["name"], i["instance_id"])
+        for i in await interaction._Client.db.supabase.rpc("list_leaderboards", server_id=interaction.guild_id)
+    ]
+
+
 @register(group=Groups.GLOBAL, main=event)
-async def leaderboard(ctx: Context, *, language):
+async def leaderboard(ctx: Context, event: Leaderboards, user: User = None, limit: int = 10, year: int = None) -> Embed:
     """Shows event Leaderboards"""
-    # TODO: MOVE TO LEADERBOARDS!
-    pass
+    instance_id = event
+    # instance_id, after, before = event.split("&")
+    # events = await ctx.db.supabase.rpc("list_events", instance_id=instance_id)
+
+    # TODO: Find event in events that is within selected year
+
+    # after = datetime.fromtimestamp(after)
+    # before = datetime.fromtimestamp(before)
+    # after.year, before.year = year, year
+    # after, before = after.isoformat(), before.isoformat()
+    # after, before = None, None
+
+    results = await ctx.db.supabase.rpc(
+        "get_leaderboard",
+        server_id=ctx.guild_id,
+        instance_id=instance_id,
+        limit_at=limit,  # , after=after, before=before
+    )
+
+    if not any(x["user_id"] == user.id for x in results):
+        results.append(
+            await ctx.db.supabase.rpc(
+                "get_leaderboard",
+                server_id=ctx.guild_id,
+                user_id=user.id,
+                instance_id=instance_id,
+                limit_at=limit,
+                # after=after,
+                # before=before,
+            )
+        )
+
+    r = set(Leaderboard_Entry(ctx, x["user_id"], x["quantity"]) for x in results)
+    leaderboard = Leaderboard(ctx, user.id, r, limit)
+    return [leaderboard.as_embed(f"{event.value}'s Leaderboard")]
 
 
 @register(group=Groups.GLOBAL, main=event)
