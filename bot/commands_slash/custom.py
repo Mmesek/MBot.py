@@ -635,7 +635,7 @@ async def betatest(ctx: Context) -> Embed:
         await ctx.bot.add_guild_member_role(
             ctx.guild_id, ctx.user_id, role_id, "User requested access to beta channels"
         )
-    code = ctx.bot.cfg.get("dl2_beta", {}).get("role", "CODE-NOT-SET-ERROR")
+    code = ctx.bot.cfg.get("dl2_beta", {}).get("code", "CODE-NOT-SET-ERROR")
     return f"Hey! Your beta code is {code}. Activate it on Steam by pasting it into beta code input.\nRight click Dying Light 2 in Steam Library -> Properties -> Beta -> Insert code into the box -> Click Check Code -> Enjoy!"
 
 
