@@ -24,7 +24,7 @@ from MFramework import (
     register,
 )
 
-from ..database import items, types
+from ..database import items
 
 
 class Hunts:
@@ -73,9 +73,9 @@ async def handle_drop(
     quantity_exchange_ratio: float = 1,
     min_initial_delay: int = 0,
     max_initial_delay: int = 10,
+    stealth: bool = False,
     min_wait: int = 15,
     max_wait: int = 60,
-    cleanup: bool = False,
     cleanup_after: int = 60,
 ):
     """
@@ -84,29 +84,58 @@ async def handle_drop(
     Parameters
     ----------
     reaction:
+        Reaction to spawn under message
     name:
+        Name of item to claim
+    instance_id:
+        Instance of item to claim
     min_quantity:
+        Minimum quantity that can be claimed
     max_quantity:
+        Maximum quantity that can be claimed
     delete_own:
+        Whether bot should remove own reaction afterwards
+        (Always True when `cleanup_after` is set)
     max_participants:
+        Maximum amount of participants that can claim item.
+        `1` Means only first person to react will win (Unless `lottery` is True)
     lottery:
+        Whether winners should be randomised between participants
     active_in_last_msgs:
+        Participant needs to have sent message within x previous messages in a channel in order to participate
     logger:
+        Logger to use after each
     announce_msg:
-    require:
+        Whether winners should be announced afterwards
+    require_instance_id:
+        Instance of item that needs to be in participant inventory
     require_min_quantity:
+        Minimum quantity that is required to claim an item.
+        Mutualy exclusive with `quantity_exchange_ratio`.
     require_max_quantity:
+        Maximum quantity that is required to claim an item.
+        Mutualy exclusive with `quantity_exchange_ratio`.
     quantity_exchange_ratio:
+        When True, instead of randomising required quantity it'll calculate required quantity based on claimable quantity.
+        Disables both `require_min_quantity` and `require_max_quantity`.
     min_initial_delay:
+        Minimum delay between when bot sends typing notification and sends reaction.
     max_initial_delay:
+        Maximum delay between when bot sends typing notification and sends reaction.
+    stealth:
+        Disables bot from sending typing notification.
+        Disables both `min_initial_delay` and `max_initial_delay`.
     min_wait:
+        Minimum delay between spawning reaction and calculating winners
     max_wait:
-    cleanup:
+        Maximum delay between spawning reaction and calculating winners
     cleanup_after:
+        After how long bot should perform cleanup
     """
     log.debug("Spawning reaction with %s", name)
 
-    await data.typing()
+    if not stealth:
+        await data.typing()
     await asyncio.sleep(random.randint(min_initial_delay, max_initial_delay))
     await data.react(reaction)
 
@@ -148,7 +177,7 @@ async def handle_drop(
     if max_participants and lottery:
         users = random.choices(users, k=max_participants)
 
-    if delete_own or cleanup:
+    if delete_own:
         await data.delete_reaction(reaction)
 
     if not users:
@@ -168,9 +197,8 @@ async def handle_drop(
 
     await ctx.cache[data.guild_id].logging[logger](data, users)
 
-    result = ""
-
     if announce_msg:
+        result = ""
         if not _claimed_by and _not_enough:
             users_not_claimed = ", ".join([f"<@{i}>" for i in _not_enough])
         users_claimed = ", ".join([f"<@{i}>" for i in _claimed_by])
@@ -188,7 +216,7 @@ async def handle_drop(
 
         msg = await data.reply(result, allowed_mentions=Allowed_Mentions(parse=[Allowed_Mention_Types.User_Mentions]))
 
-    if cleanup:
+    if cleanup_after:
         await asyncio.sleep(cleanup_after)
         await ctx.delete_all_reactions_for_emoji(data.channel_id, data.id, emoji=reaction, reason="Cleanup")
         await msg.delete(reason="Cleanup")
