@@ -625,6 +625,20 @@ async def Biomarker(ctx: Context, user: User):
     return await progress(ctx, user)
 
 
+@register(group=Groups.GLOBAL, private_response=True, guild=289739584546275339)
+async def betatest(ctx: Context) -> Embed:
+    """
+    Grants access to game's beta test & associated channels
+    """
+    role_id = ctx.bot.cfg.get("dl2_beta", {}).get("role", 0)
+    if role_id:
+        await ctx.bot.add_guild_member_role(
+            ctx.guild_id, ctx.user_id, role_id, "User requested access to beta channels"
+        )
+    code = ctx.bot.cfg.get("dl2_beta", {}).get("role", "CODE-NOT-SET-ERROR")
+    return f"Hey! Your beta code is {code}. Activate it on Steam by pasting it into beta code input.\nRight click Dying Light 2 in Steam Library -> Properties -> Beta -> Insert code into the box -> Click Check Code -> Enjoy!"
+
+
 @register(group=Groups.GLOBAL, guild=289739584546275339)
 async def lfg(
     ctx: Context, platform: str, amount: str, when: str, progress: str, voice: bool, additional_description: str = None
