@@ -98,6 +98,7 @@ class Gladiator_History(Base):
         u: list[Gladiator_History] = (
             session.query(Gladiator_History.user_id, sa.func.sum(Gladiator_History.damage))
             .filter(Gladiator_History.guild_id == ctx.guild_id)
+            .filter(Gladiator_History.timestamp >= datetime.now() - timedelta(30))
             .group_by(Gladiator_History.user_id)
             .order_by(sa.func.sum(Gladiator_History.damage))
             .all()
@@ -437,6 +438,7 @@ async def bosses(ctx: Context) -> str:
     bosses: list[Gladiator_Boss] = (
         session.query(Gladiator_Boss)
         .filter(Gladiator_Boss.guild_id == ctx.guild_id)
+        .filter(Gladiator_Boss.ends_at >= datetime.now() - timedelta(30))
         .order_by(Gladiator_Boss.ends_at, Gladiator_Boss.health)
         .all()
     )
