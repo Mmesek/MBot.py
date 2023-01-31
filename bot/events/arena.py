@@ -442,6 +442,8 @@ async def bosses(ctx: Context) -> str:
         .order_by(Gladiator_Boss.ends_at, Gladiator_Boss.health)
         .all()
     )
+    if not bosses:
+        return "No recent Boss to show"
     return "\n".join([f"{boss.name} - {boss.health} | <t:{int(boss.ends_at.timestamp())}:R>" for boss in bosses])
 
 
