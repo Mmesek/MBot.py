@@ -363,4 +363,5 @@ async def tag_replies(self: Bot, data: Channel):
         if tag in tags:
             replies.append(f"{tags[tag]}:" + self.cache[data.guild_id].forum_replies[tags[tag]])
 
-    await self.create_message(data.id, "\n\n".join(replies))
+    if replies:
+        await self.create_message(data.id, "\n\n".join(replies))
