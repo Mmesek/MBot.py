@@ -170,6 +170,8 @@ def rebuild_cache(ctx: Context, s: db.Session = None, type: db.Snippet = None):
         ctx.cache.get_tracked_streams(s)
     elif type is db.types.Snippet.DM_Reply:
         ctx.cache.get_dm_replies(s)
+    elif type is db.types.Snippet.Forum_Autoreply:
+        ctx.cache.get_forum_replies(s)
 
 
 @register(group=Groups.SYSTEM, interaction=False)

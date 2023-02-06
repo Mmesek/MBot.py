@@ -348,3 +348,19 @@ async def ghost_ping(self: Bot, data: Message_Delete):
                 f"Looking for a Ping? <:ping:517493248529530890> Detected Ghostping of {mentions} by <@{msg.author.id}>",
                 allowed_mentions=None,
             )
+
+
+@onDispatch(event="thread_create")
+async def tag_replies(self: Bot, data: Channel):
+    forum: Channel = self.cache[data.guild_id].channels[data.parent_id]
+    if forum.type != 15:
+        return
+
+    tags = {i.id: i.name for i in forum.available_tags}
+    replies = []
+
+    for tag in data.applied_tags:
+        if tag in tags:
+            replies.append(f"{tags[tag]}:" + self.cache[data.guild_id].forum_replies[tags[tag]])
+
+    await self.create_message(data.id, "\n\n".join(replies))

@@ -98,3 +98,9 @@ class Cache(Tasks, Cache):
             i.name: i.content
             for i in db.Snippet.filter(session, server_id=self.guild_id, type=types.Snippet.DM_Reply).all()
         }
+
+    def get_forum_replies(self, session):
+        self.forum_replies = {
+            i.name: i.content
+            for i in db.Snippet.filter(session, server_id=self.guild_id, type=types.Snippet.Forum_Autoreply).all()
+        }

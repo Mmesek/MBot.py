@@ -23,6 +23,7 @@ class Snippet(Permissions):
     Stream: Groups.MODERATOR = (20, "Someone is Streaming... HEY CHECK THEM OUT!")
     Definition: Groups.NITRO = (21, "Admin - Person you don't want to mess with")
     DM_Reply: Groups.MODERATOR = (22, "Thanks for contacting mod team!")
+    Forum_Autoreply: Groups.MODERATOR = (23, "Hey, thanks for creating a post!")
 
 
 class Statistic(Enum):
