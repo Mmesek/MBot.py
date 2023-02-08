@@ -58,7 +58,7 @@ async def help(ctx: Context, command: str = None, *, language):
                     if i.name not in {"ctx", "args"}
                 )
             )
-        _help = check_translation(f"commands.{cmd.name}.cmd_help", language, cmd.help)
+        _help = check_translation(f"commands.{cmd.name}.cmd_help", language, cmd.description)
         string += f"**{ctx.bot.alias}{_cmd}**"
         string += f" {_sig}" if _sig != "" else ""
         string += f" - {_help}" if _help != "" else ""
@@ -84,7 +84,7 @@ async def help(ctx: Context, command: str = None, *, language):
         if " " in cmd.name or cmd.name.istitle():
             continue
         string += f"**/{cmd.name}**"
-        string += f" - {cmd.help.strip()}"
+        string += f" - {cmd.description.strip()}"
         string += "\n"
     if string != "":
         embed.addFields("Slash Commands", string)
@@ -94,7 +94,7 @@ async def help(ctx: Context, command: str = None, *, language):
         allowed_commands,
     ):
         guild_commands += f"**/{cmd.name}**"
-        guild_commands += f" - {cmd.help.strip()}" + "\n"
+        guild_commands += f" - {cmd.description.strip()}" + "\n"
     if guild_commands:
         embed.addFields("Server Slash Commands", guild_commands)
     embed.setColor(ctx.cache.color).setFooter(tr("commands.help.yourPerm", language, group=group))
