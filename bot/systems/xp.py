@@ -227,6 +227,18 @@ async def progress(ctx: Context, user: User = None) -> Embed:
     percent = (gained / required) * 100
     progress = f"`[{'🔴' * int(percent / 6.5):🟢<15}]` {percent:.1f}%".replace(".0", "")
     e = Embed().set_description(progress).set_author(str(user), icon_url=user.get_avatar()).set_color("#8c6cff")
+
+    role_boosts = []
+    _boost = 0
+    for role in ctx.member.roles:
+        if role in ctx.cache.role_rates:
+            _role = ctx.cache.role_rates.get(role, 0)
+            _boost += _role
+            role_boosts.append(f"<@&{role}>: {_role}")
+
+    if len(role_boosts):
+        e.add_field(f"Current Role Boosts ({_boost})", "\n".join(role_boosts))
+
     if ctx.permission_group.can_use(Groups.MODERATOR) and user:
         e.add_field("Current XP", str(exp.value), True)
         e.add_field("Remaining XP", str(next - exp.value), True)
