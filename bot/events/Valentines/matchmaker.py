@@ -1,7 +1,13 @@
+from io import BytesIO
+from textwrap import wrap
+
+import aiohttp
 import sqlalchemy as sa
-from MFramework import Context, Embed, Embed_Thumbnail, Event, Interaction, register
+from MFramework import Attachment, Context, Embed, Event, Interaction, register
 from MFramework.commands.components import Button, Button_Styles, Modal, Row, TextInput
+from mlib.colors import buffered_image
 from mlib.database import Base
+from PIL import Image, ImageDraw, ImageFont
 
 from .general import compatibility, valentines
 
@@ -79,13 +85,40 @@ async def search(ctx: Context):
     )
 
     for match in matches:
-        # TODO: Create a picture out of data instead of embed!
-        await ctx.reply(
-            embeds=Embed(
-                title=match.username, description=match.description, thumbnail=Embed_Thumbnail(url=match.avatar_url)
-            ),
-            components=components,
+        img = Image.open(f"data/images/sparker_card.png")
+        draw = ImageDraw.Draw(img)
+        font = ImageFont.truetype("data/fonts/Zeyada-Regular.ttf", size=25)
+
+        captions = wrap(match.description, 50)
+        draw.multiline_text(
+            (50, 460),
+            "\n".join(captions),
+            fill=(255, 255, 255),
+            font=font,
+            align="center",
         )
+
+        font = ImageFont.truetype("data/fonts/Gabriela-Regular.ttf", size=25)
+        draw.text(
+            (8, 670),
+            f"If you think {match.username.upper()} is a MATCH for you",
+            fill=(255, 255, 255),
+            font=font,
+            align="center",
+        )
+        async with aiohttp.ClientSession() as _session:
+            async with _session.get(match.avatar_url) as response:
+                avatar = await response.read()
+        avatar = Image.open(BytesIO(avatar))
+        avatar = avatar.resize((475, 355))
+
+        img.paste(avatar, (25, 90), avatar)
+
+        img_str = buffered_image(img)
+        attachment = Attachment(file=img_str, filename=f"{match.username}_sparker_card.png")
+
+        await ctx.reply(attachments=[attachment])
+        await ctx.reply(components=components)
         response: Interaction = await ctx.bot.wait_for(
             "interaction_create",
             check=lambda x: x.guild_id == ctx.guild_id and x.member.user.id == ctx.user_id,
@@ -99,9 +132,9 @@ async def search(ctx: Context):
                 state=bool(int(response.data.custom_id.split("-")[-1])),
             )
         )
-        await response.update("...")
+        await response.update("Searching for new match...", components=[], attachments=[])
     session.commit()
-    await ctx.reply("No more matches for now! Check back later!", embeds=[], components=[])
+    await ctx.reply("No more matches for now! Check back later!", embeds=[], attachments=[], components=[])
 
 
 @register(main=matchmaker, private_response=True)
