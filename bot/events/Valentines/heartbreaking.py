@@ -194,3 +194,23 @@ async def mend(ctx: Context, user: User):
         f"<@{ctx.user_id}> has mended <@{user.id}>'s heart! {note}",
         allowed_mentions=Allowed_Mentions(users=[user.id]),
     )
+
+
+@register(main=heart)
+@Event(month=2, day=14)
+async def info(ctx: Context, user: User):
+    """
+    Check another user's heart state
+    Params
+    ------
+    user:
+        User whose heart you want to check
+    """
+    session = ctx.db.sql.session()
+    state = (
+        session.query(Heart_Log)
+        .filter(Heart_Log.guild_id == ctx.guild_id, Heart_Log.target_id == user.id)
+        .order_by(Heart_Log.timestamp.desc())
+        .first()
+    )
+    return f"{user.username}'s heart is {state.state}"
