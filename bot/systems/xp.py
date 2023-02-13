@@ -183,7 +183,7 @@ async def rate(
         ctx.cache.server_exp_rate = rate
         result.append(("Server", ctx.cache.guild.name, rate, previous))
 
-    if not any(channel, role, user, server):
+    if not any([channel, role, user, server]):
         if ctx.cache.exp_rates:
             result.extend([f"[Channel] <#{k}>: {v}" for k, v in ctx.cache.exp_rates.items()])
         if ctx.cache.role_rates:
