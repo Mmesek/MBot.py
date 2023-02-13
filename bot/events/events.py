@@ -5,6 +5,7 @@ from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 
 from .Christmas import general, snowballs  # noqa: F401
 from .Halloween import fear, general  # noqa: F401
+from .Valentines import general, heartbreaking, matchmaker  # noqa: F401
 
 
 ##@register(group=Groups.GLOBAL)
