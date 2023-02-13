@@ -55,6 +55,10 @@ async def shoot(ctx: Context, user: User, arrow: Arrows):
             return "Your target is protected! You can't change their heart now."
         elif arrow == Arrows.Heartbreaker and target_state.state == "broken":
             return "Your target is already heartbroken!"
+    if arrow == Arrows.Heartbreaker:
+        await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, 1074829663802769479, "Valentines Minigame")
+    else:
+        await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, 1074829663802769479, "Valentines Minigame")
 
     session.add(
         Heart_Log(
@@ -113,7 +117,14 @@ async def protect(ctx: Context, user: User):
     note = ""
 
     if previous:
-        session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="broken"))
+        session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=previous.target_id, state="broken"))
+        await ctx.bot.add_guild_member_role(
+            ctx.guild_id, previous.target_id, 1074829663802769479, "Valentines Minigame"
+        )
+        await ctx.bot.remove_guild_member_role(
+            ctx.guild_id, previous.target_id, 1074829364295913542, "Valentines Minigame"
+        )
+        await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
         note = f"<@{previous.target_id}> is now left heartbroken!"
 
     session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="protected"))
@@ -121,6 +132,9 @@ async def protect(ctx: Context, user: User):
 
     if not last_state or last_state.state == "protected":
         if last_state.user_id == user.id:
+            await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
+            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, 1074829364295913542, "Valentines Minigame")
+
             await ctx.reply(
                 f"<@{ctx.user_id}> and <@{user.id}> are now in a relationship! {note}",
                 allowed_mentions=Allowed_Mentions(users=[user.id]),
@@ -176,7 +190,15 @@ async def mend(ctx: Context, user: User):
     note = ""
 
     if previous:
-        session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="broken"))
+        session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=previous.target_id, state="broken"))
+        await ctx.bot.add_guild_member_role(
+            ctx.guild_id, previous.target_id, 1074829663802769479, "Valentines Minigame"
+        )
+        await ctx.bot.remove_guild_member_role(
+            ctx.guild_id, previous.target_id, 1074829364295913542, "Valentines Minigame"
+        )
+        await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
+
         note = f"<@{previous.target_id}> is now left heartbroken once again!"
 
     session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="mended"))
@@ -184,6 +206,14 @@ async def mend(ctx: Context, user: User):
 
     if not last_state or last_state.state == "protected":
         if last_state.user_id == user.id:
+            await ctx.bot.remove_guild_member_role(
+                ctx.guild_id, ctx.user_id, 1074829663802769479, "Valentines Minigame"
+            )
+            await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, 1074829663802769479, "Valentines Minigame")
+
+            await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
+            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, 1074829364295913542, "Valentines Minigame")
+
             await ctx.reply(
                 f"<@{ctx.user_id}> and <@{user.id}> are now in a relationship! {note}",
                 allowed_mentions=Allowed_Mentions(users=[user.id]),
