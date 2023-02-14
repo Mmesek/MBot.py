@@ -83,8 +83,15 @@ async def search(ctx: Context):
     matches: list[Matchmaker] = (
         session.query(Matchmaker).filter(Matchmaker.guild_id == ctx.guild_id, Matchmaker.user_id != ctx.user_id).all()
     )
+    swiped: list[Matchmaker_Matches] = (
+        session.query(Matchmaker_Matches)
+        .filter(Matchmaker_Matches.guild_id == ctx.guild_id, Matchmaker_Matches.user_id == ctx.user_id)
+        .all()
+    )
+    swiped_ids = {i.other_user_id for i in swiped}
+    matches = [i for i in matches if i.user_id not in swiped_ids]
 
-    for match in matches:
+    for x, match in enumerate(matches):
         img = Image.open(f"data/images/sparker_card.png")
         draw = ImageDraw.Draw(img)
         font = ImageFont.truetype("data/fonts/Zeyada-Regular.ttf", size=25)
@@ -119,7 +126,7 @@ async def search(ctx: Context):
         img_str = buffered_image(img)
         attachment = Attachment(file=img_str, filename=f"{match.username}_sparker_card.png")
 
-        await ctx.reply(content="...", attachments=[attachment])
+        await ctx.reply(content=f"Match {x}/{len(matches)}", attachments=[attachment])
         await ctx.reply(content="...", components=components)
         try:
             response: Interaction = await ctx.bot.wait_for(
