@@ -154,4 +154,8 @@ async def check(ctx: Context):
     matched = {i.user_id for i in matched_by}.intersection({i.other_user_id for i in matched_self})
     matched = [f"<@{i}>" for i in sorted(matched, key=lambda x: compatibility(ctx.user_id, x), reverse=True)]
 
-    return Embed(title="You have matched with the following!", description="\n".join(matched), color=int("e76f71", 16))
+    return Embed(
+        title="You have matched with the following!" if len(matched) else "There's no one here, check back later!",
+        description="\n".join(matched),
+        color=int("e76f71", 16),
+    )
