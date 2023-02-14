@@ -10,6 +10,7 @@ from .general import valentines
 
 
 class Heart_Log(Timestamp, Base):
+    timestamp = sa.Column(sa.TIMESTAMP(timezone=True), server_default=sa.func.now(), primary_key=True)
     guild_id = sa.Column(sa.BigInteger, primary_key=True)
     user_id = sa.Column(sa.BigInteger, primary_key=True)
     target_id = sa.Column(sa.BigInteger, primary_key=True)
