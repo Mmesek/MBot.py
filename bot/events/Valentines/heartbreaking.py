@@ -131,7 +131,7 @@ async def protect(ctx: Context, user: User):
     session.commit()
 
     if not last_state or last_state.state == "protected":
-        if last_state.user_id == user.id:
+        if last_state and last_state.user_id == user.id:
             await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
             await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, 1074829364295913542, "Valentines Minigame")
 
