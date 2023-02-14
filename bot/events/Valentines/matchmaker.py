@@ -117,11 +117,11 @@ async def search(ctx: Context):
         img_str = buffered_image(img)
         attachment = Attachment(file=img_str, filename=f"{match.username}_sparker_card.png")
 
-        await ctx.reply(attachments=[attachment])
-        await ctx.reply(components=components)
+        await ctx.reply(content="...", attachments=[attachment])
+        await ctx.reply(content="...", components=components)
         response: Interaction = await ctx.bot.wait_for(
             "interaction_create",
-            check=lambda x: x.guild_id == ctx.guild_id and x.member.user.id == ctx.user_id,
+            check=lambda x: x.guild_id == ctx.guild_id and x.member.user.id == ctx.user_id and x.message.content != "",
             timeout=360,
         )
         session.add(
