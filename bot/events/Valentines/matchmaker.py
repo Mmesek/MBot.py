@@ -121,14 +121,19 @@ async def search(ctx: Context):
 
         await ctx.reply(content="...", attachments=[attachment])
         await ctx.reply(content="...", components=components)
-        response: Interaction = await ctx.bot.wait_for(
-            "interaction_create",
-            check=lambda x: x.guild_id == ctx.guild_id
-            and x.member.user.id == ctx.user_id
-            and x.message
-            and x.message.content != "",
-            timeout=360,
-        )
+        try:
+            response: Interaction = await ctx.bot.wait_for(
+                "interaction_create",
+                check=lambda x: x.guild_id == ctx.guild_id
+                and x.member.user.id == ctx.user_id
+                and x.message
+                and x.message.content != "",
+                timeout=360,
+            )
+        except:
+            session.commit()
+            await ctx.reply("Matchmaker offline. Use the command again!", embeds=[], attachments=[], components=[])
+            return
         session.merge(
             Matchmaker_Matches(
                 guild_id=ctx.guild_id,
