@@ -1,7 +1,7 @@
 import enum
 
 import sqlalchemy as sa
-from MFramework import Allowed_Mentions, Context, User, register
+from MFramework import Allowed_Mention_Types, Allowed_Mentions, Context, User, register
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.commands.decorators import Chance, Event
 from mlib.database import Base, Timestamp
@@ -93,7 +93,10 @@ async def shoot(ctx: Context, user: User, arrow: Arrows):
         )
     )
     session.commit()
-    await ctx.reply(f"You've hit <@{user.id}> with {arrow.name}!", allowed_mentions=Allowed_Mentions(users=[user.id]))
+    await ctx.reply(
+        f"You've hit <@{user.id}> with {arrow.name}!",
+        allowed_mentions=Allowed_Mentions(parse=Allowed_Mention_Types.User_Mentions),
+    )
 
 
 @register(main=heart)
@@ -148,7 +151,7 @@ async def protect(ctx: Context, user: User):
     if not await check_relationship(ctx, last_state, user, "protected", note):
         await ctx.reply(
             f"<@{ctx.user_id}> is now protecting <@{user.id}>'s heart! {note}",
-            allowed_mentions=Allowed_Mentions(users=[user.id]),
+            allowed_mentions=Allowed_Mentions(parse=Allowed_Mention_Types.User_Mentions),
         )
 
 
@@ -201,7 +204,7 @@ async def mend(ctx: Context, user: User):
     if not await check_relationship(ctx, last_state, user, "mended", note):
         await ctx.reply(
             f"<@{ctx.user_id}> has mended <@{user.id}>'s heart! {note}",
-            allowed_mentions=Allowed_Mentions(users=[user.id]),
+            allowed_mentions=Allowed_Mentions(parse=Allowed_Mention_Types.User_Mentions),
         )
 
 
