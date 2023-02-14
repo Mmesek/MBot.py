@@ -1,7 +1,7 @@
 import enum
 
 import sqlalchemy as sa
-from MFramework import Allowed_Mentions, Context, Embed, User, register
+from MFramework import Allowed_Mentions, Context, User, register
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.commands.decorators import Chance, Event
 from mlib.database import Base, Timestamp
@@ -171,7 +171,7 @@ async def mend(ctx: Context, user: User):
         .first()
     )
 
-    if not last_state or last_state.state != "broken":
+    if not last_state or last_state.state not in {"broken", "mended"}:
         return "You can only mend fellow broken hearts!"
 
     target_state = (
