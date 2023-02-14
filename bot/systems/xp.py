@@ -234,7 +234,8 @@ async def progress(ctx: Context, user: User = None) -> Embed:
         if role in ctx.cache.role_rates:
             _role = ctx.cache.role_rates.get(role, 0) or 0
             _boost += _role
-            role_boosts.append(f"<@&{role}>: {_role}")
+            if _role:
+                role_boosts.append(f"<@&{role}>: {_role}")
 
     if len(role_boosts):
         e.add_field(f"Current Role Boosts ({_boost})", "\n".join(role_boosts))
