@@ -208,7 +208,7 @@ async def mend(ctx: Context, user: User):
     session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="mended"))
     session.commit()
 
-    if not last_state or last_state.state == "protected":
+    if not last_state or last_state.state == "mended":
         if last_state.user_id == user.id:
             await ctx.bot.remove_guild_member_role(
                 ctx.guild_id, ctx.user_id, 1074829663802769479, "Valentines Minigame"
