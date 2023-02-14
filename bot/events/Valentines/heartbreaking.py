@@ -84,6 +84,8 @@ async def protect(ctx: Context, user: User):
     user:
         User whose heart you want to protect
     """
+    if ctx.user_id == user.id:
+        return "You can't protect your own heart!"
     session = ctx.db.sql.session()
     last_state = (
         session.query(Heart_Log)
@@ -159,6 +161,8 @@ async def mend(ctx: Context, user: User):
     user:
         User whose heart you want to mend
     """
+    if ctx.user_id == user.id:
+        return "You can't mend your own heart!"
     session = ctx.db.sql.session()
     last_state = (
         session.query(Heart_Log)
