@@ -95,7 +95,7 @@ async def shoot(ctx: Context, user: User, arrow: Arrows):
     session.commit()
     await ctx.reply(
         f"You've hit <@{user.id}> with {arrow.name}!",
-        allowed_mentions=Allowed_Mentions(parse=Allowed_Mention_Types.User_Mentions),
+        allowed_mentions=Allowed_Mentions(parse=[Allowed_Mention_Types.User_Mentions]),
     )
 
 
@@ -151,7 +151,7 @@ async def protect(ctx: Context, user: User):
     if not await check_relationship(ctx, last_state, user, "protected", note):
         await ctx.reply(
             f"<@{ctx.user_id}> is now protecting <@{user.id}>'s heart! {note}",
-            allowed_mentions=Allowed_Mentions(parse=Allowed_Mention_Types.User_Mentions),
+            allowed_mentions=Allowed_Mentions(parse=[Allowed_Mention_Types.User_Mentions]),
         )
 
 
@@ -204,7 +204,7 @@ async def mend(ctx: Context, user: User):
     if not await check_relationship(ctx, last_state, user, "mended", note):
         await ctx.reply(
             f"<@{ctx.user_id}> has mended <@{user.id}>'s heart! {note}",
-            allowed_mentions=Allowed_Mentions(parse=Allowed_Mention_Types.User_Mentions),
+            allowed_mentions=Allowed_Mentions(parse=[Allowed_Mention_Types.User_Mentions]),
         )
 
 
