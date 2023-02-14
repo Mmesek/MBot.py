@@ -129,7 +129,7 @@ async def search(ctx: Context):
             and x.message.content != "",
             timeout=360,
         )
-        session.add(
+        session.merge(
             Matchmaker_Matches(
                 guild_id=ctx.guild_id,
                 user_id=ctx.user_id,
