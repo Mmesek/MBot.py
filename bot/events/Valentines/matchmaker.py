@@ -123,7 +123,10 @@ async def search(ctx: Context):
         await ctx.reply(content="...", components=components)
         response: Interaction = await ctx.bot.wait_for(
             "interaction_create",
-            check=lambda x: x.guild_id == ctx.guild_id and x.member.user.id == ctx.user_id and x.message.content != "",
+            check=lambda x: x.guild_id == ctx.guild_id
+            and x.member.user.id == ctx.user_id
+            and x.message
+            and x.message.content != "",
             timeout=360,
         )
         session.add(
