@@ -243,4 +243,8 @@ async def info(ctx: Context, user: User):
         .order_by(Heart_Log.timestamp.desc())
         .first()
     )
+    if state:
+        state = state.state
+    else:
+        state = "Unbroken"
     return f"{user.username}'s heart is {state.state}"
