@@ -111,8 +111,10 @@ async def search(ctx: Context):
                 avatar = await response.read()
         avatar = Image.open(BytesIO(avatar))
         avatar = avatar.resize((475, 355))
-
-        img.paste(avatar, (25, 90), avatar)
+        try:
+            img.paste(avatar, (25, 90), avatar)
+        except:
+            pass
 
         img_str = buffered_image(img)
         attachment = Attachment(file=img_str, filename=f"{match.username}_sparker_card.png")
