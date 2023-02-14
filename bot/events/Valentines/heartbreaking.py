@@ -219,14 +219,17 @@ async def info(ctx: Context, user: User):
         User whose heart you want to check
     """
     session = ctx.db.sql.session()
-    state = (
+    state: Heart_Log = (
         session.query(Heart_Log)
         .filter(Heart_Log.guild_id == ctx.guild_id, Heart_Log.target_id == user.id)
         .order_by(Heart_Log.timestamp.desc())
         .first()
     )
+    note = ""
     if state:
+        if state.state == "protected" or state.state == "mended":
+            note = f"by <@{state.user_id}>"
         state = state.state
     else:
         state = "Unbroken"
-    return f"{user.username}'s heart is {state}"
+    return f"{user.username}'s heart is {state} {note}"
