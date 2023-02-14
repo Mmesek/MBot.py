@@ -48,7 +48,7 @@ async def valentine(ctx: Context, user: User, message: str) -> Embed:
     if user.id == ctx.user.id:
         return "You can't send a secret valentine to yourself! :("
 
-    await send(ctx, user, "Secret Valentine")
+    _send(ctx, user, "Secret Valentine")
 
     await ctx.send(
         f"<@{user.id}>, you have received a valentine!",
@@ -79,6 +79,10 @@ async def send(ctx: Context, user: User, valentine: Valentine) -> Embed:
     valentine:
         Valentine to send
     """
+    return _send(ctx, user, valentine)
+
+
+def _send(ctx: Context, user: User, valentine: Valentine) -> Embed:
     if type(valentine) != str:
         value = valentine.value
     else:
