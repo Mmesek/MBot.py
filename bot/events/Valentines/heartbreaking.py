@@ -247,4 +247,4 @@ async def info(ctx: Context, user: User):
         state = state.state
     else:
         state = "Unbroken"
-    return f"{user.username}'s heart is {state.state}"
+    return f"{user.username}'s heart is {state}"
