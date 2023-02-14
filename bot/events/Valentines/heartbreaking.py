@@ -54,7 +54,7 @@ class Arrows(enum.Enum):
 @register(main=heart)
 @Event(month=2, day=14)
 @cooldown(minutes=10, logic=CacheCooldown)
-@Chance(50, "You've missed! Their heart remains unchanged")
+@Chance(80, "You've missed! Their heart remains unchanged")
 async def shoot(ctx: Context, user: User, arrow: Arrows):
     """
     Break someone's heart! Or pair them. Only if they are not protected
@@ -99,7 +99,7 @@ async def shoot(ctx: Context, user: User, arrow: Arrows):
 @register(main=heart)
 @Event(month=2, day=14)
 @cooldown(minutes=10, logic=CacheCooldown)
-@Chance(50, "You've failed! Their heart remains unprotected")
+@Chance(80, "You've failed! Their heart remains unprotected")
 async def protect(ctx: Context, user: User):
     """
     Protect someone's heart!
@@ -155,7 +155,7 @@ async def protect(ctx: Context, user: User):
 @register(main=heart)
 @Event(month=2, day=14)
 @cooldown(minutes=10, logic=CacheCooldown)
-@Chance(50, "You've failed! Their heart remains broken")
+@Chance(80, "You've failed! Their heart remains broken")
 async def mend(ctx: Context, user: User):
     """
     Mend someone's broken heart, if you have a broken heart too
