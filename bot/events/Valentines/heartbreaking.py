@@ -145,7 +145,7 @@ async def protect(ctx: Context, user: User):
     )
     note = await previous_relationship(ctx, previous, session) if previous else ""
 
-    session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="protected"))
+    session.merge(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="protected"))
     session.commit()
 
     if not await check_relationship(ctx, last_state, user, "protected", note):
@@ -198,7 +198,7 @@ async def mend(ctx: Context, user: User):
     )
     note = await previous_relationship(ctx, previous, session, " once again") if previous else ""
 
-    session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="mended"))
+    session.merge(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="mended"))
     session.commit()
 
     if not await check_relationship(ctx, last_state, user, "mended", note):
