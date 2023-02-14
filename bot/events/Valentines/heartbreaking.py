@@ -16,6 +16,29 @@ class Heart_Log(Timestamp, Base):
     state = sa.Column(sa.String)
 
 
+async def previous_relationship(ctx: Context, previous: Heart_Log, session, note: str = "") -> str:
+    session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=previous.target_id, state="broken"))
+    await ctx.bot.add_guild_member_role(ctx.guild_id, previous.target_id, 1074829663802769479, "Valentines Minigame")
+    await ctx.bot.remove_guild_member_role(ctx.guild_id, previous.target_id, 1074829364295913542, "Valentines Minigame")
+    await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
+    return f"<@{previous.target_id}> is now left heartbroken{note}!"
+
+
+async def check_relationship(ctx: Context, last_state: Heart_Log, user: User, state: str, note: str = "") -> bool:
+    if last_state and last_state.state == state and last_state.user_id == user.id:
+        await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, 1074829663802769479, "Valentines Minigame")
+        await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, 1074829663802769479, "Valentines Minigame")
+
+        await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
+        await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, 1074829364295913542, "Valentines Minigame")
+
+        await ctx.reply(
+            f"<@{ctx.user_id}> and <@{user.id}> are now in a relationship! {note}",
+            allowed_mentions=Allowed_Mentions(users=[user.id]),
+        )
+        return True
+
+
 @register(main=valentines)
 async def heart():
     """Heartbreaking Event commands"""
@@ -107,7 +130,7 @@ async def protect(ctx: Context, user: User):
     if target_state:
         if target_state.state == "broken":
             return "You are too late, Target's heart is already broken!"
-        elif target_state == "protected":
+        if target_state.state == "protected":
             return "Target's heart is already protected by someone else!"
 
     previous = (
@@ -116,37 +139,16 @@ async def protect(ctx: Context, user: User):
         .order_by(Heart_Log.timestamp.desc())
         .first()
     )
-    note = ""
-
-    if previous:
-        session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=previous.target_id, state="broken"))
-        await ctx.bot.add_guild_member_role(
-            ctx.guild_id, previous.target_id, 1074829663802769479, "Valentines Minigame"
-        )
-        await ctx.bot.remove_guild_member_role(
-            ctx.guild_id, previous.target_id, 1074829364295913542, "Valentines Minigame"
-        )
-        await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
-        note = f"<@{previous.target_id}> is now left heartbroken!"
+    note = await previous_relationship(ctx, previous, session) if previous else ""
 
     session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="protected"))
     session.commit()
 
-    if not last_state or last_state.state == "protected":
-        if last_state and last_state.user_id == user.id:
-            await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
-            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, 1074829364295913542, "Valentines Minigame")
-
-            await ctx.reply(
-                f"<@{ctx.user_id}> and <@{user.id}> are now in a relationship! {note}",
-                allowed_mentions=Allowed_Mentions(users=[user.id]),
-            )
-            return
-
-    await ctx.reply(
-        f"<@{ctx.user_id}> is now protecting <@{user.id}>'s heart! {note}",
-        allowed_mentions=Allowed_Mentions(users=[user.id]),
-    )
+    if not await check_relationship(ctx, last_state, user, "protected", note):
+        await ctx.reply(
+            f"<@{ctx.user_id}> is now protecting <@{user.id}>'s heart! {note}",
+            allowed_mentions=Allowed_Mentions(users=[user.id]),
+        )
 
 
 @register(main=heart)
@@ -181,9 +183,8 @@ async def mend(ctx: Context, user: User):
         .first()
     )
 
-    if target_state:
-        if target_state.state != "broken":
-            return "Target's heart is not broken!"
+    if target_state and target_state.state != "broken":
+        return "Target's heart is not broken!"
 
     previous = (
         session.query(Heart_Log)
@@ -191,43 +192,16 @@ async def mend(ctx: Context, user: User):
         .order_by(Heart_Log.timestamp.desc())
         .first()
     )
-    note = ""
-
-    if previous:
-        session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=previous.target_id, state="broken"))
-        await ctx.bot.add_guild_member_role(
-            ctx.guild_id, previous.target_id, 1074829663802769479, "Valentines Minigame"
-        )
-        await ctx.bot.remove_guild_member_role(
-            ctx.guild_id, previous.target_id, 1074829364295913542, "Valentines Minigame"
-        )
-        await ctx.bot.remove_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
-
-        note = f"<@{previous.target_id}> is now left heartbroken once again!"
+    note = await previous_relationship(ctx, previous, session, " once again") if previous else ""
 
     session.add(Heart_Log(guild_id=ctx.guild_id, user_id=ctx.user_id, target_id=user.id, state="mended"))
     session.commit()
 
-    if not last_state or last_state.state == "mended":
-        if last_state.user_id == user.id:
-            await ctx.bot.remove_guild_member_role(
-                ctx.guild_id, ctx.user_id, 1074829663802769479, "Valentines Minigame"
-            )
-            await ctx.bot.remove_guild_member_role(ctx.guild_id, user.id, 1074829663802769479, "Valentines Minigame")
-
-            await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.user_id, 1074829364295913542, "Valentines Minigame")
-            await ctx.bot.add_guild_member_role(ctx.guild_id, user.id, 1074829364295913542, "Valentines Minigame")
-
-            await ctx.reply(
-                f"<@{ctx.user_id}> and <@{user.id}> are now in a relationship! {note}",
-                allowed_mentions=Allowed_Mentions(users=[user.id]),
-            )
-            return
-
-    await ctx.reply(
-        f"<@{ctx.user_id}> has mended <@{user.id}>'s heart! {note}",
-        allowed_mentions=Allowed_Mentions(users=[user.id]),
-    )
+    if not await check_relationship(ctx, last_state, user, "mended", note):
+        await ctx.reply(
+            f"<@{ctx.user_id}> has mended <@{user.id}>'s heart! {note}",
+            allowed_mentions=Allowed_Mentions(users=[user.id]),
+        )
 
 
 @register(main=heart)
