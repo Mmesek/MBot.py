@@ -28,6 +28,8 @@ class Types(Permissions):
     "Unbans user"
     Report: Groups.GLOBAL = 5
     "Reports user"
+    Note: Groups.HELPER = 6
+    """Note about user"""
 
 
 class Infraction(Timestamp, ServerID, ID, Base):

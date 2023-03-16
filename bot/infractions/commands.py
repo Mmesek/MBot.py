@@ -73,6 +73,9 @@ async def infraction(
     )
     session.commit()
 
+    if type_ == models.Types.Note:
+        return
+
     try:
         await log_action(
             cache=ctx.cache,
@@ -158,6 +161,24 @@ async def warn(
         await ctx.reply(r)
 
     await ctx.send(r, channel_id=ctx.channel_id if anonymous else None)
+
+
+@register(group=Groups.HELPER, main=infraction, aliases=["note"], private_response=True)
+# @button(style=Button_Styles.PRIMARY, emoji=Emoji(name="🧾"))
+# @menu_user("Note")
+async def note(ctx: Context, user: User, message: str = None) -> str:
+    """
+    Add a note about User
+
+    Params
+    ------
+    user:
+        User to add note to
+    message:
+        What note is about
+    """
+    await infraction(ctx, type_=models.Types.Note, user=user, reason=message, weight=0)
+    return f'Note "{message}" added successfully'
 
 
 @register(group=Groups.HELPER, main=infraction, aliases=["timeout", "mute", "tempmute"])
@@ -314,7 +335,22 @@ async def list_(ctx: Context, user: User = None) -> Embed:
     session = ctx.db.sql.session()
     infractions: list[models.Infraction] = (
         session.query(models.Infraction)
-        .filter(models.Infraction.user_id == user.id, models.Infraction.server_id == ctx.guild_id)
+        .filter(
+            models.Infraction.user_id == user.id,
+            models.Infraction.server_id == ctx.guild_id,
+            models.Infraction.type != models.Types.Note,
+        )
+        .order_by(sa.desc(models.Infraction.id))
+        .all()
+    )
+
+    notes: list[models.Infraction] = (
+        session.query(models.Infraction)
+        .filter(
+            models.Infraction.user_id == user.id,
+            models.Infraction.server_id == ctx.guild_id,
+            models.Infraction.type == models.Types.Note,
+        )
         .order_by(sa.desc(models.Infraction.id))
         .all()
     )
@@ -366,25 +402,31 @@ async def list_(ctx: Context, user: User = None) -> Embed:
         1 if remaining_to_auto_mute > 0 else 2 if remaining_to_auto_ban - 1 > 0 else 3 if remaining_to_auto_ban else 4
     ]
 
-    e = (
-        Embed()
-        .set_description(str_infractions)
-        .set_author(ctx.t("title", username=user.username), icon_url=user.get_avatar())
-        .set_color(color)
-        .set_footer(
-            ctx.t(
-                "counter",
-                currently_active="-".join(currently_active),
-                active=active,
-                total=len(infractions),
+    e = [
+        (
+            Embed()
+            .set_description(str_infractions)
+            .set_author(ctx.t("title", username=user.username), icon_url=user.get_avatar())
+            .set_color(color)
+            .set_footer(
+                ctx.t(
+                    "counter",
+                    currently_active="-".join(currently_active),
+                    active=active,
+                    total=len(infractions),
+                )
             )
         )
-    )
+    ]
 
     if ctx.permission_group.can_use(Groups.MODERATOR):
         # TODO: Version based on decorated functions instead of helper function
         # components.append([action.button(custom_id=user.id, label=ctx.t(action.name)) for action in actions])
         components.append(instant_actions(user.id))
+
+    if ctx.permission_group.can_use(Groups.HELPER):
+        str_notes = "\n".join(i.as_string(ctx, width=width, id_width=id_width) for i in notes[:10])
+        e.append(Embed().set_title("Notes").set_description(str_notes))
 
     if ctx.permission_group.can_use(Groups.ADMIN):
         _ = [
@@ -397,7 +439,7 @@ async def list_(ctx: Context, user: User = None) -> Embed:
             # components.append(Row(expire.select(*_, placeholder=ctx.t("expire_placeholder"))))
             components.append(Row(ExpireInfractions(*_, placeholder=ctx.t("expire_placeholder"))))
 
-    return Message(embeds=[e], components=components)
+    return Message(embeds=e, components=components)
 
 
 @register(group=Groups.GLOBAL)
