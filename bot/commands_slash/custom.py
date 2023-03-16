@@ -1,4 +1,6 @@
+import json
 from datetime import datetime, timedelta, timezone
+from textwrap import wrap
 
 from MFramework import (
     Attachment,
@@ -15,6 +17,8 @@ from MFramework import (
     register,
 )
 from MFramework.commands.decorators import Chance
+from mlib.colors import buffered_image
+from PIL import Image, ImageDraw, ImageFont
 
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
@@ -389,18 +393,15 @@ async def truth(ctx: Context, character: characters, captions: str = None) -> At
     if ctx.is_message:
         await ctx.deferred(True)
         return "This command works only as `/` one, try again with `/truth`"
-    import json
 
     with open("data/images/truth/characters.json", "r", newline="", encoding="utf-8") as file:
         chars = json.load(file)
     if not captions:
         captions = chars.get(character[0])
-    from PIL import Image, ImageDraw, ImageFont
 
     img = Image.open(f"data/images/truth/{character[0]}_{character[1]}")  # TODO
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=65)
-    from textwrap import wrap
 
     captions = wrap(captions, 38)
     y = 470
@@ -413,10 +414,54 @@ async def truth(ctx: Context, character: characters, captions: str = None) -> At
         stroke_fill=(0, 0, 0),
         stroke_width=4,
     )
-    from mlib.colors import buffered_image
 
     img_str = buffered_image(img)
     return Attachment(file=img_str, filename="WhatReallyHappened.png", spoiler=True)
+
+
+memes = {}
+for file in os.listdir("data/images/memes"):
+    if not file.endswith("json") and "_" in file:
+        _meme, y = file.split("_", 1)
+        memes[_meme] = y
+
+
+@register(group=Groups.GLOBAL, guild=289739584546275339)
+@cooldown(minutes=5, logic=CacheCooldown)
+async def meme(picture: memes, captions: str = None) -> Attachment:
+    """
+    Caption an image
+    Params
+    ------
+    captions:
+        text to place on image. Split using comma if there are more captions on image to fill
+    """
+    img = Image.open(f"data/images/{picture}")  # TODO
+    draw = ImageDraw.Draw(img)
+    font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=65)
+
+    with open("data/images/memes/memes.json", "r", newline="", encoding="utf-8") as file:
+        positions = json.load(file)
+
+    _x = positions[picture]["x"]
+    _y = positions[picture]["y"]
+    _words = positions[picture].get("words", 38)
+
+    captions = captions.split(",")
+    for captions, words, x, y in [(cap, _words[x], _x[x], _y[x]) for x, cap in enumerate(captions)]:
+        captions = wrap(captions, words)
+        draw.multiline_text(
+            (x, y),
+            "\n".join(captions),
+            fill=(255, 255, 255),
+            font=font,
+            align="center",
+            stroke_fill=(0, 0, 0),
+            stroke_width=4,
+        )
+
+    img_str = buffered_image(img)
+    return Attachment(file=img_str, filename=f"{picture.split('.',1)[0]}.png", spoiler=True)
 
 
 from MFramework import Guild_Member
