@@ -448,7 +448,10 @@ async def meme(picture: memes, captions: str = None) -> Attachment:
     picture = picture[1].split(".", 1)[0]
     _x = positions[picture]["x"]
     _y = positions[picture]["y"]
-    _words = positions[picture].get("words", 38)
+    _words = positions[picture].get("words", [38])
+    as_spoiler = positions[picture].get("spoiler", False)
+    main_color = positions[picture].get("font_color", (255, 255, 255))
+    stroke_color = positions[picture].get("outline_color", (0, 0, 0))
 
     captions = captions.split(",")
     for captions, words, x, y in [(cap, _words[x], _x[x], _y[x]) for x, cap in enumerate(captions)]:
@@ -456,15 +459,15 @@ async def meme(picture: memes, captions: str = None) -> Attachment:
         draw.multiline_text(
             (x, y),
             "\n".join(captions),
-            fill=(255, 255, 255),
+            fill=tuple(main_color),
             font=font,
             align="center",
-            stroke_fill=(0, 0, 0),
+            stroke_fill=tuple(stroke_color),
             stroke_width=4,
         )
 
     img_str = buffered_image(img)
-    return Attachment(file=img_str, filename=f"{picture.split('.',1)[0]}.png", spoiler=True)
+    return Attachment(file=img_str, filename=f"{picture.split('.',1)[0]}.png", spoiler=as_spoiler)
 
 
 from MFramework import Guild_Member
