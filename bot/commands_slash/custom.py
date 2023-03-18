@@ -453,7 +453,7 @@ async def meme(picture: memes, captions: str = None) -> Attachment:
     main_color = positions[picture].get("font_color", (255, 255, 255))
     stroke_color = positions[picture].get("outline_color", (0, 0, 0))
 
-    captions = captions.split(",")
+    captions = captions.split(",", len(_x) - 1)
     for captions, words, x, y in [(cap, _words[x], _x[x], _y[x]) for x, cap in enumerate(captions)]:
         captions = wrap(captions, words)
         draw.multiline_text(
