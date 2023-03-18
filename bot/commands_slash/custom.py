@@ -438,7 +438,7 @@ async def meme(picture: memes, captions: str = None) -> Attachment:
     """
     from PIL import Image, ImageDraw, ImageFont
 
-    img = Image.open(f"data/images/{picture[1]}")  # TODO
+    img = Image.open(f"data/images/memes/{picture[1]}")  # TODO
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=65)
 
