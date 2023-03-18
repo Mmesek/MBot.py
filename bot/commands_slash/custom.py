@@ -18,7 +18,6 @@ from MFramework import (
 )
 from MFramework.commands.decorators import Chance
 from mlib.colors import buffered_image
-from PIL import Image, ImageDraw, ImageFont
 
 
 @register(group=Groups.MODERATOR, guild=289739584546275339)
@@ -399,6 +398,8 @@ async def truth(ctx: Context, character: characters, captions: str = None) -> At
     if not captions:
         captions = chars.get(character[0])
 
+    from PIL import Image, ImageDraw, ImageFont
+
     img = Image.open(f"data/images/truth/{character[0]}_{character[1]}")  # TODO
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=65)
@@ -435,6 +436,8 @@ async def meme(picture: memes, captions: str = None) -> Attachment:
     captions:
         text to place on image. Split using comma if there are more captions on image to fill
     """
+    from PIL import Image, ImageDraw, ImageFont
+
     img = Image.open(f"data/images/{picture[1]}")  # TODO
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=65)
