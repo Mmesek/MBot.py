@@ -445,6 +445,7 @@ async def meme(picture: memes, captions: str = None) -> Attachment:
     with open("data/images/memes/memes.json", "r", newline="", encoding="utf-8") as file:
         positions = json.load(file)
 
+    picture = picture[1].split(".", 1)[0]
     _x = positions[picture]["x"]
     _y = positions[picture]["y"]
     _words = positions[picture].get("words", 38)
