@@ -421,9 +421,8 @@ async def truth(ctx: Context, character: characters, captions: str = None) -> At
 
 memes = {}
 for file in os.listdir("data/images/memes"):
-    if not file.endswith("json") and "_" in file:
-        _meme, y = file.split("_", 1)
-        memes[_meme] = y
+    if not file.endswith("json"):
+        memes[file.split(".", 1)[0].replace("_", " ").title()] = file
 
 
 @register(group=Groups.GLOBAL, guild=289739584546275339)
@@ -436,7 +435,7 @@ async def meme(picture: memes, captions: str = None) -> Attachment:
     captions:
         text to place on image. Split using comma if there are more captions on image to fill
     """
-    img = Image.open(f"data/images/{picture}")  # TODO
+    img = Image.open(f"data/images/{picture[1]}")  # TODO
     draw = ImageDraw.Draw(img)
     font = ImageFont.truetype("data/fonts/Roboto-Regular.ttf", size=65)
 
@@ -763,3 +762,11 @@ async def pad(url: str) -> Attachment:
             file = await response.text(encoding="utf-8")
 
     return Attachment(file=file, filename=f"etherpad-{datetime.now()}.txt")
+
+
+@register(group=Groups.GLOBAL, guild=289739584546275339)
+async def birthday_hat(ctx: Context, user: User) -> Attachment:
+    """Adds Birthday's hat onto user's avatar"""
+    from ..utils.utils import layer_picture
+
+    return Attachment(file=layer_picture(user.get_avatar() + "?size=2048", "birthday_hat.png"), filename="avatar.png")
