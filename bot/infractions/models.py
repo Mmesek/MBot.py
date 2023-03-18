@@ -28,7 +28,7 @@ class Types(Permissions):
     "Unbans user"
     Report: Groups.GLOBAL = 5
     "Reports user"
-    Note: Groups.HELPER = 6
+    Note: Groups.HELPER = 7
     """Note about user"""
 
 
