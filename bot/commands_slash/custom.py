@@ -771,9 +771,29 @@ async def pad(url: str) -> Attachment:
     return Attachment(file=file, filename=f"etherpad-{datetime.now()}.txt")
 
 
+hats = {}
+for file in os.listdir("data/images/hats"):
+    if not file.endswith("json"):
+        characters[file.split(".", 1)[0].replace("_", " ").title()] = file
+
+
 @register(group=Groups.GLOBAL, guild=289739584546275339)
-async def birthday_hat(ctx: Context, user: User) -> Attachment:
-    """Adds Birthday's hat onto user's avatar"""
+async def hat(ctx: Context, user: User, hat: hats, x: int, y: int) -> Attachment:
+    """Adds hat onto user's avatar
+    Params
+    ------
+    user:
+        User's avatar you want to apply hat onto
+    hat:
+        Which hat you want to apply
+    x:
+        Horizontal pixel where to start hat
+    y:
+        Vertical pixel where to start hat
+    """
     from ..utils.utils import layer_picture
 
-    return Attachment(file=layer_picture(user.get_avatar() + "?size=2048", "birthday_hat.png"), filename="avatar.png")
+    return Attachment(
+        file=await layer_picture(user.get_avatar() + "?size=2048", f"images/memes/{hat[1]}", x, y),
+        filename="avatar.png",
+    )
