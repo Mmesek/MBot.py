@@ -191,19 +191,12 @@ async def advent(ctx: Context, *, language) -> str:
 async def hat(ctx: Context, user: User) -> Attachment:
     """Adds Santa's hat onto user's avatar"""
     await ctx.deferred()
-    from io import BytesIO
+    from ...utils.utils import layer_picture
 
-    import requests
-    from PIL import Image
-
-    fd = requests.get(user.get_avatar() + "?size=2048").content
-    img = Image.open(BytesIO(fd))
-    hat_image = Image.open("data/santa_hat.png")
-    img.paste(hat_image, (img.width - 400, 0), hat_image)
-    buffered = BytesIO()
-    img.save(buffered, format="PNG")
-    img_str = buffered.getvalue()
-    return Attachment(file=img_str, filename="avatar.png")
+    return Attachment(
+        file=await layer_picture(user.get_avatar() + "?size=2048", "santa_hat.png", x_offset=-400),
+        filename="avatar.png",
+    )
 
 
 # from functools import cache
