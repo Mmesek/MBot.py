@@ -428,7 +428,7 @@ for file in os.listdir("data/images/memes"):
 
 @register(group=Groups.GLOBAL, guild=289739584546275339)
 @cooldown(minutes=5, logic=CacheCooldown)
-async def meme(ctx: Context, picture: memes, captions: str = None) -> Attachment:
+async def meme(ctx: Context, picture: memes, captions: str) -> Attachment:
     """
     Caption an image
     Params
