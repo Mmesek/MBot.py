@@ -774,7 +774,7 @@ async def pad(url: str) -> Attachment:
 hats = {}
 for file in os.listdir("data/images/hats"):
     if not file.endswith("json"):
-        characters[file.split(".", 1)[0].replace("_", " ").title()] = file
+        hats[file.split(".", 1)[0].replace("_", " ").title()] = file
 
 
 @register(group=Groups.GLOBAL, guild=289739584546275339)
