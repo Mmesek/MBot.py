@@ -1,3 +1,5 @@
+import asyncio
+import json
 from random import SystemRandom
 
 from MFramework import Context, Embed, Groups, register
@@ -241,3 +243,35 @@ async def wordle(
             await answer.reply(f"You guessed correctly! Took `{r}` rounds to guess")
             return
     return f"Sadly you ran out of attempts! Correct word was: `{hidden}`"
+
+
+@register(group=Groups.NITRO)
+async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> str:
+    """
+    Start an automated hunger games
+    Params
+    ------
+    players:
+        List of players. Separate with comma
+    kill_per_round:
+        How many kills should be in each round
+    """
+    players = [i.strip() for i in players.split(",")]
+
+    with open("data/dlhg.json", "r", newline="", encoding="utf-8") as file:
+        theme = json.load(file)
+
+    for round in range(1, (len(players) - 1) // kill_per_round):
+        msg = [f"Round **{round}**\n"]
+
+        for player in random.choices(players, k=kill_per_round):
+            msg.append(player + " " + random.choice(theme["dead"]))
+            players.remove(player)
+
+        for player in players:
+            msg.append(player + " " + random.choice(theme[random.choice(["alive", "wounded", "team"])]))
+
+        await ctx.send_followup("\n".join(msg))
+        await asyncio.sleep(15)
+
+    return ", ".join(players) + " Wins!"
