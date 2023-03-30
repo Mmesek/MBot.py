@@ -257,6 +257,8 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
         How many kills should be in each round
     """
     _players = [i.strip() for i in players.split(",")]
+    if len(_players) < 2:
+        return "Solo hunger games? Not on my watch."
 
     with open("data/dlhg.json", "r", newline="", encoding="utf-8") as file:
         theme = json.load(file)
