@@ -256,25 +256,34 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
     kill_per_round:
         How many kills should be in each round
     """
-    players = [i.strip() for i in players.split(",")]
+    _players = [i.strip() for i in players.split(",")]
 
     with open("data/dlhg.json", "r", newline="", encoding="utf-8") as file:
         theme = json.load(file)
 
-    await ctx.reply(f"Let the games begin! {(len(players) // kill_per_round) - 1} rounds")
+    await ctx.reply(f"Let the games begin! {len(_players)} players")
+    _round = 0
 
-    for round in range(1, len(players) // kill_per_round):
-        msg = [f"Round **{round}**\n"]
+    while len(_players) > 1:
+        _round += 1
+        result = []
 
-        for player in random.choices(players, k=kill_per_round):
-            msg.append(player + " " + random.choice(theme["dead"]))
-            players.remove(player)
+        for player in random.choices(_players, k=kill_per_round):
+            result.append(player + " " + random.choice(theme["dead"]))
+            _players.remove(player)
 
-        for player in players:
-            msg.append(player + " " + random.choice(theme[random.choice(["alive", "wounded", "team"])]))
+            if len(_players) == 1 and random.randint(1, 3) <= 2:
+                break
 
-        await ctx.data.send_followup("\n".join(msg))
-        if round != len(players) // kill_per_round:
-            await asyncio.sleep(15)
+        for player in _players:
+            _result: str = random.choice(theme[random.choice(["alive", "wounded", "team"])])
 
-    await ctx.data.send_followup(", ".join(players) + " Wins!")
+            result.append(f"**{player}** {_result.format(random.choice([i for i in _players if i != player]))}")
+
+        message = await ctx.data.send_followup(f"Round **{_round}**")
+        if message:
+            for msg in result:
+                await message.edit(message.content + "\n\n" + msg)
+                await asyncio.sleep(3)
+
+    await ctx.data.send_followup((", ".join(_players) + " Wins!") if _players else "Everyone's dead. No winners.")
