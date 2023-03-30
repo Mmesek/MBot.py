@@ -270,7 +270,7 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
         _round += 1
         result = []
 
-        for player in random.choices(_players, k=kill_per_round):
+        for player in random.sample(_players, k=kill_per_round):
             result.append(player + " " + random.choice(theme["dead"]))
             _players.remove(player)
 
