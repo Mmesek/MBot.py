@@ -245,7 +245,7 @@ async def wordle(
     return f"Sadly you ran out of attempts! Correct word was: `{hidden}`"
 
 
-@register(group=Groups.NITRO)
+@register(group=Groups.GLOBAL, main=game)
 async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> str:
     """
     Start an automated hunger games
