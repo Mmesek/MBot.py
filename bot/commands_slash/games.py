@@ -287,7 +287,7 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
         message = await ctx.data.send_followup(f"Round **{_round}**")
         if message:
             for msg in result:
-                await message.edit(message.content + "\n\n" + msg)
+                message = await message.edit(message.content + "\n\n" + msg)
                 await asyncio.sleep(3)
 
     await ctx.data.send_followup((", ".join(_players) + " Wins!") if _players else "Everyone's dead. No winners.")
