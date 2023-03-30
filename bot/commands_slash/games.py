@@ -261,7 +261,9 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
     with open("data/dlhg.json", "r", newline="", encoding="utf-8") as file:
         theme = json.load(file)
 
-    for round in range(1, (len(players) - 1) // kill_per_round):
+    await ctx.reply(f"Let the games begin! {(len(players) // kill_per_round) - 1} rounds")
+
+    for round in range(1, len(players) // kill_per_round):
         msg = [f"Round **{round}**\n"]
 
         for player in random.choices(players, k=kill_per_round):
@@ -271,7 +273,8 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
         for player in players:
             msg.append(player + " " + random.choice(theme[random.choice(["alive", "wounded", "team"])]))
 
-        await ctx.send_followup("\n".join(msg))
-        await asyncio.sleep(15)
+        await ctx.data.send_followup("\n".join(msg))
+        if round != len(players) // kill_per_round:
+            await asyncio.sleep(15)
 
-    return ", ".join(players) + " Wins!"
+    await ctx.data.send_followup(", ".join(players) + " Wins!")
