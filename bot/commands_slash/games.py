@@ -271,7 +271,7 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
         result = []
 
         for player in random.sample(_players, k=kill_per_round):
-            result.append(player + " " + random.choice(theme["dead"]))
+            result.append("**{player}** " + random.choice(theme["dead"]))
             _players.remove(player)
 
             if len(_players) == 1 and random.randint(1, 3) <= 2:
@@ -281,7 +281,7 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
             _result: str = random.choice(theme[random.choice(["alive", "wounded", "team"])])
 
             result.append(
-                f"**{player}** {_result.format(random.choice([i for i in _players if i != player] or ['Zombie']))}"
+                f"**{player}** " + _result.format(random.choice([i for i in _players if i != player] or ["Zombie"]))
             )
 
         message = await ctx.data.send_followup(f"Round **{_round}**")
