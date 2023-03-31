@@ -284,6 +284,7 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
                 f"**{player}** " + _result.format(random.choice([i for i in _players if i != player] or ["Zombie"]))
             )
 
+        random.shuffle(result)
         message = await ctx.data.send_followup(f"Round **{_round}**")
         if message:
             for msg in result:
