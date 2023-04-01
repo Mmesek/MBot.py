@@ -46,7 +46,7 @@ async def leaderboard(ctx: Context, event: Leaderboards, user: User = None, limi
     )
 
     if not any(x["user_id"] == user.id for x in results):
-        results.append(
+        results.extend(
             await ctx.db.supabase.rpc(
                 "get_leaderboard",
                 server_id=ctx.guild_id,
