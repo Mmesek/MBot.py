@@ -8,13 +8,13 @@ from .Halloween import fear, general  # noqa: F401
 from .Valentines import general, heartbreaking, matchmaker  # noqa: F401
 
 
-##@register(group=Groups.GLOBAL)
+@register(group=Groups.GLOBAL)
 async def event(ctx: Context, *, language):
     """Event related commands"""
     pass
 
 
-@register(group=Groups.GLOBAL, main=event, default=True)
+# @register(group=Groups.GLOBAL, main=event, default=True)
 async def help(ctx: Context, *, language):
     """Shows help related to Event"""
     # Possibly move to help?
@@ -63,7 +63,7 @@ async def leaderboard(ctx: Context, event: Leaderboards, user: User = None, limi
     return [leaderboard.as_embed(f"{event.value}'s Leaderboard")]
 
 
-@register(group=Groups.GLOBAL, main=event)
+# @register(group=Groups.GLOBAL, main=event)
 async def history(ctx: Context, user: User = None, *, language):
     """Shows User's event history
 
@@ -75,13 +75,13 @@ async def history(ctx: Context, user: User = None, *, language):
     pass
 
 
-@register(group=Groups.GLOBAL, main=event)
+# @register(group=Groups.GLOBAL, main=event)
 async def stats(ctx: Context, *, language):
     """Shows faction statistics"""
     pass
 
 
-@register(group=Groups.GLOBAL, main=event)
+# @register(group=Groups.GLOBAL, main=event)
 async def profile(ctx: Context, user: User = None, *, language):
     """Shows User's event profile
 
@@ -93,13 +93,13 @@ async def profile(ctx: Context, user: User = None, *, language):
     pass
 
 
-@register(group=Groups.GLOBAL, main=event)
+# @register(group=Groups.GLOBAL, main=event)
 async def cooldown(ctx: Context, *, language):
     """Shows Current cooldowns"""
     pass
 
 
-@register(group=Groups.MODERATOR, main=event)
+# @register(group=Groups.MODERATOR, main=event)
 async def summary(ctx: Context, *, language):
     """Shows summary of Current Event"""
     pass
