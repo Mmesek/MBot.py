@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 
 from MFramework import Context, Embed, Groups, Interaction, User, register
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
@@ -38,7 +38,7 @@ async def leaderboard(ctx: Context, event: Leaderboards, user: User = None, limi
     after = datetime.fromisoformat(after)
     before = datetime.fromisoformat(before)
     if year:
-        after.year, before.year = year, year
+        after.year, before.year = date(year, after.month, after.day), date(year, before.month, before.day)
     after, before = after.isoformat(), before.isoformat()
 
     results = await ctx.db.supabase.rpc(
