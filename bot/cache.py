@@ -59,7 +59,7 @@ class Cache(Tasks, Cache):
         import re
 
         self.canned = {}
-        self.canned["patterns"] = re.compile("|".join([f"(?P<{re.escape(i.name)}>{i.trigger})" for i in s]))
+        self.canned["patterns"] = re.compile("|".join([f"(?P<{re.escape(i.name)}>{i.trigger})" for i in s]), re.I)
         self.canned["responses"] = {re.escape(i.name): i.content for i in s}
 
     def recompile_Triggers(self, session):
@@ -80,7 +80,7 @@ class Cache(Tasks, Cache):
 
         for r in responses:
             self.responses[r] = re.compile(
-                r"(?:{})".format("|".join("(?P<{}>{})".format(k, f) for k, f in responses[r].items()))
+                r"(?:{})".format("|".join("(?P<{}>{})".format(k, f) for k, f in responses[r].items())), re.IGNORECASE
             )
 
     def get_Blacklisted_Words(self, session):
