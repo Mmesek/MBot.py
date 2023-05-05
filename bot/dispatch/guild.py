@@ -58,4 +58,16 @@ __***CECI EST UN MESSAGE AUTOMATISÉ. NE RÉPONDEZ PAS, CAR VOS MESSAGES SERONT 
             channel.id, welcome_message if data.guild_id == 289739584546275339 else welcome_message_fr
         )
     except:
-        log.debug("Couldn't DM welcome message to %s. Possibly due to user blocking DMs from non-friends")
+        log.debug("Couldn't DM welcome message to %s. Possibly due to user blocking DMs from non-friends", data.user.id)
+
+
+@onDispatch(event="guild_member_add")
+async def ban_appeal(self: Bot, data: Guild_Member_Add):
+    if self.cache[data.guild_id] == 1104062636892639262:
+        if not await self.get_guild_ban(289739584546275339, data.user.id):
+            try:
+                channel = await self.create_dm(data.user.id)
+                await self.create_message(channel.id, "You don't seem to be banned! discord.gg/dyinglight")
+            except:
+                log.debug("Couldn't DM kick reason to %s", data.user.id)
+            await self.remove_guild_member(data.guild_id, data.user.id, "User is not Banned")
