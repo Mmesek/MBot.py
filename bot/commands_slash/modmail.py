@@ -30,6 +30,8 @@ async def direct_message_create(self: Bot, data: Message):
             ],
         )
     )
+    _bot = self
+
     if len(guilds) > 1:
         guilds = {x: guild for x, guild in enumerate(guilds)}
         servers = "\n".join([f"{k} - {v.guild.name}" for k, v in guilds.items()])
@@ -50,6 +52,10 @@ async def direct_message_create(self: Bot, data: Message):
         cache = self.cache[guilds[0].guild_id]
     else:
         cache = self.cache[self.primary_guild]
+
+    if cache.guild_id == 1104062636892639262:
+        cache = _bot.cache[289739584546275339]
+        data._server_type = "appeal"
 
     await cache.logging["direct_message"](data)
     if data.channel_id not in self.cache[0]:
@@ -243,6 +249,7 @@ class Direct_Message(MessageLog):
                     message=Message(embeds=embeds),
                     # type=Channel_Types.GUILD_PUBLIC_THREAD,
                     reason="Received DM from new user",
+                    applied_tags=[1104073269625237526] if getattr(msg, "_server_type", None) == "appeal" else None,
                 )
                 embeds = []
                 try:
