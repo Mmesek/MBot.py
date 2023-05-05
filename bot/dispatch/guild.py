@@ -63,7 +63,7 @@ __***CECI EST UN MESSAGE AUTOMATISÉ. NE RÉPONDEZ PAS, CAR VOS MESSAGES SERONT 
 
 @onDispatch(event="guild_member_add")
 async def ban_appeal(self: Bot, data: Guild_Member_Add):
-    if self.cache[data.guild_id] == 1104062636892639262:
+    if data.guild_id == 1104062636892639262:
         if not await self.get_guild_ban(289739584546275339, data.user.id):
             try:
                 channel = await self.create_dm(data.user.id)
