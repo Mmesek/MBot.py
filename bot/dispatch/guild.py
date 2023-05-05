@@ -66,10 +66,10 @@ async def ban_appeal(self: Bot, data: Guild_Member_Add):
     if data.guild_id == 1104062636892639262:
         try:
             ban = await self.get_guild_ban(289739584546275339, data.user.id)
+        except:
             try:
                 channel = await self.create_dm(data.user.id)
                 await self.create_message(channel.id, "You don't seem to be banned! discord.gg/dyinglight")
             except:
                 log.debug("Couldn't DM kick reason to %s", data.user.id)
-        except:
             await self.remove_guild_member(data.guild_id, data.user.id, "User is not Banned")
