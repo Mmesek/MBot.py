@@ -1,3 +1,5 @@
+import asyncio
+
 from MFramework import Bot, EventBetween, Message, log, onDispatch
 
 try:
@@ -18,7 +20,8 @@ async def message_create(self: Bot, data: Message):
         except ValueError:
             log.debug("Attempted to remove instruction that is no longer in a list!")
 
-        await data.reply(f"Next command: `{instructions[0]}`")
+        await asyncio.sleep(0.5)
+        await data.reply(f"Next command: ```{instructions[0]}```")
 
         global SUGGESTIONS
         SUGGESTIONS += 1
