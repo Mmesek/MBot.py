@@ -23,5 +23,5 @@ async def message_create(self: Bot, data: Message):
         global SUGGESTIONS
         SUGGESTIONS += 1
         if SUGGESTIONS % 5 == 0:
-            with open("data/blurple", "w", newline="", encoding="utf-8") as file:
-                file.writelines(instructions)
+            with open("data/blurple.txt", "w", newline="", encoding="utf-8") as file:
+                file.writelines("\n".join(instructions))
