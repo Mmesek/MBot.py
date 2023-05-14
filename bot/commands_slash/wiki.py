@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import aiohttp
 from MFramework import Embed, Groups, register
 
@@ -28,14 +30,19 @@ async def get(title: str):
     res = await get_json(f"{wiki_url}/api.php?action=query&format=json&prop=cirrusdoc%7Ccontributors&titles={title}")
 
     pages = res["query"]["pages"]
+    page = pages[list(pages.keys())[0]]
+    content = page["cirrusdoc"][0]["source"]
+
+    source = content["source_text"]
     # TODO: Parse infobox and separate sections
 
-    contributors = [f"[{c['name']}]({wiki_url}/wiki/User:{c['name']})" for c in res["query"]["contributors"]]
+    contributors = [f"[{c['name']}]({wiki_url}/wiki/User:{c['name']})" for c in page["contributors"]]
 
     return (
         Embed()
         .set_url(f"{wiki_url}/wiki/{title}")
-        .set_title(title)
+        .set_title(content.get["title"])
+        .set_timestamp(datetime.fromisoformat(content["timestamp"]))
         .add_field("Contributors", "\n".join(contributors[:25]))
     )
 
