@@ -25,7 +25,7 @@ async def get(title: str):
     title:
         Title of article to fetch
     """
-    res = get_json(f"{wiki_url}/api.php?action=query&format=json&prop=cirrusdoc%7Ccontributors&titles={title}")
+    res = await get_json(f"{wiki_url}/api.php?action=query&format=json&prop=cirrusdoc%7Ccontributors&titles={title}")
 
     pages = res["query"]["pages"]
     # TODO: Parse infobox and separate sections
