@@ -42,14 +42,21 @@ async def get(title: str):
         for c in page["contributors"]
     ]
 
-    return (
+    e = (
         Embed()
         .set_url(f"{wiki_url}/wiki/{title}")
         .set_title(content["title"])
         .set_footer("Last update at")
         .set_timestamp(datetime.fromisoformat(content["timestamp"]))
-        .add_field("Contributors", ", ".join(contributors[:25]))
     )
+
+    if len(contributors) > 1:
+        e.add_field(f"Contributors ({len(contributors)})", ", ".join(contributors[:25]))
+    else:
+        name = page["contributors"][0]["name"]
+        e.set_author(name, f"{wiki_url}/wiki/User:{html.escape(name).replace(' ', '%20')})")
+
+    return e
 
 
 @register(group=Groups.GLOBAL, main=wiki)
