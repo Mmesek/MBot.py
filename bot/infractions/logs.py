@@ -89,6 +89,9 @@ class Infraction(Log):
         if duration:
             s += f" ({secondsToText(duration)})"
 
+        if type == models.Types.Ban and self.bot.cfg.get("ban_appeal_url", None):
+            s += f"\nYou can appeal here: {self.bot.cfg.get('ban_appeal_url')}"
+
         return await self._log_dm(user_id, s)
 
 
