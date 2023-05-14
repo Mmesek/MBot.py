@@ -12,8 +12,17 @@ async def get_json(url: str) -> dict:
 
 
 @register(group=Groups.GLOBAL)
-async def wiki(title: str) -> Embed:
-    """Retrieves wiki's content"""
+async def wiki() -> Embed:
+    pass
+
+
+@register(group=Groups.GLOBAL, main=wiki)
+async def get(title: str):
+    """Retrieves wiki's content
+    Params
+    ------
+    Title of article to fetch
+    """
     res = get_json(f"{wiki_url}/api.php?action=query&format=json&prop=cirrusdoc%7Ccontributors&titles={title}")
 
     pages = res["query"]["pages"]
@@ -45,7 +54,7 @@ async def search(query: str, limit: int = 10) -> Embed:
     mapped = dict(zip(res[1], res[-1]))
 
     if len(mapped) == 1:
-        return await wiki(mapped.keys()[0])
+        return await get(mapped.keys()[0])
 
     text = []
     for key, value in mapped.items():
