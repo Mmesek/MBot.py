@@ -1,3 +1,4 @@
+import html
 from datetime import datetime
 
 import aiohttp
@@ -36,14 +37,18 @@ async def get(title: str):
     source = content["source_text"]
     # TODO: Parse infobox and separate sections
 
-    contributors = [f"[{c['name']}]({wiki_url}/wiki/User:{c['name']})" for c in page["contributors"]]
+    contributors = [
+        f"[{c['name']}]({wiki_url}/wiki/User:{html.escape(c['name']).replace(' ', '%20')})"
+        for c in page["contributors"]
+    ]
 
     return (
         Embed()
         .set_url(f"{wiki_url}/wiki/{title}")
         .set_title(content["title"])
+        .set_footer("Last update at")
         .set_timestamp(datetime.fromisoformat(content["timestamp"]))
-        .add_field("Contributors", "\n".join(contributors[:25]))
+        .add_field("Contributors", ", ".join(contributors[:25]))
     )
 
 
