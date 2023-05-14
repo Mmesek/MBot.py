@@ -59,9 +59,8 @@ async def search(query: str, limit: int = 10) -> Embed:
     text = []
     for key, value in mapped.items():
         text.append(f"- [{key}]({value})")
-    "\n".join(text)
 
-    return Embed().set_title(f"Search results for {res[0]}").set_description(text)
+    return Embed().set_title(f"Search results for {res[0]}").set_description("\n".join(text))
 
 
 @register(group=Groups.GLOBAL, main=wiki)
