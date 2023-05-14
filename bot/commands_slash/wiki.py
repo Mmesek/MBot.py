@@ -18,10 +18,12 @@ async def wiki() -> Embed:
 
 @register(group=Groups.GLOBAL, main=wiki)
 async def get(title: str):
-    """Retrieves wiki's content
+    """
+    Retrieves wiki's content
     Params
     ------
-    Title of article to fetch
+    title:
+        Title of article to fetch
     """
     res = get_json(f"{wiki_url}/api.php?action=query&format=json&prop=cirrusdoc%7Ccontributors&titles={title}")
 
