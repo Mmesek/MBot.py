@@ -41,7 +41,7 @@ async def get(title: str):
     return (
         Embed()
         .set_url(f"{wiki_url}/wiki/{title}")
-        .set_title(content.get["title"])
+        .set_title(content["title"])
         .set_timestamp(datetime.fromisoformat(content["timestamp"]))
         .add_field("Contributors", "\n".join(contributors[:25]))
     )
