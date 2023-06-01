@@ -44,7 +44,7 @@ async def get(title: str):
 
     e = (
         Embed()
-        .set_url(f"{wiki_url}/wiki/{title}")
+        .set_url(f"{wiki_url}/wiki/{html.escape(title).replace(' ', '%20')}")
         .set_title(content["title"])
         .set_footer("Last update at")
         .set_timestamp(datetime.fromisoformat(content["timestamp"]))
