@@ -1,12 +1,11 @@
 git+https://github.com/Mmesek/MFramework.py.git
 git+https://github.com/Mmesek/mdiscord.git
-git+https://github.com/Mmesek/mlib.git
+git+https://github.com/Mmesek/mlib.git@main
 beautifulsoup4
 html2text
 lxml
 Pillow
 numpy
-sklearn
 scipy
 scikit-learn
 pandas
