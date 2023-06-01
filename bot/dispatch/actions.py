@@ -63,9 +63,7 @@ class Message_Replay_QnA(LogMessage):
         question.author = None
         question.setColor("#45f913")
         question.setUrl(
-            Discord_Paths.MessageLink.link.format(
-                guild_id=rmsg.guild_id, channel_id=rmsg.channel_id, message_id=rmsg.id
-            )
+            Discord_Paths.MessageLink.link.format(guild_id=msg.guild_id, channel_id=rmsg.channel_id, message_id=rmsg.id)
         )
         self.user_in_footer(question, rmsg)
         if rmsg.attachments != []:
