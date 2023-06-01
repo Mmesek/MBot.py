@@ -89,7 +89,7 @@ async def parse_reply(self: Bot, data: Message):
     _g = detect_group(self, data.author.id, data.guild_id, data.member.roles)
     if data.referenced_message == None or data.referenced_message.id == 0:
         return
-    if _g >= Groups.MODERATOR:
+    if not _g.can_use(Groups.MODERATOR):
         return
     channel = self.cache[data.guild_id].threads.get(data.channel_id, data.channel_id)
     if channel == 686371597895991327:
