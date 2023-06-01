@@ -1,0 +1,21 @@
+version: '3.7'
+services:
+  hakon:
+    image: mbot:latest
+    container_name: Bot
+    command:
+      [
+        "python",
+        "-m",
+        "MFramework",
+        "bot",
+        "--cfg=data/secrets.ini",
+        "--log=INFO"
+      ]
+    environment:
+      - TZ=utc
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data:rw
+      - ./bot:/app/bot:ro
+      - ./locale:/app/locale:ro
