@@ -1,4 +1,5 @@
 import re
+from datetime import timedelta
 
 from MFramework import *
 
@@ -157,6 +158,7 @@ async def deduplicate_across_channels(self: Bot, data: Message) -> bool:
             and _msg[0].author.id == data.author.id
             and _msg[0].attachments == data.attachments
             and _msg[0].referenced_message == data.referenced_message
+            and data.timestamp - _msg[0].timestamp < timedelta(hours=1)
         ):
             log.debug('Deleting Message "%s" because of being duplicate across channels', data.content)
             await data.delete(reason="Duplicate Message across channels")
