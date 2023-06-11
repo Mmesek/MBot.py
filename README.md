@@ -13,7 +13,7 @@
 
 Bot commands/systems used by my personal M_Bot as well as Modmail on [Dying Light](https://discord.gg/dyinglight)'s server.
 
-Features:
+## Features
 - [Modmail](bot/systems/modmail.py)
 - [Logging](bot/dispatch/logging.py)
 - [Stream](bot/dispatch/dispatch.py) Log (based on presence)
@@ -39,33 +39,41 @@ Features:
 - [Search](bot/commands_slash/search.py)ing other APIs (Like Steam, UrbanDict or Word Definitions)
 - [Story](bot/commands_slash/story.py) conversation executor (Reads json or yaml file with story flow and responds to user accordingly)
 
-Minigames:
+## Minigames
 - [Hangman](bot/commands_slash/games.py) game
 - [Wordle](bot/commands_slash/games.py)
 - [Halloween](bot/events/Halloween)
 - Reaction [Hunt](bot/events/hunts.py) events
 - [Christmas](bot/events/Christmas)
 
-Launch via docker-compose:
+---
+
+## Running locally
+
+Run once to generate secrets.ini, modify to suit your needs.
+Make sure to set `intents` in `bot` section to at least `1`.
+
+#### Docker Compose:
 ```sh
 docker-compose up
 ```
 
-Or manually via Docker:
+#### Docker
 ```sh
 docker run -it Mmesek/MFramework \
     -v data:/app/data \
     -v bot:/app/bot \
-    -v repos:/repos
+    -v locale:/app/locale \
 ```
 
-Set crontab:
+### Manually
+
+#### Install required packages
 ```sh
-crontab -e
-@reboot sleep 40 && /bin/bash /home/pi/MBot.py/mbot.sh
+python -m pip install -r requirements.txt
 ```
 
-Install required packages:
+#### Run
 ```sh
-python3.10 pip install -r requirements.txt
+python -m MFramework bot
 ```
