@@ -1,9 +1,9 @@
 # MBot.py
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![Open in Visual Studio Code](https://open.vscode.dev/badges/open-in-vscode.svg)](https://open.vscode.dev/Mmesek/MBot.py)
+[![Open in Visual Studio Code](https://img.shields.io/static/v1?logo=visualstudiocode&label=&message=Open%20in%20Visual%20Studio%20Code&labelColor=2c2c32&color=007acc&logoColor=007acc)](https://open.vscode.dev/Mmesek/MBot.py)
 
 [![CodeFactor Grade](https://img.shields.io/codefactor/grade/github/Mmesek/MBot.py)](https://www.codefactor.io/repository/github/mmesek/mbot.py)
-[![Lines of code](https://img.shields.io/tokei/lines/github/Mmesek/MBot.py)]()
+[![Lines of code](https://sloc.xyz/github/Mmesek/MBot.py)]()
 [![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/Mmesek/MBot.py)]()
 [![GitHub repo size](https://img.shields.io/github/repo-size/Mmesek/MBot.py)]()
 
