@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 from mlib.graphing import create_image
 import json
 import os
+from io import BytesIO
 
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework import Attachment, Context, Groups, register
@@ -58,8 +59,9 @@ def display_canvas(canvas):
     plt.imshow(canvas)
     plt.axis("off")
     plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
-    plt.savefig("canvas.png", bbox_inches="tight", pad_inches=0)
-    return create_image(plt)
+    buffered = BytesIO()
+    plt.savefig(buffered, bbox_inches='tight', pad_inches=0)
+    return buffered.getvalue()
 
 
 def save_canvas():
@@ -84,9 +86,7 @@ load_canvas()
 
 
 @register(group=Groups.GLOBAL)
-async def show(
-    ctx: Context, x: int = None, y: int = None, size: int = DEFAULT_ZOOM_SIZE
-):
+async def show(x: int = None, y: int = None, size: int = DEFAULT_ZOOM_SIZE):
     """ "
     Show the canvas or a zoomed-in portion of the canvas.
     Params
@@ -119,7 +119,7 @@ async def show(
 
 @register(group=Groups.GLOBAL)
 @cooldown(minutes=1, logic=CacheCooldown)
-async def place(ctx: Context, x: int, y: int, color_code: str):
+async def place(x: int, y: int, color_code: str):
     """
     Place a pixel on the canvas at the specified coordinates with the specified color.
     Params
@@ -140,16 +140,13 @@ async def place(ctx: Context, x: int, y: int, color_code: str):
             r, g, b = COLOR_CODES[color_code]
             canvas[y, x] = (r, g, b)
             save_canvas()
-            await ctx.reply(f"Pixel placed at ({x}, {y}) with color {color_code}")
+            return f"Pixel placed at ({x}, {y}) with color {color_code}"
         else:
-            await ctx.reply(
-                "Invalid color code! Use the `colorcodes` command to see the available color codes."
-            )
+            return "Invalid color code! Use the `colorcodes` command to see the available color codes."
     else:
-        await ctx.reply("Invalid coordinates!")
+        return "Invalid coordinates!"
 
 
-@register(group=Groups.GLOBAL)
-async def colorcodes(ctx: Context):
+@register(group=Groups.GLOBAL, private_response=True)
     color_code_list = "\n".join(COLOR_CODES.keys())
-    await ctx.reply(f"Available color codes:\n```{color_code_list}```")
+    return f"Available color codes:\n```\n{color_code_list}```"
