@@ -5,7 +5,7 @@ import os
 from io import BytesIO
 
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
-from MFramework import Attachment, Groups, register
+from MFramework import Attachment, Context, Groups, register
 
 # Canvas Size
 CANVAS_WIDTH = 300
@@ -14,7 +14,7 @@ BORDER_SIZE = 5
 # Default zoom when using the show command, will show a 50x50 pixel image
 DEFAULT_ZOOM_SIZE = 50
 #Path to canvas.json file
-canvas_file = "data/canvas.json"
+CANVAS_FILE = "data/canvas.json"
 
 
 
@@ -67,15 +67,15 @@ def display_canvas(canvas):
 
 
 def save_canvas():
-    with open(canvas_file, "w") as f:
+    with open(CANVAS_FILE, "w") as f:
         json.dump(canvas.tolist(), f)
 
 
 def load_canvas():
     global canvas
     try:
-        if os.path.isfile(canvas_file):
-            with open(canvas_file, "r") as f:
+        if os.path.isfile(CANVAS_FILE):
+            with open(CANVAS_FILE, "r") as f:
                 canvas = np.array(json.load(f))
                 canvas = np.asarray(canvas, dtype=np.uint8)
         else:
@@ -116,12 +116,12 @@ async def show(x: int = None, y: int = None, size: int = DEFAULT_ZOOM_SIZE):
         image = canvas[y1:y2, x1:x2]
 
     var = display_canvas(image)
-    return Attachment(file=var, filename="data/canvas.png")
+    return Attachment(file=var, filename="canvas.png")
 
 
 @register(group=Groups.GLOBAL)
 @cooldown(minutes=1, logic=CacheCooldown)
-async def place(x: int, y: int, color_code: str):
+async def place(ctx: Context, x: int, y: int, color_code: str):
     """
     Place a pixel on the canvas at the specified coordinates with the specified color.
     Params
