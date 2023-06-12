@@ -1,12 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from mlib.graphing import create_image
 import json
 import os
 from io import BytesIO
 
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
-from MFramework import Attachment, Context, Groups, register
+from MFramework import Attachment, Groups, register
 
 # Canvas Size
 CANVAS_WIDTH = 300
@@ -14,6 +13,9 @@ CANVAS_HEIGHT = 300
 BORDER_SIZE = 5
 # Default zoom when using the show command, will show a 50x50 pixel image
 DEFAULT_ZOOM_SIZE = 50
+#Path to canvas.json file
+canvas_file = "data/canvas.json"
+
 
 
 # color codes, list is expandable
@@ -65,15 +67,15 @@ def display_canvas(canvas):
 
 
 def save_canvas():
-    with open("canvas.json", "w") as f:
+    with open(canvas_file, "w") as f:
         json.dump(canvas.tolist(), f)
 
 
 def load_canvas():
     global canvas
     try:
-        if os.path.isfile("canvas.json"):
-            with open("canvas.json", "r") as f:
+        if os.path.isfile(canvas_file):
+            with open(canvas_file, "r") as f:
                 canvas = np.array(json.load(f))
                 canvas = np.asarray(canvas, dtype=np.uint8)
         else:
@@ -114,7 +116,7 @@ async def show(x: int = None, y: int = None, size: int = DEFAULT_ZOOM_SIZE):
         image = canvas[y1:y2, x1:x2]
 
     var = display_canvas(image)
-    return Attachment(file=var, filename="canvas.png")
+    return Attachment(file=var, filename="data/canvas.png")
 
 
 @register(group=Groups.GLOBAL)
