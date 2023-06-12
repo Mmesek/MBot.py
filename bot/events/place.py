@@ -148,5 +148,9 @@ async def place(x: int, y: int, color_code: str):
 
 
 @register(group=Groups.GLOBAL, private_response=True)
+async def colorcodes():
+    """
+    Show the list of all available colors
+    """
     color_code_list = "\n".join(COLOR_CODES.keys())
     return f"Available color codes:\n```\n{color_code_list}```"
