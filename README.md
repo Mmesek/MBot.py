@@ -11,13 +11,13 @@
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/Mmesek/MBot.py)](../../pulls)
 [![GitHub contributors](https://img.shields.io/github/contributors/Mmesek/MBot.py)](../../graphs/contributors)
 
-Bot commands/systems used by my personal M_Bot as well as Modmail on [Dying Light](https://discord.gg/dyinglight)'s server.
+Multipurpose collection of systems written from scratch for automation & moderation of chat communities. Used as Modmail on [Dying Light](https://discord.gg/dyinglight)'s server.
 
 ## Features
-- [Modmail](bot/systems/modmail.py)
+- Forum-based [Modmail](bot/commands_slash/modmail.py) system forwarding communication between user direct messages and server moderation team's thread
 - [Logging](bot/dispatch/logging.py)
 - [Stream](bot/dispatch/dispatch.py) Log (based on presence)
-- [Infractions](bot/commands_slash/infractions.py)
+- [Infractions](bot/infractions) system with automated actions
 - [Info](bot/commands_slash/info.py) (about Discord objects (User, Role, Channel, Guild etc)
 - Basic [interacting](bot/commands_slash/mod.py) as bot - (Say/React)
 - [Leaderboards](bot/commands_slash/leaderboards.py)
@@ -34,6 +34,7 @@ Bot commands/systems used by my personal M_Bot as well as Modmail on [Dying Ligh
 - [Graphing](bot/commands_slash/graphs.py) (things like member join over time histograph)
 - Auto dice roll in [RPG](bot/dispatch/actions.py) channels
 - [Dynamic](bot/dispatch/dynamic.py) Voice Channel generation
+- [Voice](bot/dispatch/voice.py#L54-L126) & [Text](bot/systems/xp.py) chat activity tracking
 - Miscellaneous commands for [random](bot/commands_slash/rand.py) rolls (Dice roll, coinflip etc)
 - Various [converters](bot/commands_slash/converters.py) (Like Morse Transaltor, Making text upsidedown or Currency Converter)
 - [Search](bot/commands_slash/search.py)ing other APIs (Like Steam, UrbanDict or Word Definitions)
@@ -50,7 +51,7 @@ Bot commands/systems used by my personal M_Bot as well as Modmail on [Dying Ligh
 
 ## Running locally
 
-Run once to generate secrets.ini, modify to suit your needs.
+Run once to generate `secrets.ini`, modify to suit your needs.
 Make sure to set `intents` in `bot` section to at least `1`.
 
 #### Docker Compose:
