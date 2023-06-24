@@ -14,3 +14,4 @@ upsidedown
 pycountry
 howlongtobeatpy
 psutil
+pyyaml
