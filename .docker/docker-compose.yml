@@ -1,6 +1,9 @@
 version: '3.7'
 services:
-  hakon:
+  bot:
+    build:
+      context: ../
+      dockerfile: Dockerfile
     image: mbot:latest
     container_name: Bot
     command:
@@ -16,6 +19,13 @@ services:
       - TZ=utc
     restart: unless-stopped
     volumes:
-      - ./data:/app/data:rw
-      - ./bot:/app/bot:ro
-      - ./locale:/app/locale:ro
+      - ../data:/app/data:rw
+      - ../bot:/app/bot:ro
+      - ../locale:/app/locale:ro
+    depends_on:
+      - cache
+  cache:
+    image: eqalpha/keydb:alpine
+    container_name: KeyDB
+    hostname: cache
+    restart: always

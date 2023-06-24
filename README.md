@@ -55,7 +55,7 @@ Make sure to set `intents` in `bot` section to at least `1`.
 
 #### Docker Compose:
 ```sh
-docker-compose up
+docker compose up -f .docker/docker-compose.yml
 ```
 
 #### Docker
