@@ -11,6 +11,7 @@ from MFramework import (
     Guild_Member,
     Message,
     Message_Reference,
+    NotFound,
     Presence_Update,
     User,
     menu,
@@ -228,10 +229,13 @@ async def kick(ctx: Context, user: User, reason: str = None) -> str:
         Reason of action
     """
     r = await infraction(ctx, type_=models.Types.Kick, user=user, reason=reason)
-    await ctx.bot.remove_guild_member(
-        ctx.guild_id, user.id, reason=reason or ctx.t("default_reason", moderator=ctx.user.username)
-    )
-    return r
+    try:
+        await ctx.bot.remove_guild_member(
+            ctx.guild_id, user.id, reason=reason or ctx.t("default_reason", moderator=ctx.user.username)
+        )
+        return r
+    except NotFound:
+        return "User is not on the server!"
 
 
 @register(group=Groups.MODERATOR, main=infraction, aliases=["ban"])
@@ -272,10 +276,13 @@ async def unban(ctx: Context, user: User, reason: str = None) -> str:
         Reason of action
     """
     r = await infraction(ctx, type_=models.Types.Unban, user=user, reason=reason)
-    await ctx.bot.remove_guild_ban(
-        ctx.guild_id, user.id, reason=reason or ctx.t("default_reason", moderator=ctx.user.username)
-    )
-    return r
+    try:
+        await ctx.bot.remove_guild_ban(
+            ctx.guild_id, user.id, reason=reason or ctx.t("default_reason", moderator=ctx.user.username)
+        )
+        return r
+    except NotFound:
+        return "User was not banned!"
 
 
 @register(group=Groups.ADMIN, main=infraction)
