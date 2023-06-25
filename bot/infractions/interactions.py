@@ -33,7 +33,7 @@ class Reason(Modal):
         if member:
             user = member.user
         else:
-            user = User(id=data)
+            user = User(id=int(id))
         from .commands import ban, kick, timeout, warn
 
         ctx = Context(ctx.bot.cache, ctx.bot, ctx.data, warn._cmd)
