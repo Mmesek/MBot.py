@@ -1,5 +1,6 @@
-from MFramework import register, Groups
 from random import SystemRandom
+
+from MFramework import Groups, register
 
 random = SystemRandom()
 
@@ -18,7 +19,7 @@ async def chance(statement: str) -> str:
     statement:
         String to roll
     """
-    from random import seed, randint
+    from random import randint, seed
 
     seed(statement)
     return f"{randint(1, 100)}% chance {'that' if 'is' in statement else 'of'} {statement}"
@@ -125,7 +126,7 @@ async def xkcdpassword() -> str:
 
     # On standard Linux systems, use a convenient dictionary file.
     # Other platforms may need to provide their own word-list.
-    with open("/usr/share/dict/words") as f:
+    with open("data/words/words") as f:
         words = [word.strip() for word in f]
     return " ".join(secrets.choice(words) for i in range(4))
 
@@ -163,7 +164,7 @@ async def spin(terms: str = None, k: int = 1) -> str:
         Amount of words to choose.
     """
     if not terms:
-        with open("/usr/share/dict/words") as f:
+        with open("data/words/words") as f:
             terms = f.readlines()
     else:
         terms = terms.split(",")

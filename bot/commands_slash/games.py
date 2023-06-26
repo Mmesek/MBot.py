@@ -63,7 +63,7 @@ async def hangman(
         Whether Bot should reveal a letter in case of wrong answer
     """
     if not words:
-        with open("/usr/share/dict/words") as f:
+        with open("data/words/words") as f:
             words = [word.strip() for word in f if "'" not in word]
     else:
         words = [word.strip() for word in words.split(",")]
@@ -189,7 +189,7 @@ async def wordle(
     if official:
         word_list = "data/words/wordle-official.txt"
     else:
-        word_list = "/usr/share/dict/words"
+        word_list = "data/words/words"
     with open(word_list) as f:
         words = [word.strip() for word in f if "'" not in word]
     if official:

@@ -351,7 +351,7 @@ async def word(ctx: Context, search: str = None) -> Embed:
     """
     await ctx.deferred()
     if not search:
-        with open("/usr/share/dict/words") as f:
+        with open("data/words/words") as f:
             words = [word.strip() for word in f]
         from random import SystemRandom as random
 
@@ -413,7 +413,7 @@ async def fuzzy_word(ctx: Context, word: str, letter_count: int = None) -> Embed
 
     reg = re.compile(rf"(?i){m}")
     res = []
-    with open("/usr/share/dict/words") as f:
+    with open("data/words/words") as f:
         words = [word.strip() for word in f]
     for _word in words:
         if len(_word) == int(letter_count):
@@ -521,7 +521,7 @@ async def anagram(ctx: Context, letters: str, exact_amount: bool = True) -> str:
         exact_amount:
             Whether to show only anagrams containing same amount of letters
     """
-    with open("/usr/share/dict/words") as f:
+    with open("data/words/words") as f:
         words = set(word.strip().upper() for word in f)
     import time
     from collections import Counter
