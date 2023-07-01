@@ -14,7 +14,7 @@ from MFramework import (
 from .internal import kick_user
 
 
-@onDispatch
+# @onDispatch
 async def guild_member_add(self: Bot, data: Guild_Member_Add):
     if data.user.id in getattr(self.cache[data.guild_id], "anti_raid_whitelist", []):
         return
