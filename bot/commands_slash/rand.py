@@ -141,7 +141,7 @@ async def ratio(severity: int = 5) -> str:
         Severity of the ratio
     """
     with open("data/words/ratio.txt", "r", newline="\n", encoding="utf-8") as file:
-        words = set([i.strip() for i in file.readlines()])
+        words = [i.strip() for i in file.readlines()]
     if severity > len(words):
         severity = len(words)
     elif severity < 1:
