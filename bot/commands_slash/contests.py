@@ -37,7 +37,7 @@ from MFramework.commands.decorators import EventBetween
 @EventBetween(after_month=7, after_day=3, before_month=7, before_day=13, before_hour=15)
 async def horror(
     ctx: Context,
-    entry: TextInput[1, 200] = "Your Entry",
+    entry: TextInput[50, 200] = "Your Entry",
 ) -> Modal:
     """
     Enter a contest!
