@@ -78,7 +78,7 @@ class Button_Types(enum.Enum):
     Danger = Button_Styles.DANGER.name
 
 
-@register(group=Groups.MODERATOR, private_response=True, bot=289739584546275339)
+@register(group=Groups.MODERATOR, private_response=True, bot=572532846678376459)
 async def entry_button(ctx: Context, label: str, style: Button_Types, emoji: str = None, text: str = None):
     """
     Create button that acts as contest entry
