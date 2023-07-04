@@ -1,7 +1,8 @@
 import asyncio
+import enum
 
 import sqlalchemy as sa
-from MFramework import Context, Embed, Groups, register
+from MFramework import Context, Embed, Emoji, Groups, register
 from mlib.database import Base, Timestamp
 
 
@@ -21,7 +22,14 @@ class Contest_Entries3(Timestamp, Base):
     msg = sa.Column(sa.BigInteger)
 
 
-from MFramework.commands.components import Modal, Row, Text_Input_Styles, TextInput
+from MFramework.commands.components import (
+    Button,
+    Button_Styles,
+    Modal,
+    Row,
+    Text_Input_Styles,
+    TextInput,
+)
 from MFramework.commands.decorators import EventBetween
 
 
@@ -53,6 +61,49 @@ async def horror(
     session.add(Contest_Entries3(id=ctx.user_id, msg=msg.id))
     session.commit()
     return "Entry Confirmed!"
+
+
+class EnterContest(Button):
+    auto_deferred: bool = False
+
+    @classmethod
+    async def execute(cls, ctx: Context, data: str):
+        return horror
+
+
+class Button_Types(enum.Enum):
+    Primary = Button_Styles.PRIMARY.name
+    Secondary = Button_Styles.SECONDARY.name
+    Success = Button_Styles.SUCCESS.name
+    Danger = Button_Styles.DANGER.name
+
+
+@register(group=Groups.ADMIN, private_response=True, bot=963549809447432292)
+async def make_button(ctx: Context, label: str, style: Button_Types, emoji: str = None, text: str = None):
+    """
+    Create button that acts as contest entry
+    Params
+    ------
+    label:
+        Name of the button
+    style:
+        Style of button to use
+    emoji:
+        Emoji to put into the button
+    text:
+        Optional message before button
+    """
+    if emoji:
+        emoji = emoji.strip("<>").split(":")
+        if len(emoji) == 1:
+            emoji.append(None)
+        emoji = Emoji(id=emoji[-1], name=emoji[-2], animated="a" == emoji[0])
+    await ctx.send(
+        text,
+        components=Row(EnterContest(label=label, emoji=emoji, style=Button_Styles.get(style.value))),
+        channel_id=ctx.channel_id,
+    )
+    return "Message sent!"
 
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, auto_defer=False, private_response=True)
