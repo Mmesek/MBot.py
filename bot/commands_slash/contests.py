@@ -49,7 +49,7 @@ async def horror(
     embed = Embed().set_footer(ctx.user.username, ctx.user.get_avatar()).set_color("#990000").set_description(entry)
 
     session = ctx.db.sql.session()
-    if _entry := session.query(Contest_Entries3).filter(id=ctx.user_id).first():
+    if _entry := session.query(Contest_Entries3).filter(Contest_Entries3.id == ctx.user_id).first():
         try:
             await ctx.bot.edit_message(1125772270258901044, _entry.msg, embeds=[embed])
             return "Entry Edited!"
