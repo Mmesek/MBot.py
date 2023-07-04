@@ -39,17 +39,17 @@ async def horror(
         2 sentences
     """
     session = ctx.db.sql.session()
-    embed = Embed().set_footer(ctx.user.username, ctx.user.get_avatar()).set_color("#990000")
+    embed = Embed().set_footer(ctx.user.username, ctx.user.get_avatar()).set_color("#990000").set_description(entry)
 
-    if entry := Contest_Entries3.filter(session, id=ctx.user_id).first():
+    if _entry := Contest_Entries3.filter(session, id=ctx.user_id).first():
         try:
-            await ctx.bot.edit_message(1125772270258901044, entry.msg, embeds=[embed])
+            await ctx.bot.edit_message(1125772270258901044, _entry.msg, embeds=[embed])
             return "Entry Edited!"
         except:
             pass
 
     msg = await ctx.bot.create_message(1125772270258901044, embeds=[embed])
-    await msg.react("�")
+    await msg.react("💀")
     session.add(Contest_Entries3(id=ctx.user_id, msg=msg.id))
     session.commit()
     return "Entry Confirmed!"
