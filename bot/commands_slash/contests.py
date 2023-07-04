@@ -2,7 +2,7 @@ import asyncio
 
 import sqlalchemy as sa
 from MFramework import Context, Embed, Groups, register
-from mlib.database import Base
+from mlib.database import Base, Timestamp
 
 
 class Contest_Entries(Base):
@@ -16,8 +16,43 @@ class Contest_Entries2(Base):
     msg = sa.Column(sa.BigInteger)
 
 
+class Contest_Entries3(Timestamp, Base):
+    id = sa.Column(sa.BigInteger, primary_key=True)
+    msg = sa.Column(sa.BigInteger)
+
+
 from MFramework.commands.components import Modal, Row, Text_Input_Styles, TextInput
 from MFramework.commands.decorators import EventBetween
+
+
+@register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
+@EventBetween(after_month=7, after_day=3, before_month=7, before_day=13, before_hour=15)
+async def horror(
+    ctx: Context,
+    entry: TextInput[1, 200] = "Your Entry",
+) -> Modal:
+    """
+    Enter a contest!
+    Params
+    ------
+    entry:
+        2 sentences
+    """
+    session = ctx.db.sql.session()
+    embed = Embed().set_footer(ctx.user.username, ctx.user.get_avatar()).set_color("#990000")
+
+    if entry := Contest_Entries3.filter(session, id=ctx.user_id).first():
+        try:
+            await ctx.bot.edit_message(1125772270258901044, entry.msg, embeds=[embed])
+            return "Entry Edited!"
+        except:
+            pass
+
+    msg = await ctx.bot.create_message(1125772270258901044, embeds=[embed])
+    await msg.react("�")
+    session.add(Contest_Entries3(id=ctx.user_id, msg=msg.id))
+    session.commit()
+    return "Entry Confirmed!"
 
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, auto_defer=False, private_response=True)
