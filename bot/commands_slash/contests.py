@@ -57,7 +57,7 @@ async def horror(
             pass
 
     msg = await ctx.bot.create_message(1125772270258901044, embeds=[embed])
-    session.add(Contest_Entries3(id=ctx.user_id, msg=msg.id))
+    session.merge(Contest_Entries3(id=ctx.user_id, msg=msg.id))
     session.commit()
 
     await msg.react("💀")
@@ -356,3 +356,24 @@ async def msi_activity(ctx: Context, *, language):
         cw = csv.DictWriter(file, ["user_id", "old_exp", "new_xp"])
         cw.writeheader()
         cw.writerows(rows)
+
+
+@register(group=Groups.SYSTEM, interaction=False)
+async def hi(ctx: Context):
+    """
+    Description to use with help command
+    """
+    from MFramework import Channel
+
+    channel = Channel(ctx.bot, 1125772270258901044)
+    msgs = await channel.get_messages(limit=200)
+    ids = [int(msg.id) for msg in msgs]
+    session = ctx.db.sql.session()
+    entries = session.query(Contest_Entries3.msg).filter(Contest_Entries3.msg.in_(ids)).all()
+    entries = [int(i[0]) for i in entries]
+    print("entries msgs entries/wo msgs/wo")
+    print(len(entries), len(ids), len(set(entries).difference(set(ids))), len(set(ids).difference(set(entries))))
+    print([_id for _id in ids if _id not in entries])
+    print(set(ids).difference(set(entries)))
+    for _id in set(ids).difference(set(entries)):
+        await ctx.bot.delete_message(1125772270258901044, _id)
