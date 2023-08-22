@@ -21,7 +21,7 @@ Hey! Welcome to *the official Dying Light Discord server*! I'm a **community**-m
 Feel free to message me whenever you have an issue, suggestion or really anything related to the Discord **server**.
 Please, do not DM moderation directly for these matters.
 
-However, If you need to reach Techland, you can either directly contact the Community Manager, <@210060521238560768>, send them an email to `support@techland.pl` or use their website: https://support.techland.pl/
+However, If you need to reach Techland, you can either directly contact the Community Manager, <@452233019105869834>, send them an email to `support@techland.pl` or use their website: https://support.techland.pl/
 
 Some links:
 
@@ -29,7 +29,7 @@ Some links:
 <https://techland-merch.com/> - Techland Merch
 <https://techlandgg.com/> - Get in game rewards and complete challenges
 
-Under any circumstances, do **not** DM or @ping ANY other Techland employee other than <@210060521238560768> on the server.
+Under any circumstances, do **not** DM or @ping ANY other Techland employee other than <@452233019105869834> on the server.
 
 __***THIS IS AN AUTOMATED MESSAGE. DO NOT REPLY, AS YOUR MESSAGES WILL BE SENT TO THE SERVER MODERATION.***__
 """
@@ -39,7 +39,7 @@ Bienvenue sur le serveur Discord officiel Dying Light FR! Je suis un robot cré�
 N'hésitez pas à m'envoyer un message si vous avez un problème, une suggestion ou tout ce qui concerne le serveur Discord.
 S'il vous plaît, n'envoyez MP à la modération directement pour ces questions.
 
-Cependant, si vous avez besoin de joindre Techland, vous pouvez communiquer directement avec le Community Manager, <@210060521238560768>, leur envoyer un email à `support@techland.pl` ou utiliser leur site web: https://support.techland.pl/.
+Cependant, si vous avez besoin de joindre Techland, vous pouvez communiquer directement avec le Community Manager, <@452233019105869834>, leur envoyer un email à `support@techland.pl` ou utiliser leur site web: https://support.techland.pl/.
 
 Quelques liens :
 
