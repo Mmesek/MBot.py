@@ -42,7 +42,7 @@ async def refreshAppIndex():
     apps = await aio_request("ISteamApps/GetAppList/v2")
     index = {}
     for each in apps["applist"]["apps"]:
-        index[each["name"]] = each["appid"]
+        index[each["name"].lower()] = each["appid"]
 
     with open("data/steamstoreindex.json", "w", newline="", encoding="utf-8") as file:
         json.dump(index, file, ensure_ascii=False)
@@ -66,9 +66,9 @@ async def Game(interaction: Interaction, current: str) -> list[str]:
     if not INDEX:
         await loadAppIndex()
     _index = [i for i in INDEX.keys() if i.strip()]
-    matches = get_close_matches(current, _index, 25)
+    matches = get_close_matches(current.lower(), _index, 25)
     if not matches or matches[0] == "":
-        matches = list(filter(lambda x: current in x, _index))[:25]
+        matches = list(filter(lambda x: current.title() in x, _index))[:25]
     return matches
 
 
