@@ -68,7 +68,7 @@ async def Game(interaction: Interaction, current: str) -> list[str]:
     _index = [i for i in INDEX.keys() if i.strip()]
     matches = get_close_matches(current.lower(), _index, 25)
     if not matches or matches[0] == "":
-        matches = list(filter(lambda x: current.title()[:100] in x, _index))[:25]
+        matches = [i.title()[:100] for i in list(filter(lambda x: current in x, _index))[:25]]
     return matches
 
 
