@@ -433,7 +433,8 @@ async def list_(ctx: Context, user: User = None) -> Embed:
 
     if ctx.permission_group.can_use(Groups.HELPER):
         str_notes = "\n".join(i.as_string(ctx, width=width, id_width=id_width) for i in notes[:10])
-        e.append(Embed().set_title("Notes").set_description(str_notes))
+        if str_notes:
+            e.append(Embed().set_title("Notes").set_description(str_notes))
 
     if ctx.permission_group.can_use(Groups.ADMIN):
         _ = [
