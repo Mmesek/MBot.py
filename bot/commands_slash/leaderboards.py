@@ -218,12 +218,11 @@ async def games(ctx: Context, game: str = None, user: UserID = None, reverse=Tru
 
 
 class Leaderboards(Enum):
-    Easter_Egg_2021 = "Easter Egg"
-    Easter_Egg = "Easter Egg 2022"
+    Easter_Egg = "Easter Egg"
     Pumpkin_Hunt = "Pumpkin"
     # Halloween = "Halloween"
     Fear = "Fear"
-    Reinforced_Fear = "Reinforced Fear"
+    # Reinforced_Fear = "Reinforced Fear"
     Candies = "Halloween Treats"
     Moka = "Moka Treats"
     Present_Hunt = "Present"
@@ -283,7 +282,7 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID = None, limit
     #    12:["Advent", "CookiesRecv", "CookiesSent", "GiftsRecv","GiftsSent", "Presents Found"]
     # }    await ctx.deferred(False)
 
-    item = items.Item.by_name(s, event.value)
+    item = items.Item.by_name(s, f"{event.value} {year}" if year else event.value)
     # //NOTE: Kinda experimental, when guild is below 1000 members we'll pass to IN current members
     # otherwise we'll get x10 more than limit and attempt to filter them to ones within current guild
     # Whether doing any of this makes any sense is heavly debatable but should do the job
