@@ -283,6 +283,8 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID = None, limit
     # }    await ctx.deferred(False)
 
     item = items.Item.by_name(s, f"{event.value} {year}" if year else event.value)
+    if not item:
+        return "This leaderboard is empty!"
     # //NOTE: Kinda experimental, when guild is below 1000 members we'll pass to IN current members
     # otherwise we'll get x10 more than limit and attempt to filter them to ones within current guild
     # Whether doing any of this makes any sense is heavly debatable but should do the job
