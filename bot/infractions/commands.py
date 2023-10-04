@@ -202,7 +202,7 @@ async def timeout(
         Weight of this infraction
     """
     if type(duration) is str:
-        duration = total_seconds(duration)
+        duration = total_seconds(duration) or timedelta(28)
     r = await infraction(ctx, type_=models.Types.Timeout, user=user, reason=reason, duration=duration, weight=weight)
     await ctx.bot.modify_guild_member(
         ctx.guild_id,
