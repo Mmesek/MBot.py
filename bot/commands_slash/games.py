@@ -245,8 +245,17 @@ async def wordle(
     return f"Sadly you ran out of attempts! Correct word was: `{hidden}`"
 
 
+from MFramework.commands.components import (
+    Button,
+    Interaction_Application_Command_Callback_Data,
+    Interaction_Callback_Type,
+    Interaction_Response,
+    Row,
+)
+
+
 @register(group=Groups.GLOBAL, main=game)
-async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> str:
+async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2, auto_advance: bool = True) -> str:
     """
     Start an automated hunger games
     Params
@@ -255,6 +264,8 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
         List of players. Separate with comma
     kill_per_round:
         How many kills should be in each round
+    auto_advance:
+        Whether should wait for button press to continue
     """
     _players = [i.strip() for i in players.split(",")]
     if len(_players) < 2:
@@ -265,6 +276,13 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
 
     await ctx.reply(f"Let the games begin! {len(_players)} players")
     _round = 0
+
+    if not auto_advance:
+        next_player = [Row(Button("Next player", f"proceed-{ctx.user_id}"))]
+        next_round = [Row(Button("Next round", f"proceed-{ctx.user_id}"))]
+    else:
+        next_player = None
+        next_round = None
 
     while len(_players) > 1:
         _round += 1
@@ -287,8 +305,35 @@ async def hunger_games(ctx: Context, players: str, kill_per_round: int = 2) -> s
         random.shuffle(result)
         message = await ctx.data.send_followup(f"Round **{_round}**")
         if message:
-            for msg in result:
-                message = await message.edit(message.content + "\n\n" + msg)
-                await asyncio.sleep(3)
+            for x, msg in enumerate(result):
+                message = await message.edit(message.content + "\n\n" + msg, components=next_player)
+                if not auto_advance and x + 1 < len(result):
+                    await wait_for_continue(ctx)
+                else:
+                    await asyncio.sleep(3)
+
+            if not auto_advance:
+                await message.edit(components=next_round)
+                await wait_for_continue(ctx)
 
     await ctx.data.send_followup((", ".join(_players) + " Wins!") if _players else "Everyone's dead. No winners.")
+
+
+async def wait_for_continue(ctx: Context):
+    try:
+        interaction = await ctx.bot.wait_for(
+            "interaction_create",
+            check=lambda x: x.data.custom_id == f"Button-proceed-{ctx.user_id}"
+            and (x.user or x.member.user).id == ctx.user_id,
+            timeout=300,
+        )
+        await ctx.bot.create_interaction_response(
+            interaction.id,
+            interaction.token,
+            Interaction_Response(
+                type=Interaction_Callback_Type.UPDATE_MESSAGE,
+                data=Interaction_Application_Command_Callback_Data(components=[]),
+            ),
+        )
+    except TimeoutError:
+        return
