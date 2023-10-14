@@ -260,6 +260,7 @@ class Halloween(ServerID, UserID, Base):
         if race:
             pass
         elif self.race in HUNTERS:
+            t.protected = datetime.now(tz=timezone.utc) + timedelta(minutes=1)
             race = Race.Human
         elif self.race in IMMUNE_TABLE.keys():
             race = self.race
@@ -1170,6 +1171,7 @@ async def summary(ctx: Context, include_humans: bool = False):
     total = sorted(Halloween.get_total(s, ctx.guild_id).items(), key=lambda x: x[1], reverse=True)
     total = "\n".join([f"`{PLURALS.get(i[0], i[0]):10}`: `{i[1]:>5}`" for i in total])
     e.addField("Member Counts", total)
+
     # TODO: format nicely!
     def get_username(user_id):
         from MFramework import Guild_Member
