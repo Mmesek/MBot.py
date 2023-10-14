@@ -7,10 +7,11 @@ from datetime import datetime, timedelta
 from enum import Enum
 
 import sqlalchemy as sa
-from MFramework import Context, Embed, Groups, User, register
 from MFramework.commands.cooldowns import cooldown
 from MFramework.database.alchemy.mixins import ServerID
 from mlib.database import Base, Timestamp
+
+from MFramework import Context, Embed, Groups, User, register
 
 from ...database import items, models, types
 from ...database.mixins import UserID
@@ -290,7 +291,7 @@ async def scare(ctx: Context, target: User, *, session: sa.orm.Session, **kwargs
             _fear = target_fear // 1.2
         transaction, reward = award_points(u, t, target_fear, _fear)
         success = True
-        result = f"<@{ctx.user_id}>'s Army, Sucessfully scared <@{target.id}> and gained {reward} of Fear!"
+        result = f"<@{ctx.user_id}>'s Army sucessfully scared <@{target.id}> and gained {reward} of Fear!"
     elif user_power == target_power:
         return "Draw! Both Armies tried to scare each other but failed!"
     elif random().randint(0, max(user_power, target_power)) < min(user_power, target_power):
