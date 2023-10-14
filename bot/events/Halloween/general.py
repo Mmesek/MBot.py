@@ -482,7 +482,7 @@ async def enlist(ctx: Context, guild: Guilds, *, session: sa.orm.Session, this_u
     if this_user.race is not Race.Human and guild is not Guilds.Any:
         total = Halloween.get_total(session, ctx.guild_id)
         _race = Race.get(guild.value)
-        if total.get(_race) > total.get(CURE_TABLE.get(_race)) // 3:
+        if total.get(_race) > total.get(CURE_TABLE.get(_race), 0) // 3:
             raise Cant("enlist", ctx.language)
     if guild is Guilds.Any:
         total = sorted(Halloween.get_total(session, ctx.guild_id).items(), key=lambda x: x[1])
