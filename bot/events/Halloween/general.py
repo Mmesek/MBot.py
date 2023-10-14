@@ -896,10 +896,10 @@ async def cooldowns(ctx: Context):
     def cooldown_var(race, a, b):
         try:
             diff = t.get(race) - ((t.get(a) + t.get(b)) // 2)
+            if ((t.get(a) + t.get(b)) // 2) > t.get(race):
+                diff *= 2
         except TypeError:
             diff = 0
-        if ((t.get(a) + t.get(b)) // 2) > t.get(race):
-            diff *= 2
         return timedelta(minutes=diff * 3)
 
     def get(cooldown: COOLDOWNS, race: Race, other1: Race, other2: Race, multipler=1):
