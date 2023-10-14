@@ -1,9 +1,10 @@
 from typing import Callable, List
 
-from MFramework import Embed, Event, Groups, Snowflake, User, UserID, menu, register
 from MFramework.bot import Context
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.localization import secondsToText
+
+from MFramework import Embed, Event, Groups, Snowflake, User, UserID, menu, register
 
 from ..database import items, log, types
 
@@ -222,7 +223,7 @@ class Leaderboards(Enum):
     Pumpkin_Hunt = "Pumpkin"
     # Halloween = "Halloween"
     Fear = "Fear"
-    # Reinforced_Fear = "Reinforced Fear"
+    Reinforced_Fear = "Reinforced Fear"
     Candies = "Halloween Treats"
     Moka = "Moka Treats"
     Present_Hunt = "Present"
