@@ -11,6 +11,10 @@ def _t(key: str, language: str = "en", **kwargs):
 
 
 import sqlalchemy as sa
+from MFramework.commands.cooldowns import CacheCooldown, cooldown
+from MFramework.database.alchemy.mixins import ServerID
+from mlib.database import Base, Timestamp
+
 from MFramework import (
     Attachment,
     Chance,
@@ -22,9 +26,6 @@ from MFramework import (
     User,
     register,
 )
-from MFramework.commands.cooldowns import CacheCooldown, cooldown
-from MFramework.database.alchemy.mixins import ServerID
-from mlib.database import Base, Timestamp
 
 from ...database.mixins import UserID
 from ...database.types import HalloweenRaces as Race
@@ -892,7 +893,10 @@ async def cooldowns(ctx: Context):
     t = Halloween.get_total(s, ctx.guild_id)
 
     def cooldown_var(race, a, b):
-        diff = t.get(race) - ((t.get(a) + t.get(b)) // 2)
+        try:
+            diff = t.get(race) - ((t.get(a) + t.get(b)) // 2)
+        except TypeError:
+            diff = 0
         if ((t.get(a) + t.get(b)) // 2) > t.get(race):
             diff *= 2
         return timedelta(minutes=diff * 3)
