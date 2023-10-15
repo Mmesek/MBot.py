@@ -595,7 +595,7 @@ async def defend(ctx: Context, target: User, *, session: sa.orm.Session, this_us
         session.query(Halloween).filter(Halloween.server_id == ctx.guild_id, Halloween.user_id == target.id).first()
     )
 
-    if target_user.race not in HUNTERS:
+    if getattr(target_user, "race", None) not in HUNTERS:
         raise Failed("defend", ctx.language)
 
     now = datetime.now(tz=timezone.utc)
