@@ -16,6 +16,8 @@ from MFramework.database.alchemy.mixins import ServerID
 from mlib.database import Base, Timestamp
 
 from MFramework import (
+    Allowed_Mention_Types,
+    Allowed_Mentions,
     Attachment,
     Chance,
     Context,
