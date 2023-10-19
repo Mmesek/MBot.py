@@ -312,7 +312,8 @@ async def turn(
             target=target_user_id,
             currentClass=r,
             previousClass=p,
-        )
+        ),
+        allowed_mentions=Allowed_Mentions(parse=Allowed_Mention_Types.User_Mentions),
     )
 
 
