@@ -315,7 +315,7 @@ async def turn(
             currentClass=r,
             previousClass=p,
         ),
-        allowed_mentions=Allowed_Mentions(parse=[Allowed_Mention_Types.User_Mentions]),
+        allowed_mentions=Allowed_Mentions(users=[target_user_id]),
     )
 
 
