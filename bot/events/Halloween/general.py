@@ -304,8 +304,15 @@ async def turn(
     """Turns target user into race of invoking user or provided race"""
     p, r = this_user.turn_another(s, target_user_id, to_race)
     await update_user_roles(ctx, target_user_id, p, r, s=s)
-    return _t(
-        f"success_{action}", ctx.language, author=ctx.user_id, target=target_user_id, currentClass=r, previousClass=p
+    await ctx.reply(
+        _t(
+            f"success_{action}",
+            ctx.language,
+            author=ctx.user_id,
+            target=target_user_id,
+            currentClass=r,
+            previousClass=p,
+        )
     )
 
 
