@@ -1,8 +1,6 @@
 # TODO:
-# New:
-# Fear system? Trade to buy monsters, send on others, gain more fear
 # Increase power level of player based on bites/cures?
-# Boss raids?
+
 from datetime import datetime, timedelta
 
 import sqlalchemy as sa
