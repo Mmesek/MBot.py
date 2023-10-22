@@ -13,7 +13,7 @@ from mlib.database import Base, Timestamp
 
 from MFramework import Context, Embed, Groups, User, register
 
-from ...database import items, models, types
+from ...database import items, log, models, types
 from ...database.mixins import UserID
 from .general import (
     HUNTERS,
@@ -447,6 +447,44 @@ async def sacrifice(ctx: Context, monster: Monsters, quantity: int = 1, *, sessi
         session.commit()
         return f"Successfuly sacrificed {monster.name}{f' x {quantity}' if quantity > 1 else ''} and received Reinforced Fear x {rf_q}!"
     return "You don't have enough monsters of that type!"
+
+
+@fear
+@cooldown(minutes=30, logic=FearCooldown)
+async def ressurect(ctx: Context, boss: Bosses, *, session: sa.orm.Session, **kwargs):
+    """
+    Ressurect a boss to fight again!
+    Params
+    ------
+    boss:
+        Boss to ressurect
+    """
+    name = boss.name.replace("_", " ")
+    boss_item = items.Item.fetch_or_add(session, name=name, type=types.Item.Entity)
+
+    if boss_item.durability != 0:
+        return "This boss is not yet defeated!"
+
+    boss_item.durability = boss.value * 1.2
+    multipler = 1
+    quantity = 1
+    for x, _ in enumerate(Bosses):
+        if _.name == boss.name:
+            multipler += x * 0.2
+            quantity = (quantity + x) * 10
+    boss_item.damage = int(boss.value * multipler)
+
+    u = models.User.fetch_or_add(session, id=ctx.user_id)
+    rf = items.Item.fetch_or_add(session, name="Reinforced Fear", type=types.Item.Currency)
+    owned_rf = next(filter(lambda x: x.item_id == rf.id, u.items), 0)
+    if owned_rf < quantity:
+        return f"You don't have enough Reinforced Fear for this ritual! Sacrifice your army to reinforce your fear! Required fear for this ritual: {quantity}"
+    t = log.Transaction(server_id=ctx.server_id)
+    u.remove_item(items.Inventory(rf, quantity=quantity), transaction=t)
+    session.add(t)
+
+    session.commit()
+    return f"{name} has been sucessfully ressurected for {quantity} of Reinforced Fear by <@{ctx.user_id}>!"
 
 
 @register(group=Groups.SYSTEM, interaction=False)
