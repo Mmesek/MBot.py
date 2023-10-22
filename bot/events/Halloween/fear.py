@@ -11,7 +11,7 @@ from MFramework.commands.cooldowns import cooldown
 from MFramework.database.alchemy.mixins import ServerID
 from mlib.database import Base, Timestamp
 
-from MFramework import Context, Embed, Groups, User, register
+from MFramework import Context, Embed, Groups, Interaction, User, register
 
 from ...database import items, log, models, types
 from ...database.mixins import UserID
@@ -353,9 +353,49 @@ class Bosses(Enum):
     Champion = 5000000
 
 
+async def Alive_Bosses(interaction: Interaction, current: str) -> list[str]:
+    """Lists available bosses"""
+    session = interaction._Client.db.sql.session()
+    return [
+        (f"{i[0]}: {i[1]}hp", i[0])
+        for i in (
+            session.query(items.Item.name, items.Item.durability)
+            .filter(
+                items.Item.type == types.Item.Entity,
+                items.Item.name.in_([i.name.replace("_", " ") for i in Bosses]),
+                items.Item.name.like(f"%{current}%"),
+                items.Item.durability > 0,
+            )
+            .distinct()
+            .limit(25)
+            .all()
+        )
+    ]
+
+
+async def Dead_Bosses(interaction: Interaction, current: str) -> list[str]:
+    """Lists available bosses"""
+    session = interaction._Client.db.sql.session()
+    return [
+        (i[0], i[0])
+        for i in (
+            session.query(items.Item.name)
+            .filter(
+                items.Item.type == types.Item.Entity,
+                items.Item.name.in_([i.name.replace("_", " ") for i in Bosses]),
+                items.Item.name.like(f"%{current}%"),
+                items.Item.durability == 0,
+            )
+            .distinct()
+            .limit(25)
+            .all()
+        )
+    ]
+
+
 @fear
 @cooldown(hours=2, logic=FearCooldown)
-async def raid(ctx: Context, boss: Bosses, *, session: sa.orm.Session, **kwargs):
+async def raid(ctx: Context, boss: Alive_Bosses, *, session: sa.orm.Session, **kwargs):
     """
     Send your army on a raid!
     Params
@@ -451,7 +491,7 @@ async def sacrifice(ctx: Context, monster: Monsters, quantity: int = 1, *, sessi
 
 @fear
 @cooldown(minutes=30, logic=FearCooldown)
-async def ressurect(ctx: Context, boss: Bosses, *, session: sa.orm.Session, **kwargs):
+async def ressurect(ctx: Context, boss: Dead_Bosses, *, session: sa.orm.Session, **kwargs):
     """
     Ressurect a boss to fight again!
     Params
