@@ -222,10 +222,21 @@ class Halloween(ServerID, UserID, Base):
         if self.race is Race.Human:
             if self.user_id == target_user:
                 t = self
-                if race in [i.name for i in HUNTERS]:
-                    self.protected = datetime.now(tz=timezone.utc) + timedelta(hours=1)
-                else:
-                    self.protected = datetime.now(tz=timezone.utc) + timedelta(minutes=30)
+                if all(
+                    i.previous != race
+                    for i in s.query(HalloweenLog.previous)
+                    .filter(
+                        HalloweenLog.server_id == self.server_id,
+                        HalloweenLog.target_id == target_user,
+                    )
+                    .order_by(HalloweenLog.timestamp.desc())
+                    .limit(5)
+                    .all()
+                ):
+                    if race in [i.name for i in HUNTERS]:
+                        self.protected = datetime.now(tz=timezone.utc) + timedelta(hours=1)
+                    else:
+                        self.protected = datetime.now(tz=timezone.utc) + timedelta(minutes=30)
         else:
             t = Halloween.fetch_or_add(s, server_id=self.server_id, user_id=target_user)
 
