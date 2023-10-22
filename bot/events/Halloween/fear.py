@@ -405,6 +405,7 @@ async def raid(ctx: Context, boss: Alive_Bosses, *, session: sa.orm.Session, **k
     """
     name = boss.replace("_", " ")
     boss_item = items.Item.fetch_or_add(session, name=name, type=types.Item.Entity)
+    boss = Bosses(boss.replace(" ", "_"))
     if boss_item.durability == None:
         boss_item.durability = boss.value
         multipler = 0.1
@@ -500,6 +501,7 @@ async def ressurect(ctx: Context, boss: Dead_Bosses, *, session: sa.orm.Session,
         Boss to ressurect
     """
     name = boss.replace("_", " ")
+    boss = Bosses(boss.replace(" ", "_"))
     boss_item = items.Item.fetch_or_add(session, name=name, type=types.Item.Entity)
 
     if boss_item.durability != 0:
