@@ -516,8 +516,8 @@ async def ressurect(ctx: Context, boss: Dead_Bosses, *, session: sa.orm.Session,
 
     u = models.User.fetch_or_add(session, id=ctx.user_id)
     rf = items.Item.fetch_or_add(session, name="Reinforced Fear", type=types.Item.Currency)
-    owned_rf = next(filter(lambda x: x.item_id == rf.id, u.items), 0)
-    if owned_rf < quantity:
+    owned_rf = next(filter(lambda x: x.item_id == rf.id, u.items), items.Inventory())
+    if owned_rf.quantity < quantity:
         return f"You don't have enough Reinforced Fear for this ritual! Sacrifice your army to reinforce your fear! Required fear for this ritual: {quantity}"
     t = log.Transaction(server_id=ctx.server_id)
     u.remove_item(items.Inventory(rf, quantity=quantity), transaction=t)
