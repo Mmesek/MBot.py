@@ -3,8 +3,9 @@ from datetime import datetime, timedelta, timezone
 from io import StringIO
 
 import pandas as pd
-from MFramework import Attachment, Context, Groups, register
 from MFramework.utils.utils import get_usernames
+
+from MFramework import Attachment, Context, Groups, register
 
 from . import models
 from .commands import infraction
@@ -70,7 +71,7 @@ async def mod_summary(ctx: Context, month: int = None) -> Attachment:
 
     buffered = StringIO()
 
-    data = pd.DataFrame.from_dict(moderators, orient="index", columns=columns)
+    data = pd.DataFrame.from_dict(moderators, orient="index", columns=list(columns))
     data.sort_values(by="Infractions")
     data.to_csv(buffered)
 
