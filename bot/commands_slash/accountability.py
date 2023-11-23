@@ -24,10 +24,14 @@ async def goal(ctx: Context, name: str, duration: timedelta, interval: timedelta
     name:
         Name of the goal
     duration:
-        For how long you want to receive notifications (up to 24h)
+        For how long you want to receive notifications (up to 24h). Example: 12h 30m
     interval:
-        Interval at which to notify you. Min 5m. Digits followed by either s, m or h. Example: 30m 45s
+        Interval at which to notify you. Min 1m. Digits followed by either s, m or h. Example: 30m 45s
     """
+    if duration >= timedelta(minutes=1) > interval:
+        interval = timedelta(minutes=1)
+    if duration == interval:
+        duration += timedelta(seconds=5)
     end = datetime.now() + duration
     last_notification = datetime.now()
     buttons = Row(
@@ -47,13 +51,15 @@ async def goal(ctx: Context, name: str, duration: timedelta, interval: timedelta
             msg = await ctx.send_dm(
                 f"Hey, have you completed your objective? Your goal was `{name}`", components=[buttons]
             )
-            response = await wait_for_continue(ctx, msg)
+            last_notification = datetime.now()
+            response = await wait_for_continue(ctx, msg, interval.total_seconds())
             if "delete" in response:
                 return
-        await asyncio.sleep(abs((datetime.now() - (last_notification + interval)).total_seconds()))
+        if (next_notif := datetime.now() - (last_notification + interval)).total_seconds() > 0:
+            await asyncio.sleep(next_notif.total_seconds())
 
 
-async def wait_for_continue(ctx: Context, msg: Message):
+async def wait_for_continue(ctx: Context, msg: Message, interval: int) -> str:
     try:
         interaction: Interaction = await ctx.bot.wait_for(
             "interaction_create",
@@ -62,7 +68,7 @@ async def wait_for_continue(ctx: Context, msg: Message):
                 or x.data.custom_id == f"Button-delete-goal-{ctx.user_id}"
             )
             and (x.user or x.member.user).id == ctx.user_id,
-            timeout=300,
+            timeout=interval / 2,
         )
         await ctx.bot.create_interaction_response(
             interaction.id,
@@ -75,4 +81,4 @@ async def wait_for_continue(ctx: Context, msg: Message):
         return interaction.data.custom_id
     except TimeoutError:
         await msg.edit(components=[])
-        return
+        return ""
