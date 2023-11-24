@@ -45,18 +45,13 @@ async def goal(ctx: Context, name: str, duration: timedelta, interval: timedelta
     await ctx.reply(f"Got it, will notify you every {interval} for {duration}!")
 
     while True:
+        await asyncio.sleep(((last_notification + interval) - datetime.now()).total_seconds())
+        last_notification = datetime.now()
+        msg = await ctx.send_dm(f"Hey, have you completed your objective? Your goal was `{name}`", components=[buttons])
+        if "delete" in await wait_for_continue(ctx, msg, interval.total_seconds()):
+            return
         if datetime.now() > end:
             return
-        if last_notification < datetime.now() - interval:
-            msg = await ctx.send_dm(
-                f"Hey, have you completed your objective? Your goal was `{name}`", components=[buttons]
-            )
-            last_notification = datetime.now()
-            response = await wait_for_continue(ctx, msg, interval.total_seconds())
-            if "delete" in response:
-                return
-        if (next_notif := datetime.now() - (last_notification + interval)).total_seconds() > 0:
-            await asyncio.sleep(next_notif.total_seconds())
 
 
 async def wait_for_continue(ctx: Context, msg: Message, interval: int) -> str:
@@ -68,7 +63,7 @@ async def wait_for_continue(ctx: Context, msg: Message, interval: int) -> str:
                 or x.data.custom_id == f"Button-delete-goal-{ctx.user_id}"
             )
             and (x.user or x.member.user).id == ctx.user_id,
-            timeout=interval / 2,
+            timeout=max(interval / 2, 60),
         )
         await ctx.bot.create_interaction_response(
             interaction.id,
