@@ -21,7 +21,8 @@ class Channels(Database, ObjectCollections):
         self.dynamic_channels = {}
         super().__init__(guild=guild, **kwargs)
 
-    async def initialize(self, bot: Bot, session: Session, guild: db.Server = None, **kwargs) -> None:
+    async def initialize(self, bot: Bot, session: Session, guild: Guild, **kwargs) -> None:
+        await super().initialize(bot=bot, guild=guild, session=session, **kwargs)
         channels = session.query(db.Channel).filter(db.Channel.server_id == self.guild_id)
         await self.get_channels(channels)
 
