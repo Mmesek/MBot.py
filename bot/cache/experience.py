@@ -30,10 +30,9 @@ class Experience(Channels, Roles):
 
         super().__init__(guild=guild, **kwargs)
 
-    async def initialize(self, bot: Bot, session: Session, guild: db.Server = None, **kwargs) -> None:
-        self.server_exp_rate = guild.exp_rate or 1.0
-
-        return await super().initialize(bot=bot, session=session, guild=guild, **kwargs)
+    async def initialize(self, bot: Bot, session: Session, guild: Guild = None, **kwargs) -> None:
+        await super().initialize(bot=bot, guild=guild, session=session, **kwargs)
+        self.server_exp_rate = self.settings.exp_rate or 1.0
 
     def set_roles(self):
         for id, role in self.roles.items():

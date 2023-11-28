@@ -20,11 +20,12 @@ async def fetch_or_add(cls: T, session: Session, server_id: int, id: int) -> T:
 
 
 class Database(GuildCache):
-    async def initialize(self, bot: Bot, **kwargs) -> None:
-        session: Session = bot.db.sql.session()
-        guild = await self.get_guild(session)
-        await super().initialize(guild=guild, session=session, **kwargs)
-        session.commit()
+    settings: db.Server
+
+    async def initialize(self, bot: Bot, session: Session, **kwargs) -> None:
+        self.settings = await self.get_guild(session)
+
+        await super().initialize(bot=bot, session=session, **kwargs)
 
     async def new_guild(self, s: Session) -> db.Server:
         """Creates new guild if it wasn't present in database"""
@@ -36,7 +37,7 @@ class Database(GuildCache):
 
     async def save_in_database(self, session: Session):
         """Saves data to Database"""
-        pass
+        session.commit()
 
     async def get_guild(self, s: Session) -> db.Server:
         """Retrieves Guild from Database"""

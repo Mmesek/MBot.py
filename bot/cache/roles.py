@@ -14,7 +14,7 @@ class Roles(Database, ObjectCollections, Base):
     """Ephemeral Role to grant when user is connected to a Voice channel"""
 
     async def initialize(self, *, bot: Bot, guild: Guild, session: Session, **kwargs) -> None:
-        await super().initialize(bot=bot, guild=guild, **kwargs)
+        await super().initialize(bot=bot, guild=guild, session=session, **kwargs)
         self.set_roles()
         roles = session.query(db.Role).filter(db.Role.server_id == self.guild_id)
         await self.get_roles(roles)

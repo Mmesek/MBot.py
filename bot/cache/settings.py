@@ -18,22 +18,12 @@ class Settings(Database, ObjectCollections, Commands):
 
     async def initialize(self, *, bot: Bot, guild: Guild, **kwargs) -> None:
         await super().initialize(bot=bot, guild=guild, **kwargs)
-        with bot.db.sql.Session() as s:
-            g = self.get_guild(s)
-            await self.load_settings(g)
+        await self.load_settings(self.settings)
 
     async def load_settings(self, guild: Server):
-        self.settings = {
-            setting: getattr(value, setting.annotation.__name__.lower()) for setting, value in guild.settings.items()
-        }
-        for setting, value in guild.settings.items():
-            setattr(
-                self,
-                setting.name.lower(),
-                getattr(value, setting.annotation.__name__.lower(), None),
-            )
-            if setting is types.Setting.Alias:
-                self.set_alias(guild.alias)
+        if guild.alias:
+            self.set_alias(guild.alias)
+        self.flags = guild.flags or 0
 
     def is_tracking(self, flag: types.Flags) -> bool:
         """Checks if tracking is enabled on server"""
