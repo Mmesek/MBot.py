@@ -1,7 +1,7 @@
+from MFramework import Bot, Guild, Snowflake
 from sqlalchemy.orm import Query, Session
 
 from bot.database import models as db
-from MFramework import Bot, Guild, Snowflake
 
 from ..database import models as db
 from .channels import Channels
@@ -59,11 +59,11 @@ class Experience(Channels, Roles):
 
         return await super().save_in_database(session)
 
-    async def get_channels(self, channels: Query[db.Channel], guild: db.Server):
-        channels = channels.filter(db.Channel.exp_rate).all()
+    async def get_channels(self, channels: Query[db.Channel]):
+        _channels = channels.filter(db.Channel.exp_rate).all()
 
-        self.disabled_channels.update([channel.id for channel in channels if channel.exp_rate == 0])
-        self.channel_rates = {channel.id: channel.exp_rate for channel in channels}
+        self.disabled_channels.update([channel.id for channel in _channels if channel.exp_rate == 0])
+        self.channel_rates = {channel.id: channel.exp_rate for channel in _channels}
 
         return await super().get_channels(channels)
 
