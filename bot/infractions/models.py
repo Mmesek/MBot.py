@@ -4,12 +4,13 @@ from typing import Optional
 import sqlalchemy as sa
 from MFramework import Context, Discord_Paths, Groups
 from MFramework.database.alchemy.mixins import ServerID, Snowflake
-from MFramework.database.alchemy.types import Permissions
 from mlib.database import ID, Base, Timestamp
 from mlib.localization import secondsToText
 
+from ..database.alchemy.types import Permissions
 
-class Types(Permissions):
+
+class Infraction_Types(Permissions):
     """Infraction Types"""
 
     Warn: Groups.HELPER = 0
@@ -32,6 +33,9 @@ class Types(Permissions):
     """Note about user"""
 
 
+Types = Infraction_Types
+
+
 class Infraction(Timestamp, ServerID, ID, Base):
     """Infraction object"""
 
@@ -48,7 +52,7 @@ class Infraction(Timestamp, ServerID, ID, Base):
     )
     """ID of Moderator that issued this infraction"""
 
-    type: Types = sa.Column(sa.Enum(Types))
+    type: Infraction_Types = sa.Column(sa.Enum(Infraction_Types))
     """`Infractions` type of this infraction"""
     reason: Optional[str] = sa.Column(sa.UnicodeText, nullable=True)
     """Reason of this infraction"""
@@ -92,9 +96,9 @@ class Infraction(Timestamp, ServerID, ID, Base):
                 if (self.expires_at and self.expires_at <= datetime.now(tz=timezone.utc))
                 and self.type
                 not in {
-                    Types.Timeout,
-                    Types.Unban,
-                    Types.Report,
+                    Infraction_Types.Timeout,
+                    Infraction_Types.Unban,
+                    Infraction_Types.Report,
                 }
                 else "",
             )
