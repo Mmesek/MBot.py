@@ -28,7 +28,7 @@ class Tasks(BasicCache):
             self.tasks[task.type][int(task.message_id)] = asyncio.create_task(
                 TASK_FUNCTIONS[task.type.name.lower()](bot, task)
             )
-        return await super().initialize(**kwargs)
+        return await super().initialize(bot=bot, session=session, guild=guild, **kwargs)
 
 
 class Safety(BasicCache):
