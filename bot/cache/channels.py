@@ -1,8 +1,8 @@
+from MFramework import Bot, Guild, Snowflake
 from MFramework.cache.guild import ObjectCollections
 from sqlalchemy.orm import Query, Session
 
 from bot.database import models as db
-from MFramework import Bot, Guild, Snowflake
 
 from ..database import models as db
 from ..database.alchemy import types
@@ -10,9 +10,9 @@ from .database import Database, fetch_or_add
 
 
 class Channels(Database, ObjectCollections):
-    nitro_channel: Snowflake
+    nitro_channel: Snowflake = None
     """Server's channel for Nitro users"""
-    afk_channel: Snowflake
+    afk_channel: Snowflake = None
     """AFK channel on server"""
     dynamic_channels: dict[Snowflake, Snowflake]
     """List of ephemeral Voice Channels"""

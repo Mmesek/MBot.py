@@ -1,8 +1,8 @@
+from MFramework import Bot, Groups, Guild, Snowflake
 from MFramework.cache.guild import Base, ObjectCollections
 from sqlalchemy.orm import Query, Session
 
 from bot.database import models as db
-from MFramework import Bot, Groups, Guild, Snowflake
 
 from ..database import models as db
 from ..database.alchemy import types
@@ -88,6 +88,6 @@ class PresenceRoles(Roles):
         activitites = roles.filter(db.Role.type == "Presence").all()
 
         for presence in activitites:
-            self.presence_roles[presence] = presence.id
+            self.presence_roles[presence.string] = presence.id
 
         return await super().get_roles(roles)

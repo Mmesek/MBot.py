@@ -1,7 +1,8 @@
-from MFramework.cache.base import Commands
-from MFramework.cache.guild import ObjectCollections
+from datetime import timedelta
 
 from MFramework import Bot, Guild
+from MFramework.cache.base import Commands
+from MFramework.cache.guild import ObjectCollections
 
 from ..database import Server
 from ..database.alchemy import types
@@ -23,7 +24,12 @@ class Settings(Database, ObjectCollections, Commands):
     async def load_settings(self, guild: Server):
         if guild.alias:
             self.set_alias(guild.alias)
+        self.auto_ban = guild.auto_ban
+        self.auto_mute = guild.auto_mute
+        self.premium = guild.premium
         self.flags = guild.flags or 0
+        self.mute_duration = guild.mute_duration or timedelta(hours=12)
+        self.server_exp_rate = guild.exp_rate or 1.0
 
     def is_tracking(self, flag: types.Flags) -> bool:
         """Checks if tracking is enabled on server"""
