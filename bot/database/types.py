@@ -1,7 +1,8 @@
 import enum
 
-from MFramework.database.alchemy.types import *
 from mlib.types import Enum
+
+from .alchemy.types import *
 
 
 class Snippet(Permissions):
