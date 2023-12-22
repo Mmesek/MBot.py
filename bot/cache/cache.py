@@ -1,10 +1,11 @@
 import asyncio
 
+from MFramework import Bot, Guild, Message, Snowflake, log
 from MFramework.cache.base import BasicCache
-
-from MFramework import Guild, Message, Snowflake
+from sqlalchemy.orm import Session
 
 from ..database import models as db
+from ..utils.scheduler import tasks as TASK_FUNCTIONS
 
 
 class Tasks(BasicCache):
@@ -14,6 +15,20 @@ class Tasks(BasicCache):
     def __init__(self, *, guild: Guild, **kwargs) -> None:
         self.tasks = {}
         super().__init__(guild=guild, **kwargs)
+
+    async def initialize(self, bot: Bot, session: Session, guild: Guild, **kwargs) -> None:
+        _tasks: list[db.Task] = (
+            session.query(db.Task).filter(db.Task.server_id == guild.id).filter(db.Task.finished == False).all()
+        )
+        log.debug("Adding Tasks for guild %s", guild.id)
+        for task in _tasks:
+            if task.type not in self.tasks:
+                self.tasks[task.type] = {}
+            log.debug("Adding new %s Task to cache", task.type)
+            self.tasks[task.type][int(task.message_id)] = asyncio.create_task(
+                TASK_FUNCTIONS[task.type.name.lower()](bot, task)
+            )
+        return await super().initialize(**kwargs)
 
 
 class Safety(BasicCache):

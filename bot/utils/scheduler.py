@@ -4,22 +4,13 @@ import datetime
 from MFramework import Bot, Snowflake
 
 from .. import database as db
-from .. import log
 
-tasks = {}
+tasks: dict[str, callable] = {}
 
 
 def scheduledTask(func):
     tasks[func.__name__.lower()] = func
     return func
-
-
-def add_guild_tasks(self: Bot, guild_id: Snowflake):
-    session = self.db.sql.session()
-    _tasks = session.query(db.Task).filter(db.Task.server_id == guild_id).filter(db.Task.finished == False).all()
-    log.debug("Adding Tasks for guild %s", guild_id)
-    for task in _tasks:
-        _appendTasksToCache(self, task)
 
 
 def add_task(
