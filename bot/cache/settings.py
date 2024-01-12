@@ -19,11 +19,11 @@ class Settings(Database, ObjectCollections, Commands):
 
     async def initialize(self, *, bot: Bot, guild: Guild, **kwargs) -> None:
         await super().initialize(bot=bot, guild=guild, **kwargs)
-        await self.load_settings(self.settings)
+        await self.load_settings(bot, self.settings)
 
-    async def load_settings(self, guild: Server):
+    async def load_settings(self, bot: Bot, guild: Server):
         if guild.alias:
-            self.set_alias(guild.alias)
+            self.set_alias(bot, guild.alias)
         self.auto_ban = guild.auto_ban
         self.auto_mute = guild.auto_mute
         self.premium = guild.premium
