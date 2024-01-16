@@ -11,31 +11,32 @@ from MFramework.commands.components import (
     interaction_create,
 )
 from mlib.database import Base
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Survey(Base):
-    id: int = sa.Column(sa.Integer, primary_key=True)
-    guild_id: int = sa.Column(sa.BigInteger)
-    name: str = sa.Column(sa.String)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    guild_id: Mapped[int] = mapped_column(sa.BigInteger)
+    name: Mapped[str]
     questions: list["Survey_Question"] = orm.relationship("Survey_Question")
 
 
 class Survey_Question(Base):
-    id: int = sa.Column(sa.BigInteger, primary_key=True)
-    survey_id = sa.Column(sa.ForeignKey("Survey.id"))
+    id: Mapped[int] = mapped_column(sa.BigInteger, primary_key=True)
+    survey_id: Mapped[int] = mapped_column(sa.ForeignKey("Survey.id"))
     survey: Survey = orm.relationship("Survey", viewonly=True)
-    question = sa.Column(sa.String)
-    answer_type = sa.Column(sa.String)
-    optional = sa.Column(sa.Boolean)
-    available_answers = sa.Column(sa.ARRAY(sa.String), nullable=True)
+    question: Mapped[str]
+    answer_type: Mapped[str]
+    optional: Mapped[bool]
+    available_answers: Mapped[list[str]] = sa.Column(sa.ARRAY(sa.String), nullable=True)
 
 
 class Survey_Answer(Base):
-    survey_id = sa.Column(sa.ForeignKey("Survey.id"), primary_key=True)
-    question_id = sa.Column(sa.ForeignKey("Survey_Question.id"), primary_key=True)
-    user_id = sa.Column(sa.BigInteger, primary_key=True)
-    multiple_answers = sa.Column(sa.ARRAY(sa.String), nullable=True)
-    answer = sa.Column(sa.String, nullable=True)
+    survey_id = mapped_column(sa.ForeignKey("Survey.id"), primary_key=True)
+    question_id = mapped_column(sa.ForeignKey("Survey_Question.id"), primary_key=True)
+    user_id = mapped_column(sa.BigInteger, primary_key=True)
+    multiple_answers = mapped_column(sa.ARRAY(sa.String), nullable=True)
+    answer = mapped_column(sa.String, nullable=True)
 
 
 async def Surveys(interaction: Interaction, current: str) -> list[str]:

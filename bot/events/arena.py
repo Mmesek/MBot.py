@@ -22,6 +22,7 @@ from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.commands.exceptions import CooldownError
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.database import Base
+from sqlalchemy.orm import Mapped, mapped_column
 
 from ..commands_slash.answer import Answers_Puzzle, Answers_Registered
 
@@ -37,9 +38,9 @@ class Cooldown(NotAvailable):
 
 
 class Gladiator(Base):
-    id: int = sa.Column(sa.Integer, primary_key=True)
-    guild_id: int = sa.Column(sa.BigInteger)
-    user_id: int = sa.Column(sa.BigInteger)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    guild_id: Mapped[int] = mapped_column(sa.BigInteger)
+    user_id: Mapped[int] = mapped_column(sa.BigInteger)
     history: list["Gladiator_History"] = orm.relationship("Gladiator_History")
 
     def bonus(self, boss: "Gladiator_Boss") -> int:
