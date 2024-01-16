@@ -1,6 +1,6 @@
 from random import SystemRandom
 
-from MFramework import Groups, register
+from MFramework import Groups, User, register
 
 random = SystemRandom()
 
@@ -169,3 +169,18 @@ async def spin(terms: str = None, k: int = 1) -> str:
     else:
         terms = terms.split(",")
     return ", ".join(random.sample([i.strip() for i in terms], k))
+
+
+@register(group=Groups.GLOBAL, main=roll)
+async def size(user: User) -> str:
+    """
+    Check user's size
+    Params
+    ------
+    user:
+        User to check
+    """
+    import random
+
+    random.seed(str(user.id))
+    return f"{user.username}: 8{'='*random.randint(0,20)}D"
