@@ -12,12 +12,19 @@ from mlib import logger
 
 log.setLevel(logger.log_level)
 
-from MFramework.bot import Bot
-from MFramework.database.cache.listeners import create_cache_listeners
+from MFramework.bot import Bot as BaseBot
+from MFramework.bot import Snowflake
+from MFramework.cache.listeners import create_cache_listeners
 
 from . import database  # noqa: F401
 from .cache import Cache
 
-Bot._Cache = Cache
+BaseBot._Cache = Cache
+
+
+class Bot(BaseBot):
+    _Cache = Cache
+    cache: dict[Snowflake, Cache]
+
 
 create_cache_listeners(Cache)
