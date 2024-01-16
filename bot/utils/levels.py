@@ -48,7 +48,7 @@ async def handle_activity(self, data, type="chat"):
     else:
         user_id = data.user_id
 
-    from ..database import alchemy as db
+    import database as db
 
     e = (
         session.query(db.UserLevels)
@@ -95,7 +95,7 @@ async def handle_activity(self, data, type="chat"):
 
 
 def task_check_activity():
-    from ..database import alchemy as db
+    from .. import database as db
     from ..database import database
 
     _db = database.Database()

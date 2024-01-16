@@ -5,7 +5,7 @@ from sqlalchemy.orm import Query, Session
 from bot.database import models as db
 
 from ..database import models as db
-from ..database.alchemy import types
+from ..database import types
 from .database import Database, fetch_or_add
 
 

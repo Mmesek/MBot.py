@@ -23,7 +23,7 @@ from MFramework.commands.components import LinkButton, Row, Select_Option
 from MFramework.commands.exceptions import Error
 from mlib.converters import total_seconds
 
-from ..database.alchemy import types
+from ..database import types
 from . import models
 from .interactions import ExpireInfractions, instant_actions
 from .internal import log_action
