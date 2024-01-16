@@ -65,7 +65,7 @@ async def user(ctx: Context, user: UserID) -> Embed:
     """
     from MFramework.commands._utils import detect_group
 
-    user = ctx.cache.members[int(user)]
+    user = await ctx.cache.members[int(user)]
     roles = user.roles
     user = user.user.id
     group = detect_group(ctx.bot, user, ctx.guild_id, roles)

@@ -42,7 +42,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
         .setAuthor(name=f"{member.user.username}#{member.user.discriminator}", icon_url=member.user.get_avatar())
         .setThumbnail(member.user.get_avatar())
         .setColor(get_main_color(member.user.get_avatar()))
-        .setFooter(text=f"ID: {member.user.id} | Bot Group: {ctx.cache.cachedRoles(member.roles).name.title()}")
+        .setFooter(text=f"ID: {member.user.id} | Bot Group: {ctx.cache.cached_roles(member.roles).name.title()}")
     )
 
     dates = []
@@ -90,7 +90,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     try:
         permissions = Bitwise_Permission_Flags.current_permissions(Bitwise_Permission_Flags, int(member.permissions))
         everyone = Bitwise_Permission_Flags.current_permissions(
-            Bitwise_Permission_Flags, int(ctx.cache.roles[ctx.guild_id].permissions)
+            Bitwise_Permission_Flags, int(await ctx.cache.roles[ctx.guild_id].permissions)
         )
         permissions = [i for i in permissions if i not in everyone]
     except:
@@ -215,7 +215,7 @@ async def server(ctx: Context) -> Embed:
         .setImage(guild.get_splash())
         .setDescription(guild.description if guild.description else None)
         .setTimestamp(guild.id.as_date)
-        .setAuthor(ctx.cache.members[guild.owner_id].user.username)
+        .setAuthor(await ctx.cache.members[guild.owner_id].user.username)
     )
     for field in fields:
         if fields[field] != "":
@@ -307,7 +307,7 @@ async def members(ctx: Context, role: Role, force_update: bool = False, show_id:
 
         await asyncio.sleep(30)
     total = []
-    for member_id, member in ctx.cache.members.items():
+    async for member_id, member in ctx.cache.members.items():
         if role.id in member.roles:
             total.append(member_id)
     from MFramework import Embed
@@ -316,7 +316,9 @@ async def members(ctx: Context, role: Role, force_update: bool = False, show_id:
         desc = ",".join([str(i) for i in total])
     else:
         desc = "".join([f"<@{i}>" for i in total])
-    embed = Embed().setDescription(desc).setFooter(f"Total users/members: {len(total)}/{len(ctx.cache.members)}")
+    embed = (
+        Embed().setDescription(desc).setFooter(f"Total users/members: {len(total)}/{len(ctx.cache.members)}")
+    )  # FIXME?
     embed.setColor(role.color).setTitle(f"List of members with role {role.name}")
     return embed
 
@@ -336,10 +338,10 @@ async def created(ctx: Context, snowflake: Snowflake) -> Embed:
     try:
         _member = await ctx.bot.get_guild_member(ctx.guild_id, snowflake)
     except:
-        _role = [i for i in ctx.cache.roles if i == snowflake]
+        _role = [i for i in ctx.cache.roles if i == snowflake]  # FIXME?
         if _role:
             names.append(("Role", f"<@&{snowflake}>"))
-        _channel = [i for i in ctx.cache.channels if i == snowflake]
+        _channel = [i for i in ctx.cache.channels if i == snowflake]  # FIXME?
         if _channel:
             names.append(("Channel", f"<#{snowflake}>"))
     if not _role and not _channel:

@@ -142,8 +142,8 @@ async def subscribe(ctx: Context, logger: get_logger, channel: Channel = None):
 
     _w.subscriptions.append(models.Subscription(source=f"logging-{logger.lower()}", thread_id=thread, regex=""))
     s.commit()
-    ctx.cache.get_Webhooks(s)
-    ctx.cache.set_loggers(ctx.bot)
+    await ctx.cache.get_Webhooks(s)
+    await ctx.cache.set_loggers(ctx.bot)
     return f"Channel <#{channel_id}> is now subscribed to {logger}"
 
 
@@ -285,7 +285,7 @@ async def slowmode(ctx: Context, limit: int = 0, duration: int = 0, channel: Cha
                 except:
                     pass
     else:
-        channels[channel] = ctx.cache.channels.get(channel, Channel).rate_limit_per_user
+        channels[channel] = await ctx.cache.channels.get(channel, Channel).rate_limit_per_user
         await ctx.bot.modify_channel(channel, rate_limit_per_user=limit, reason="Slow mode command")
     await m.edit(f"{'Server wide ' if all else ''}Slow mode activiated")
     if d > 0:
@@ -318,7 +318,7 @@ async def lockdown(ctx: Context, duration: int = 0, channel: ChannelID = None, a
     lockdown = Bitwise_Permission_Flags.SEND_MESSAGES.value | Bitwise_Permission_Flags.ADD_REACTIONS.value
     m = await ctx.reply(f"Applying Lockdown in progress...")
     if all:
-        for channel in ctx.cache.channels.values():
+        for channel in ctx.cache.channels.values():  # FIXME?
             channels[channel.id] = channel.permission_overwrites
             channel_overwrites = []
             for overwrite in channel.permission_overwrites:
@@ -331,7 +331,7 @@ async def lockdown(ctx: Context, duration: int = 0, channel: ChannelID = None, a
                 channel.id, permission_overwrites=channel_overwrites, reason="Global Lockdown command"
             )
     else:
-        channel = ctx.bot.cache[ctx.guild_id].channels.get(channel, Channel).permission_overwrites
+        channel = await ctx.bot.cache[ctx.guild_id].channels.get(channel, Channel).permission_overwrites
         channels[channel] = channel
         channel_overwrites = []
         for overwrite in channel:

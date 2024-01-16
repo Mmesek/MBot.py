@@ -173,7 +173,7 @@ URL_PATTERN = re.compile(r"https?:\/\/.*\..*")
 async def remove_links(self: Bot, data: Message) -> bool:
     if len(data.member.roles) > 0 and any(
         self.cache[data.guild_id].roles.get(i, Role()).color for i in data.member.roles
-    ):
+    ):  # FIXME?
         return False
     cache = self.cache[data.guild_id]
     if URL_PATTERN.search(data.content):
@@ -276,6 +276,8 @@ async def roll_dice(self: Bot, data: Message, updated: bool = False):
 TIME_PATTERN = re.compile(
     r"(?P<Hour>\d\d?) ?(:|\.)? ?(?P<Minute>\d\d?)? ?(?P<Daytime>AM|PM)? ?(?P<LateMinute>\d\d?)? ?(?P<Timezone>\w+)"
 )
+
+
 # @onDispatch(event="message_create")
 async def check_timezone(self: Bot, data: Message):
     match = TIME_PATTERN.search(data.content)
@@ -297,7 +299,7 @@ SPOILER_PATTERN = re.compile(r"\|\|.*?\|\|")
 @onDispatch(event="message_create")
 async def delete_non_spoilers(self: Bot, data: Message):
     if (
-        self.cache[data.guild_id].cachedRoles(data.member.roles).can_use(Groups.ADMIN)
+        self.cache[data.guild_id].cached_roles(data.member.roles).can_use(Groups.ADMIN)
         or self.cache[data.guild_id].guild.owner_id == data.author.id
     ):
         return
@@ -308,14 +310,14 @@ async def delete_non_spoilers(self: Bot, data: Message):
             not all(attachment.filename.startswith("SPOILER") for attachment in data.attachments)
             or SPOILER_PATTERN.sub("", data.content)
         )
-    ):
+    ):  # FIXME
         await data.delete(reason="Message is not surrounded with spoilers")
         return True
 
 
 @onDispatch(event="message_create")
 async def media_only(self: Bot, data: Message):
-    channel: Channel = self.cache[data.guild_id].channels.get(data.channel_id, None)
+    channel: Channel = await self.cache[data.guild_id].channels.get(data.channel_id, None)
     if (
         channel
         and channel.topic
@@ -328,18 +330,18 @@ async def media_only(self: Bot, data: Message):
 @onDispatch(event="message_create", priority=1)
 async def no_commands(self: Bot, data: Message):
     if (
-        self.cache[data.guild_id].cachedRoles(data.member.roles).can_use(Groups.SUPPORT)
+        self.cache[data.guild_id].cached_roles(data.member.roles).can_use(Groups.SUPPORT)
         or self.cache[data.guild_id].guild.owner_id == data.author.id
     ):
         return
-    channel: Channel = self.cache[data.guild_id].channels.get(data.channel_id, None)
+    channel: Channel = await self.cache[data.guild_id].channels.get(data.channel_id, None)
     if channel and channel.topic and "commands-disabled" in channel.topic.lower():
         return True
 
 
 @onDispatch(event="message_delete", priority=1)
 async def ghost_ping(self: Bot, data: Message_Delete):
-    msg: Message = self.cache[data.guild_id].messages[f"{data.guild_id}.{data.channel_id}.{data.id}"]
+    msg: Message = await self.cache[data.guild_id].messages[f"{data.guild_id}.{data.channel_id}.{data.id}"]
     if msg:
         mentions = ", ".join([f"<@{user.id}>" for user in msg.mentions if user.id != msg.author.id and not user.bot])
         if mentions:
@@ -352,7 +354,7 @@ async def ghost_ping(self: Bot, data: Message_Delete):
 
 @onDispatch(event="thread_create")
 async def tag_replies(self: Bot, data: Channel):
-    forum: Channel = self.cache[data.guild_id].channels[data.parent_id]
+    forum: Channel = await self.cache[data.guild_id].channels[data.parent_id]
     if forum.type != 15:
         return
 

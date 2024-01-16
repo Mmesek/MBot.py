@@ -8,9 +8,9 @@ async def presence_update(self: Bot, data: Presence_Update):
     from MFramework.database.alchemy.types import Flags
 
     if self.cache[data.guild_id].is_tracking(Flags.Presence):
-        cached = self.cache[data.guild_id].presence.get(data.user.id, None)
+        cached = await self.cache[data.guild_id].presence.get(data.user.id, None)
         if cached and (len(data.activities) == 0 or (data.activities[0].name != cached[0])):
-            s = self.cache[data.guild_id].presence.pop(data.user.id)
+            s = await self.cache[data.guild_id].presence.pop(data.user.id)
             elapsed = 0  # TODO
             try:
                 _name = s.activities[0].name
@@ -22,8 +22,8 @@ async def presence_update(self: Bot, data: Presence_Update):
             and len(data.activities) > 0
             and data.activities[0].type == 0
             and data.activities[0].name is not None
-        ):
-            self.cache[data.guild_id].presence.store(data)
+        ):  # FIXME
+            await self.cache[data.guild_id].presence.store(data)
 
     for stream in filter(lambda x: x.type == Activity_Types.STREAMING, data.activities):
         if stream.state in self.cache[data.guild_id].tracked_streams:

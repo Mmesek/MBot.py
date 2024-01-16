@@ -93,7 +93,7 @@ async def infraction(
     except:
         response = ctx.t("error_dm") + "\n"
 
-    if detect_group(ctx.bot, user.id, ctx.guild_id, ctx.cache.members.get(user.id, Guild_Member()).roles).can_use(
+    if detect_group(ctx.bot, user.id, ctx.guild_id, await ctx.cache.members.get(user.id, Guild_Member()).roles).can_use(
         Groups.HELPER
     ):
         raise UserProtected(ctx.t("error_target_moderator"))
@@ -503,10 +503,10 @@ async def report(ctx: Context, msg: str) -> str:
     mod_roles = ctx.cache.groups[Groups.MODERATOR]
     reported_to = 0
     for moderator in list(
-        filter(lambda x: any(role in ctx.cache.members[x].roles for role in mod_roles), ctx.cache.members)
+        filter(lambda x: any(role in ctx.cache.members[x].roles for role in mod_roles), ctx.cache.members)  # FIXME?
     ):
         # for moderator in list(filter(lambda x: ctx.cache.cachedRoles(ctx.cache.members[x].roles).can_use(Groups.MODERATOR), ctx.cache.members)):
-        if ctx.cache.members[moderator].user.bot or (
+        if await ctx.cache.members[moderator].user.bot or (
             moderator not in ctx.cache.moderators or ctx.cache.moderators[moderator].status not in ["online", "idle"]
         ):
             continue
@@ -534,6 +534,6 @@ async def report(ctx: Context, msg: str) -> str:
 
 @onDispatch
 async def presence_update(self: Bot, data: Presence_Update):
-    member = self.cache[data.guild_id].members.get(data.user.id)
-    if member and self.cache[data.guild_id].cachedRoles(member.roles).can_use(Groups.MODERATOR):
+    member = await self.cache[data.guild_id].members.get(data.user.id)
+    if member and self.cache[data.guild_id].cached_roles(member.roles).can_use(Groups.MODERATOR):
         self.cache[data.guild_id].moderators[data.user.id] = data
