@@ -1,10 +1,9 @@
 from typing import Callable, List
 
+from MFramework import Embed, Event, Groups, Snowflake, User, UserID, menu, register
 from MFramework.bot import Context
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.localization import secondsToText
-
-from MFramework import Embed, Event, Groups, Snowflake, User, UserID, menu, register
 
 from ..database import items, log, types
 
@@ -115,7 +114,7 @@ async def top(
 
     value_processing = lambda x: secondsToText(x, ctx.language) if voice and not count else x
     r = [Leaderboard_Entry(ctx, k, v, value_processing) for k, v in r.items()]
-    r = list(filter(lambda x: x.user_id in ctx.cache.members, r))[:limit]
+    r = list(filter(lambda x: x.user_id in ctx.cache.members, r))[:limit]  # FIXME?
     r.sort(key=lambda x: x.value, reverse=True)
     r = r[:limit]
     leaderboard = Leaderboard(ctx, ctx.user_id, r, limit)
@@ -291,13 +290,13 @@ async def event(ctx: Context, event: Leaderboards, user_id: UserID = None, limit
     # Whether doing any of this makes any sense is heavly debatable but should do the job
     inventories = s.query(items.Inventory).filter(items.Inventory.item_id == item.id, items.Inventory.quantity > 0)
     og_limit = limit
-    if len(ctx.cache.members.keys()) < 1000:
-        inventories = inventories.filter(items.Inventory.user_id.in_(list(ctx.cache.members.keys())))
+    if len(ctx.cache.members.keys()) < 1000:  # FIXME?
+        inventories = inventories.filter(items.Inventory.user_id.in_(list(ctx.cache.members.keys())))  # FIXME?
     else:
         limit = limit * 10
     inventories = inventories.order_by(items.Inventory.quantity.desc()).limit(limit).all()
     if og_limit < limit:
-        inventories = list(filter(lambda x: x.user_id in ctx.cache.members, inventories))[:og_limit]
+        inventories = list(filter(lambda x: x.user_id in ctx.cache.members, inventories))[:og_limit]  # FIXME?
     # NOTE//
 
     if not any(x.user_id == user_id for x in inventories):

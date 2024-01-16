@@ -48,13 +48,13 @@ class Infraction(Log):
         duration: int = 0,
         attachments: list[Attachment] = None,
     ) -> Message:
-        channel = self.bot.cache[guild_id].channels.get(channel_id)
+        channel = await self.bot.cache[guild_id].channels.get(channel_id)
         channel_name = channel.name if channel else channel_id
         string = f'{moderator.username} [{self._types.get(type.name.lower(), type.name)}](<{Discord_Paths.MessageLink.link.format(guild_id=guild_id, channel_id=channel_id, message_id=message_id)}> "{channel_name}") '
         u = f"[<@{user_id}>"
 
         try:
-            user = self.bot.cache[guild_id].members[user_id].user
+            user = await self.bot.cache[guild_id].members[user_id].user
             u += f" | {user.username}#{user.discriminator}"
         except:
             pass
@@ -107,7 +107,7 @@ class Infraction_Event(Infraction):
     ) -> Message:
         if by_user != "":
             try:
-                by_user = self.bot.cache[data.guild_id].members[int(by_user)].user.username
+                by_user = await self.bot.cache[data.guild_id].members[int(by_user)].user.username
             except:
                 pass
             string = f"{by_user} {type} [<@{data.user.id}> | {data.user.username}#{data.user.discriminator}]"

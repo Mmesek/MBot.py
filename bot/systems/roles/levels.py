@@ -41,7 +41,7 @@ async def create(ctx: Context, role: Role, exp: int = 0) -> str:
 async def list_(ctx: Context) -> str:
     """Shows list of current level roles"""
     return (
-        "\n".join(f"{getattr(ctx.cache.roles.get(i[0]), 'name', None)} - {i[1]}" for i in ctx.cache.level_roles)
+        "\n".join(f"{getattr(await ctx.cache.roles.get(i[0]), 'name', None)} - {i[1]}" for i in ctx.cache.level_roles)
         or "None set"
     )
 

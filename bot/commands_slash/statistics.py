@@ -316,7 +316,7 @@ async def members(ctx: Context, stat: str = "total", year: int = None, month: in
                     lambda x: (not year or x.joined_at.year <= int(year))
                     and (not month or x.joined_at.month <= int(month))
                     and (not day or x.joined_at.day <= int(day)),
-                    ctx.cache.members.values(),
+                    await ctx.cache.members.values(),
                 )
             )
         )
@@ -327,7 +327,7 @@ async def members(ctx: Context, stat: str = "total", year: int = None, month: in
                     lambda x: (not year or x.joined_at.year >= int(year))
                     and (not month or x.joined_at.month >= int(month))
                     and (not day or x.joined_at.day >= int(day)),
-                    ctx.cache.members.values(),
+                    await ctx.cache.members.values(),
                 )
             )
         )
@@ -338,7 +338,7 @@ async def members(ctx: Context, stat: str = "total", year: int = None, month: in
                     lambda x: (not year or x.joined_at.year == int(year))
                     and (not month or x.joined_at.month == int(month))
                     and (not day or x.joined_at.day == int(day)),
-                    ctx.cache.members.values(),
+                    await ctx.cache.members.values(),
                 )
             )
         )
@@ -354,5 +354,5 @@ async def names(ctx: Context, value: str) -> int:
         value to count
     """
     return len(
-        list(filter(lambda x: x.nick and value in x.nick or value in x.user.username, ctx.cache.members.values()))
+        list(filter(lambda x: x.nick and value in x.nick or value in x.user.username, await ctx.cache.members.values()))
     )

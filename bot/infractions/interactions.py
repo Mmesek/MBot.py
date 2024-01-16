@@ -29,7 +29,7 @@ class Reason(Modal):
     @classmethod
     async def execute(cls, ctx: Context, data: str, inputs: dict[str, str]):
         action, id = data.split("-")
-        member: Guild_Member = ctx.cache.members.get(int(id))
+        member: Guild_Member = await ctx.cache.members.get(int(id))
         if member:
             user = member.user
         else:

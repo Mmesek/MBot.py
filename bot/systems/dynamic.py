@@ -35,7 +35,7 @@ async def cleanup_dynamic_channel(self: Bot, data: Voice_State):
 @onDispatch(event="voice_state_update", priority=15)
 async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
     """Creates Dynamic Channel"""
-    channel: Channel = self.cache[data.guild_id].channels[data.channel_id]
+    channel: Channel = await self.cache[data.guild_id].channels[data.channel_id]
     if (
         not channel
         or all(NAME not in channel.name.lower() for NAME in DYNAMIC_NAME)
@@ -45,7 +45,7 @@ async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
 
     if (
         self.cache[data.guild_id].dynamic_channels.get(data.user_id, None) in self.cache[data.guild_id].voice
-        or self.cache[data.guild_id].cooldowns.get(data.guild_id, data.user_id, COOLDOWN_NAME)
+        or await self.cache[data.guild_id].cooldowns.get(data.guild_id, data.user_id, COOLDOWN_NAME)
         or len(self.cache[data.guild_id].dynamic_channels) >= CHANNEL_LIMIT
     ):
         log.debug("User %s has existing cooldown or already generated channel. Moving or Disconnecting", data.user_id)
@@ -59,14 +59,17 @@ async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
     log.debug("User %s joined template channel", data.user_id)
     gc = self.cache[data.guild_id].dynamic_channels
     if gc:
-        c = [int(self.cache[data.guild_id].channels.get(gc[u], Channel()).name.split(" ", 1)[0].strip("#")) for u in gc]
+        c = [
+            int(await self.cache[data.guild_id].channels.get(gc[u], Channel()).name.split(" ", 1)[0].strip("#"))
+            for u in gc
+        ]
         count = (sorted(set(range(1, c[-1] + 2)).difference(c)) or [1])[0]
     else:
         count = 1
 
     name = data.member.nick or data.member.user.username
 
-    self.cache[data.guild_id].cooldowns.store(data.guild_id, data.user_id, COOLDOWN_NAME, expire=COOLDOWN_DELTA)
+    await self.cache[data.guild_id].cooldowns.store(data.guild_id, data.user_id, COOLDOWN_NAME, expire=COOLDOWN_DELTA)
     new_channel = await self.create_guild_channel(
         guild_id=data.guild_id,
         name=f'#{count} {channel.name.split(":",1)[-1] if ":" in channel.name else name}',

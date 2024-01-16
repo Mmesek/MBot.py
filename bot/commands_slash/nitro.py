@@ -21,7 +21,7 @@ async def nitro(ctx: Context, hex_color: str = None, name: str = None, emoji: st
     nitro_position = 0
 
     groups = ctx.cache.groups
-    for _role in ctx.cache.roles.values():
+    for _role in await ctx.cache.roles.values():
         if any(_role.id in groups[i] for i in {Groups.ADMIN, Groups.MODERATOR, Groups.HELPER, Groups.SUPPORT}):
             reserved_colors.add(_role.color)
             reserved_names.add(_role.name.lower())
@@ -50,7 +50,7 @@ async def nitro(ctx: Context, hex_color: str = None, name: str = None, emoji: st
 
     if not name:
         if c:
-            _r = ctx.cache.roles.get(c.id)
+            _r = await ctx.cache.roles.get(c.id)
             if _r:
                 name = _r.name
             else:
@@ -83,7 +83,7 @@ async def nitro(ctx: Context, hex_color: str = None, name: str = None, emoji: st
             role = await ctx.bot.modify_guild_role(
                 ctx.guild_id, c.id, name, 0, color=color, reason="Updated Role of Nitro user", **emoji
             )
-            ctx.cache.roles.update(role)
+            await ctx.cache.roles.update(role)
             state = "updated"
         except NotFound:
             s.delete(c)
@@ -104,7 +104,7 @@ async def nitro(ctx: Context, hex_color: str = None, name: str = None, emoji: st
         await ctx.bot.modify_guild_role_positions(ctx.guild_id, role.id, nitro_position + 1)
         await ctx.bot.add_guild_member_role(ctx.guild_id, ctx.member.user.id, role.id, "Nitro role")
         c = db.Role.fetch_or_add(s, server_id=ctx.guild_id, id=role.id)
-        ctx.cache.roles.store(role)
+        await ctx.cache.roles.store(role)
         state = "created"
 
     emoji = (
@@ -145,7 +145,7 @@ async def remove_invalid(ctx: Context):
     from MFramework.database.alchemy.models import Role
 
     roles = s.query(Role).filter(Role.server_id == ctx.guild_id).all()
-    server_roles = [r for r in ctx.cache.roles]
+    server_roles = [r for r in ctx.cache.roles]  # FIXME?
     to_delete = []
     for role in roles:
         if role.id not in server_roles:

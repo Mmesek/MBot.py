@@ -28,7 +28,7 @@ async def delete(ctx: Context, *args):
     invoking_permission = ctx.permission_group
     msg = await ctx.data.get()
     ctx.user_id = msg.author.id
-    member = ctx.cache.members.get(ctx.user_id)
+    member = await ctx.cache.members.get(ctx.user_id)
     if member:
         ctx.member = member
     if not invoking_permission.can_use(ctx.permission_group):

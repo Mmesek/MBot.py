@@ -32,7 +32,7 @@ async def exp(self: Bot, data: Message):
     ):
         return
 
-    last = self.cache[data.guild_id].cooldowns.has(data.guild_id, data.author.id, "ChatExp")
+    last = await self.cache[data.guild_id].cooldowns.has(data.guild_id, data.author.id, "ChatExp")
     if last:
         return
 
@@ -57,7 +57,7 @@ async def exp(self: Bot, data: Message):
     # boost = user.get_setting(db.types.Setting.Exp) or 1.0
     # FIXME: Reenable user boost on SQL side?
     exp = await self.db.supabase.increase_exp(data.guild_id, data.author.id, rate)  # * boost)
-    self.cache[data.guild_id].cooldowns.store(data.guild_id, data.author.id, "ChatExp")
+    await self.cache[data.guild_id].cooldowns.store(data.guild_id, data.author.id, "ChatExp")
 
     previous_level = None
     level_up = None

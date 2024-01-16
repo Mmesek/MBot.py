@@ -61,8 +61,8 @@ async def direct_message_create(self: Bot, data: Message):
     if data.channel_id not in self.cache[0]:
         from MFramework.database.cache_internal.models import Collection
 
-        self.cache[data.guild_id][data.channel_id] = Collection()
-    self.cache[data.guild_id][data.channel_id].store(data)
+        self.cache[data.guild_id].channels[data.channel_id] = Collection()
+    await self.cache[data.guild_id].channels[data.channel_id].store(data)
 
 
 @register(group=Groups.MODERATOR, private_response=True)
@@ -211,7 +211,7 @@ class Direct_Message(MessageLog):
                     _msg.guild_id = self.guild_id
                     _msg.channel_id = thread.id
                     _msg.id = None
-                    _msg.member = self.bot.cache[self.guild_id].members.get(msg.author.id)
+                    _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
                     ctx = Context(self.bot.cache, self.bot, _msg)
                     from .info import user
 
@@ -259,7 +259,7 @@ class Direct_Message(MessageLog):
                     _msg.guild_id = self.guild_id
                     _msg.channel_id = thread.id
                     _msg.id = None
-                    _msg.member = self.bot.cache[self.guild_id].members.get(msg.author.id)
+                    _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
                     ctx = Context(self.bot.cache, self.bot, _msg)
                     from .info import user
 

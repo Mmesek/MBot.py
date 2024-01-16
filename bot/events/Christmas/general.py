@@ -425,7 +425,7 @@ async def summary(ctx: Context, display_top: int = 1):
             .order_by(db.items.Inventory.quantity.desc())
             .all()
         )
-        inventories = list(filter(lambda x: x.user_id in ctx.cache.members, inventories))
+        inventories = list(filter(lambda x: x.user_id in ctx.cache.members, inventories))  # FIXME?
         inv[name] = inventories
 
     for snowball in inv["Thrown Snowball"]:
@@ -471,12 +471,12 @@ async def summary(ctx: Context, display_top: int = 1):
             if u.quantity <= 0:
                 continue
             x += 1
-            boards[board].append(f"{u.quantity} - {ctx.cache.members.get(int(u.user_id)).user.username}")
+            boards[board].append(f"{u.quantity} - {await ctx.cache.members.get(int(u.user_id)).user.username}")
             tops.append(u.user_id)
             if x >= display_top:
                 break
     for u in robin[:1]:
-        boards["Robin Hood"].append(f"{u[0]} - {ctx.cache.members.get(int(u[1])).user.username}")
+        boards["Robin Hood"].append(f"{u[0]} - {await ctx.cache.members.get(int(u[1])).user.username}")
     for board in boards:
         if boards[board]:
             e.addField(board, "\n".join(boards[board]), True)

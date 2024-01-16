@@ -785,7 +785,7 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
     )
     for entry in turn_history[: int(limit)]:
         _u = entry.user_id
-        _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
+        _u = await ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
         if entry.previous == entry.race:
             line = "Defended"
         elif entry.user_id == entry.target_id:
@@ -815,7 +815,7 @@ async def history(ctx: Context, user: User = None, limit: int = 10) -> Embed:
     )
     for entry in targets_history[: int(limit)]:
         _u = entry.target_id
-        _u = ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
+        _u = await ctx.cache.members.get(int(_u), Guild_Member(user=User(username=_u))).user.username
         if entry.previous == entry.race:
             line = "was protected from being turned"
         elif entry.previous in IMMUNE_TABLE and entry.race in HUNTERS:
@@ -1215,18 +1215,18 @@ async def summary(ctx: Context, include_humans: bool = False):
     e.addField("Member Counts", total)
 
     # TODO: format nicely!
-    def get_username(user_id):
+    async def get_username(user_id):
         from MFramework import Guild_Member
 
-        return ctx.cache.members.get(int(user_id), Guild_Member(user=User(username=user_id))).user.username
+        return await ctx.cache.members.get(int(user_id), Guild_Member(user=User(username=user_id))).user.username
 
     if most_bites:
-        most_bites = "\n".join([f"**{k.name}**: `{get_username(v[0])}` ({v[1]})" for k, v in most_bites.items()])
+        most_bites = "\n".join([f"**{k.name}**: `{await get_username(v[0])}` ({v[1]})" for k, v in most_bites.items()])
         e.addField("Most Bites as", most_bites, True)
     if most_cures:
-        most_cures = "\n".join([f"**{k.name}**: `{get_username(v[0])}` ({v[1]})" for k, v in most_cures.items()])
+        most_cures = "\n".join([f"**{k.name}**: `{await get_username(v[0])}` ({v[1]})" for k, v in most_cures.items()])
         e.addField("Most Cures as", most_cures, True)
-    turned_user = get_username(most_turned[0])
+    turned_user = await get_username(most_turned[0])
     e.addField("Mostly Turned", f"`{turned_user}` ({most_turned[1]})")
 
     history = (
@@ -1320,7 +1320,7 @@ async def crossref(ctx: Context, *, language):
     unique_victims = [i for i in unique_victims if i not in players]
     not_found = []
     for victim in unique_victims:
-        m = ctx.cache.members.get(victim[0])
+        m = await ctx.cache.members.get(victim[0])
         if not m:
             not_found.append(victim[0])
     from ...database import log, types
@@ -1357,4 +1357,5 @@ async def crossref(ctx: Context, *, language):
     avg_chat = [i[1] for i in avg_chat if i[1] < 1000]
     avg_voice = [i[1] for i in avg_voice if i[1] < 1000]
     with_infractions = [i[1] for i in with_infractions if i[1]]
+    # FIXME
     return f"{len(avg_chat)}/{len(ctx.cache.members)}\nAvg chat activity: {sum(avg_chat)/len(avg_chat)}\nAvg voice activity: {sum(avg_voice)/len(avg_voice)}\nWith infractions: {len(with_infractions)}\nAvg infractions: {sum(with_infractions)/len(with_infractions)}\nChatter: <@{tc[0]}> - {tc[1]}\nVoice: <@{tv[0]}> - {tv[1]}"
