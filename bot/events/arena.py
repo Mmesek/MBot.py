@@ -176,6 +176,15 @@ class Gladiator_Boss(Base):
 
         msg = await bot.create_message(data.channel_id, embeds=[embed], components=components)
         await asyncio.sleep(_wait or 60)
+        if self.health > 0:
+            s = f"Fighter fled with {self.health}!"
+        else:
+            s = "Fighter was slain by {}"
+        msg.embeds[0].description = s
+        msg.embeds[0].fields[0].name = "Fighter fled"
+        msg.components[0].components[0].disabled = True
+        await msg.edit()
+        await asyncio.sleep(10)
         await bot.delete_message(msg.channel_id, msg.id)
         return True
 
