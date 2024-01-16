@@ -6,16 +6,17 @@ import sqlalchemy.orm as orm
 from MFramework import Context, Groups, Interaction, register
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.database import Base
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 class Challenge(Base):
-    id: int = sa.Column(sa.Integer, primary_key=True)
-    guild_id: int = sa.Column(sa.BigInteger)
-    name: str = sa.Column(sa.String, nullable=False)
-    stage: str = sa.Column(sa.String, nullable=True)
-    points: int = sa.Column(sa.Integer, default=1)
-    # stages: list["Challenge"] = orm.relationship("Challenge", primaryjoin="Challenge.name")
+    id: Mapped[int] = mapped_column(init=False, primary_key=True)
+    guild_id: Mapped[int] = mapped_column(sa.BigInteger)
+    name: Mapped[str] = mapped_column(nullable=False)
+    stage: Mapped[str] = mapped_column(nullable=True)
     scores: list["Challenge_Score"] = orm.relationship("Challenge_Score")
+    points: Mapped[int] = mapped_column(default=1)
+    # stages: list["Challenge"] = orm.relationship("Challenge", primaryjoin="Challenge.name")
 
     def __init__(self, guild_id: int, name: str, stage: str = None, points: int = 1):
         self.guild_id = guild_id
