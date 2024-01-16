@@ -337,7 +337,6 @@ async def msi_activity(ctx: Context, *, language):
         .filter(User_Experience.server_id == ctx.guild_id, User_Experience.user_id.in_(users))
         .all()
     )
-    from ..database.log import Statistic, types
 
     old_exp = session.query(Statistic.user_id, Statistic.value).filter(Statistic.name == types.Statistic.Chat).all()
     rows = []
