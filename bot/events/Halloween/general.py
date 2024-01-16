@@ -11,10 +11,6 @@ def _t(key: str, language: str = "en", **kwargs):
 
 
 import sqlalchemy as sa
-from MFramework.commands.cooldowns import CacheCooldown, cooldown
-from MFramework.database.alchemy.mixins import ServerID
-from mlib.database import Base, Timestamp
-
 from MFramework import (
     Allowed_Mention_Types,
     Allowed_Mentions,
@@ -28,6 +24,9 @@ from MFramework import (
     User,
     register,
 )
+from MFramework.commands.cooldowns import CacheCooldown, cooldown
+from MFramework.database.alchemy.mixins import ServerID
+from mlib.database import Base, Timestamp
 
 from ...database.mixins import UserID
 from ...database.types import HalloweenRaces as Race
@@ -902,6 +901,28 @@ async def statistics(ctx: Context) -> Embed:
     e.set_footer(
         f"Active/Total/Participants: {len([i for i in active_players if i[0] > 1])}/{len(total_players)}/{sum([i[1] for i in _total])}"
     )
+    import matplotlib.pyplot as plt
+    import pandas as pd
+    from mlib import graphing
+
+    fig = plt.figure()
+
+    monsters = pd.Series(
+        [i[1] for i in _total if i[0] in IMMUNE_TABLE],
+        index=[i[0].name for i in _total if i[0] in IMMUNE_TABLE],
+        name="Monsters",
+    )
+    hunters = pd.Series(
+        [i[1] for i in _total if i[0] in CURE_TABLE],
+        index=[i[0].name for i in _total if i[0] in CURE_TABLE],
+        name="Hunters",
+    )
+    fig.add_axes(monsters.plot.pie(figsize=(2, 2)))
+    fig.add_axes(hunters.plot.pie(figsize=(4, 4)))
+
+    img = graphing.create_image(fig)
+    filename = f"halloween_statistics-{datetime.now().year}-{datetime.now().month}-{datetime.now().day}.png"
+    e.setImage("attachment://" + filename).setColor(16744206)
     return e
 
 
