@@ -7,7 +7,7 @@ from MFramework.database.alchemy.mixins import ServerID, Snowflake
 from mlib.database import ID, Base, Timestamp
 from mlib.localization import secondsToText
 
-from ..database.alchemy.types import Permissions
+from ..database.types import Permissions
 
 
 class Infraction_Types(Permissions):

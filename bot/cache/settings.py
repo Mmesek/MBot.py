@@ -4,8 +4,7 @@ from MFramework import Bot, Guild
 from MFramework.cache.base import Commands
 from MFramework.cache.guild import ObjectCollections
 
-from ..database import Server
-from ..database.alchemy import types
+from ..database import Server, types
 from .database import Database
 
 

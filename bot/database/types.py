@@ -1,8 +1,23 @@
 import enum
 
+from MFramework import Groups
 from mlib.types import Enum
 
-from .alchemy.types import *
+
+class Permissions(bytes, Enum):
+    @property
+    def permission(cls) -> Groups:
+        return cls.__annotations__.get(cls.name, Groups.SYSTEM)
+
+    def __new__(cls, value: int, doc=None):
+        obj = bytes.__new__(cls, [value])
+        obj._value_ = value
+        obj.doc = doc
+        return obj
+
+    def __init__(self, value="Missing value", doc="Missing docstring") -> None:
+        self._value_ = value
+        self.doc = doc
 
 
 class Snippet(Permissions):
@@ -172,3 +187,11 @@ class HalloweenRaces(Enum):
     Hunter: Item.Race = "Hunter"  # , Item.Race #ad4949
     Huntsmen: Item.Race = "Huntsmen"  # , Item.Race #be923d
     Enchanter: Item.Race = "Enchanter"  # , Item.Race #4abe5f
+
+
+class Flags(enum.IntFlag):
+    Chat = 1 << 0
+    Voice = 1 << 1
+    Presence = 1 << 2
+    Activity = 1 << 3
+    Nitro = 1 << 4
