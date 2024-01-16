@@ -1,6 +1,7 @@
 import asyncio
 from datetime import timedelta
 
+from mdiscord.exceptions import BadRequest
 from MFramework import Bot, Channel, Channel_Types, Voice_State, log, onDispatch
 
 CHANNEL_LIMIT = 40
@@ -78,15 +79,17 @@ async def dynamic_channel(self: Bot, data: Voice_State) -> bool:
         reason=f"Generated Channel for user {data.member.user.username}",
     )
     self.cache[data.guild_id].dynamic_channels[data.user_id] = new_channel.id
-
-    await self.modify_guild_member(
-        data.guild_id,
-        data.user_id,
-        mute=None,
-        deaf=None,
-        channel_id=new_channel.id,
-        reason=f"Moved {data.member.user.username} to generated channel",
-    )
-    log.debug("Moved User %s from template channel to created %s", data.user_id, new_channel.id)
+    try:
+        await self.modify_guild_member(
+            data.guild_id,
+            data.user_id,
+            mute=None,
+            deaf=None,
+            channel_id=new_channel.id,
+            reason=f"Moved {data.member.user.username} to generated channel",
+        )
+        log.debug("Moved User %s from template channel to created %s", data.user_id, new_channel.id)
+    except BadRequest as ex:
+        log.debug(ex)
 
     return True
