@@ -594,6 +594,9 @@ class Giveaway(Button):
         return Giveaway_Answer(Row(TextInput(q.key, q.key, placeholder="Your answer")), title="Answer", custom_id=data)
 
 
+from ..systems.giveaways import Giveaway as Giveaway_System
+
+
 @register(group=Groups.ADMIN, main=manage, private_response=True)
 async def giveaway(ctx: Context, prize: str, text: str = None, winners: int = 1) -> str:
     """Sends a button that allows joining a giveaway
@@ -611,4 +614,35 @@ async def giveaway(ctx: Context, prize: str, text: str = None, winners: int = 1)
         components=Row(Giveaway(label="Click to partake in a giveaway!", emoji=Emoji(name="🎉"))),
         channel_id=ctx.channel_id,
     )
-    return "Message sent!"
+    # TODO
+    _giveaway = Giveaway_System(
+        server_id=ctx.guild_id,
+        channel_id=ctx.channel_id,
+        message_id=msg.id,
+        user_id=ctx.user_id,
+        prize=prize,
+        amount=winners,
+    )
+    s = await ctx.db.sql.session()
+    s.add(_giveaway)
+    s.commit()
+    return "Message sent and Giveaway created!"
+
+
+# @register(group=Groups.ADMIN, main=manage)
+async def giveaway_end(ctx: Context, prize: str, winners: int = 1):
+    """
+    End a giveaway and choose winner(s)
+    Params
+    ------
+    winners:
+        Amount of winners to choose
+    """
+    # TODO translation strings?
+    s = await ctx.db.sql.session()
+    g = (
+        s.filter(Giveaway_System)
+        .filter(Giveaway_System.server_id == ctx.guild_id, Giveaway_System.prize == prize)
+        .first()
+    )
+    await g.finish(ctx, winners)
