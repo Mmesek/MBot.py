@@ -436,7 +436,7 @@ async def meme(ctx: Context, picture: memes, captions: str) -> Attachment:
     captions:
         text to place on image. Split using comma if there are more captions on image to fill
     """
-    from PIL import Image, ImageDraw, ImageFont
+    from PIL import Image, ImageDraw, ImageFont, ImageOps
 
     img = Image.open(f"data/images/memes/{picture[1]}")  # TODO
     draw = ImageDraw.Draw(img)
@@ -452,11 +452,19 @@ async def meme(ctx: Context, picture: memes, captions: str) -> Attachment:
     as_spoiler = positions[picture].get("spoiler", False)
     main_color = positions[picture].get("font_color", (255, 255, 255))
     stroke_color = positions[picture].get("outline_color", (0, 0, 0))
+    _angle = positions[picture].get("text_angle", [0])
 
     captions = captions.split(",", len(_x) - 1)
-    for captions, words, x, y in [(cap, _words[x], _x[x], _y[x]) for x, cap in enumerate(captions)]:
+    for captions, words, x, y, angle in [(cap, _words[x], _x[x], _y[x], _angle[x]) for x, cap in enumerate(captions)]:
         captions = wrap(captions, words)
-        draw.multiline_text(
+
+        if angle:
+            txt = Image.new("L", font.getsize(captions))
+            _draw = ImageDraw.Draw(txt)
+        else:
+            _draw = draw
+
+        _draw.multiline_text(
             (x, y),
             "\n".join(captions),
             fill=tuple(main_color),
@@ -465,6 +473,10 @@ async def meme(ctx: Context, picture: memes, captions: str) -> Attachment:
             stroke_fill=tuple(stroke_color),
             stroke_width=4,
         )
+
+        if angle:
+            rotated = txt.rotate(angle)
+            draw.paste(ImageOps.colorize(), (), rotated)
 
     img_str = buffered_image(img)
     return Attachment(file=img_str, filename=f"{picture.split('.',1)[0]}.png", spoiler=as_spoiler)
