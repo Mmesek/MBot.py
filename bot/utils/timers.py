@@ -5,7 +5,7 @@ from MFramework import Snowflake
 from MFramework import log as _log
 from MFramework.bot import Bot
 
-from ..database import log, models, types
+from ..database import models, types
 
 
 def checkLast(ctx: Bot, guild: Snowflake, channel: Snowflake, user: Snowflake) -> float:

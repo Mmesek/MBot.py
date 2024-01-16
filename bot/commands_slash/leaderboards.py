@@ -5,7 +5,7 @@ from MFramework.bot import Context
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.localization import secondsToText
 
-from ..database import items, log, types
+from ..database import types
 
 
 @register()
@@ -379,7 +379,7 @@ async def aoc(ctx: Context, year: int = None) -> Embed:
     )
 
 
-def prepare_leaderboard(s, name: str, limit: int = 10) -> List[items.Inventory]:
+def prepare_leaderboard(s, name: str, limit: int = 10):  # -> List[items.Inventory]:
     item = items.Item.by_name(s, name)
     return (
         s.query(items.Inventory)
@@ -390,7 +390,8 @@ def prepare_leaderboard(s, name: str, limit: int = 10) -> List[items.Inventory]:
     )
 
 
-def get_player_stats(s, inventories: List[items.Inventory], user_id: Snowflake) -> str:
+# def get_player_stats(s, inventories: List[items.Inventory], user_id: Snowflake) -> str:
+def get_player_stats(s, inventories: List, user_id: Snowflake) -> str:
     inventory = [i for i in filter(lambda x: x.user_id == user_id, inventories)]
     if inventory == []:
         inventory = (
