@@ -1,3 +1,23 @@
+[project]
+name = "MBot.py"
+version = 4
+authors = [{ name = "Mmesek" }]
+description = "Discord Bot written with MFramework"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: AGPL-3.0 License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Mmesek/MBot.py"
+"Bug Tracker" = "https://github.com/Mmesek/MBot.py/issues"
+"Source Code" = "https://github.com/Mmesek/MBot.py"
+
+[project.license]
+file = "LICENSE"
+
 [tool.isort]
 profile = "black"
 
