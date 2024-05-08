@@ -1,0 +1,11 @@
+[tool.isort]
+profile = "black"
+
+[tool.black]
+line-length = 120
+target-version = ["py312"]
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules --doctest-report ndiff"
+doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+testpaths = ["bot", "tests"]
