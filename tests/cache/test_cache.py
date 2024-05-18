@@ -1,7 +1,16 @@
-from MFramework.cache import base
+from MFramework.cache import base, guild
 
-from bot.cache import *
-from bot.cache import database
+from bot.cache import (
+    Cache,
+    cache,
+    channels,
+    database,
+    experience,
+    responses,
+    roles,
+    settings,
+    voice,
+)
 
 
 def test_cache():
