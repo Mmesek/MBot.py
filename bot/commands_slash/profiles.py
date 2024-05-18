@@ -1,7 +1,7 @@
 from MFramework import Context, Embed, Groups, register
 from mlib.localization import secondsToText, tr
 
-from ..database import models
+from bot.database import models
 
 
 # @register(group=Groups.GLOBAL)

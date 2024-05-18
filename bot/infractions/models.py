@@ -7,7 +7,7 @@ from MFramework.database.alchemy.mixins import ServerID, Snowflake
 from mlib.database import ID, Base, Timestamp
 from mlib.localization import secondsToText
 
-from ..database.types import Permissions
+from bot.database.types import Permissions
 
 
 class Infraction_Types(Permissions):
@@ -41,13 +41,13 @@ class Infraction(Timestamp, ServerID, ID, Base):
 
     user_id: Snowflake = sa.Column(
         sa.BigInteger,
-        nullable=False
+        nullable=False,
         # sa.ForeignKey("User.id", ondelete="SET DEFAULT", onupdate="Cascade"), nullable=False, default=0
     )
     """ID of User that is infracted"""
     moderator_id: Optional[Snowflake] = sa.Column(
         sa.BigInteger,
-        nullable=False
+        nullable=False,
         # sa.ForeignKey("User.id", ondelete="SET DEFAULT", onupdate="Cascade"), nullable=True, default=0
     )
     """ID of Moderator that issued this infraction"""
@@ -74,33 +74,39 @@ class Infraction(Timestamp, ServerID, ID, Base):
                 "row",
                 width=width,
                 id_width=id_width,
-                link="[#](<{}>)".format(
-                    Discord_Paths.MessageLink.link.format(
-                        guild_id=self.server_id,
-                        channel_id=self.channel_id,
-                        message_id=self.message_id,
+                link=(
+                    "[#](<{}>)".format(
+                        Discord_Paths.MessageLink.link.format(
+                            guild_id=self.server_id,
+                            channel_id=self.channel_id,
+                            message_id=self.message_id,
+                        )
                     )
-                )
-                if self.message_id
-                else "#",
+                    if self.message_id
+                    else "#"
+                ),
                 timestamp=int(self.timestamp.timestamp()),
                 reason=self.reason,
                 moderator_id=self.moderator_id,
-                duration=ctx.t(
-                    "for_duration",
-                    duration=secondsToText(int(self.duration.total_seconds()), ctx.language),
-                )
-                if self.duration
-                else "",
-                active="~~"
-                if (self.expires_at and self.expires_at <= datetime.now(tz=timezone.utc))
-                and self.type
-                not in {
-                    Infraction_Types.Timeout,
-                    Infraction_Types.Unban,
-                    Infraction_Types.Report,
-                }
-                else "",
+                duration=(
+                    ctx.t(
+                        "for_duration",
+                        duration=secondsToText(int(self.duration.total_seconds()), ctx.language),
+                    )
+                    if self.duration
+                    else ""
+                ),
+                active=(
+                    "~~"
+                    if (self.expires_at and self.expires_at <= datetime.now(tz=timezone.utc))
+                    and self.type
+                    not in {
+                        Infraction_Types.Timeout,
+                        Infraction_Types.Unban,
+                        Infraction_Types.Report,
+                    }
+                    else ""
+                ),
             )
             .format(type=ctx.t(self.type.name), id=self.id)
             .strip()

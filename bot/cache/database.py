@@ -1,13 +1,11 @@
 from typing import TypeVar
 
+from MFramework import Bot, log
 from MFramework.cache.guild import GuildCache
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from bot.database import models as db
-from MFramework import Bot, log
-
-from ..database import models as db
 
 T = TypeVar("T")
 

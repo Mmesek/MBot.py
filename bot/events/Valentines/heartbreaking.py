@@ -6,7 +6,7 @@ from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.commands.decorators import Chance, Event
 from mlib.database import Base, Timestamp
 
-from .general import valentines
+from bot.events.Valentines.general import valentines
 
 
 class Heart_Log(Timestamp, Base):

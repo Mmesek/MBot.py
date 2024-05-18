@@ -15,7 +15,7 @@ from MFramework import (
 from MFramework.utils.log import Guild_Member_Update, Log
 from mlib.localization import secondsToText
 
-from . import models
+from bot.infractions import models
 
 
 class Report(Log):

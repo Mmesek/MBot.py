@@ -10,7 +10,7 @@ async def Warn(ctx: Context, user: User):
     user:
         user to warn
     """
-    from ..infractions.interactions import Reason, Row, TextInput
+    from bot.infractions.interactions import Reason, Row, TextInput
 
     return Reason(
         Row(TextInput("Reason", placeholder="Reason of this action")), title="Infraction", custom_id=f"Warn-{user.id}"

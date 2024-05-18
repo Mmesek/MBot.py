@@ -28,9 +28,9 @@ from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.database.alchemy.mixins import ServerID
 from mlib.database import Base, Timestamp
 
-from ...database.mixins import UserID
-from ...database.types import HalloweenRaces as Race
-from ...database.types import Statistic
+from bot.database.mixins import UserID
+from bot.database.types import HalloweenRaces as Race
+from bot.database.types import Statistic
 
 # When | Where | Who | to Whom | to What | From what?
 
@@ -200,7 +200,7 @@ class Halloween(ServerID, UserID, Base):
     def fetch_or_add(
         cls: "Halloween", s: sa.orm.Session, user_id: Snowflake, server_id: Snowflake, **kwargs
     ) -> "Halloween":
-        from ...database.models import User
+        from bot.database.models import User
 
         user = User.fetch_or_add(s, id=user_id)
         r = super().fetch_or_add(s, user_id=user_id, server_id=server_id, **kwargs)
@@ -1323,7 +1323,7 @@ async def crossref(ctx: Context, *, language):
         m = await ctx.cache.members.get(victim[0])
         if not m:
             not_found.append(victim[0])
-    from ...database import log, types
+    from bot.database import log, types
 
     users = {}
     avg_chat = []

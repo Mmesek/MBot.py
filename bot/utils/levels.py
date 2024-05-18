@@ -13,7 +13,7 @@ async def handle_exp(self, data, e=None):
         # user_id = data.user_id
         user_id = getattr(data, "user_id", None) or getattr(data, "author").id
         session = self.db.sql.session()
-        from ..database import log, types
+        from bot.database import log, types
 
         EXP = log.Statistic.get(session, data.guild_id, user_id, types.Statistic.Chat)
         vEXP = log.Statistic.get(session, data.guild_id, user_id, types.Statistic.Voice)
@@ -95,8 +95,8 @@ async def handle_activity(self, data, type="chat"):
 
 
 def task_check_activity():
-    from .. import database as db
-    from ..database import database
+    from bot import database as db
+    from bot.database import database
 
     _db = database.Database()
     s = _db.sql.session()

@@ -102,7 +102,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     embed.addField("\u200b", "\u200b")
 
     s = ctx.db.sql.session()
-    from ..database import User
+    from bot.database import User
 
     u = User.by_id(s, id=member.user.id)
     if u:
@@ -145,7 +145,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
             _stats.append((stat.name.name, stat.value))
         if _stats:
             embed.addField("Statistics", "\n".join(format_values(_stats)), False)
-        from ..systems.xp import User_Experience
+        from bot.systems.xp import User_Experience
 
         xp = User_Experience.fetch_or_add(s, user_id=member.user.id, server_id=ctx.guild_id)
         if ctx.permission_group.can_use(Groups.MODERATOR) and xp.value:
@@ -159,7 +159,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
                 pass
     components = []
     if ctx.permission_group.can_use(Groups.MODERATOR):
-        from ..infractions.interactions import instant_actions
+        from bot.infractions.interactions import instant_actions
 
         components.append(instant_actions(member.user.id))
     await ctx.reply(embeds=[embed], components=components)

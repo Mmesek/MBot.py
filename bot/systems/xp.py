@@ -70,7 +70,7 @@ async def exp(self: Bot, data: Message):
         if exp >= req:
             level_up = role
 
-    from ..database import log, types
+    from bot.database import log, types
 
     if self.cache[data.guild_id].is_tracking(types.Flags.Chat):
         session = self.db.sql.session()
@@ -122,7 +122,7 @@ async def remove(ctx: Context, user: User, xp: float) -> str:
     xp:
         XP to remove
     """
-    from ..database import models
+    from bot.database import models
 
     session = ctx.db.sql.session()
     _user = models.User.fetch_or_add(session, id=user.id)
@@ -170,7 +170,7 @@ async def rate(
         # ctx.cache.role_rates.sort(key=lambda x: x[1])
         result.append(("Role", role.name, rate, previous))
     if user:
-        from ..database import models
+        from bot.database import models
 
         _user = models.User.fetch_or_add(session, id=user.id)
         previous = _user.get_setting(types.Setting.Exp) or 1.0
@@ -207,7 +207,7 @@ async def progress(ctx: Context, user: User = None) -> Embed:
     """
     user_id = ctx.user_id if not user else user.id
     user = ctx.user if not user else user
-    from ..database import models
+    from bot.database import models
 
     session = ctx.db.sql.session()
     _user = models.User.fetch_or_add(session, id=user_id)

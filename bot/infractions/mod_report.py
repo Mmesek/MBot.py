@@ -3,12 +3,11 @@ from datetime import datetime, timedelta, timezone
 from io import StringIO
 
 import pandas as pd
+from MFramework import Attachment, Context, Groups, register
 from MFramework.utils.utils import get_usernames
 
-from MFramework import Attachment, Context, Groups, register
-
-from . import models
-from .commands import infraction
+from bot.infractions import models
+from bot.infractions.commands import infraction
 
 
 @register(group=Groups.ADMIN, main=infraction)

@@ -11,9 +11,10 @@ from MFramework import (
     RoleID,
     register,
 )
-from MFramework.database.alchemy import models, types
 from MFramework.utils.log import Log
 from mlib.utils import all_subclasses
+
+from bot.database import models, types
 
 
 @register(group=Groups.ADMIN)

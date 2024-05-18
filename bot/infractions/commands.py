@@ -23,10 +23,10 @@ from MFramework.commands.components import LinkButton, Row, Select_Option
 from MFramework.commands.exceptions import Error
 from mlib.converters import total_seconds
 
-from ..database import types
-from . import models
-from .interactions import ExpireInfractions, instant_actions
-from .internal import log_action
+from bot.database import types
+from bot.infractions import models
+from bot.infractions.interactions import ExpireInfractions, instant_actions
+from bot.infractions.internal import log_action
 
 
 class UserProtected(Error):

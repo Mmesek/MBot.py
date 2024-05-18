@@ -15,7 +15,7 @@ from MFramework import (
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.commands.decorators import Chance
 
-from ... import database as db
+from bot import database as db
 
 
 def _t(key, language="en", **kwargs):
@@ -191,7 +191,7 @@ async def advent(ctx: Context, *, language) -> str:
 async def hat(ctx: Context, user: User) -> Attachment:
     """Adds Santa's hat onto user's avatar"""
     await ctx.deferred()
-    from ...utils.utils import layer_picture
+    from bot.utils.utils import layer_picture
 
     return Attachment(
         file=await layer_picture(user.get_avatar() + "?size=2048", "santa_hat.png", x_offset=-400),
@@ -279,7 +279,7 @@ async def story(ctx: Context):
     story = load("gatherers")
     chapter = "start"
     option = None
-    from ...database import log, types
+    from bot.database import log, types
 
     session = ctx.db.sql.session()
     with ctx.db.sql.session.begin() as session:

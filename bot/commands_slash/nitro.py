@@ -1,6 +1,6 @@
 from MFramework import Context, Groups, NotFound, register
 
-from .. import database as db
+from bot import database as db
 
 
 @register(group=Groups.NITRO, guild_only=True, private_response=True)
@@ -110,9 +110,7 @@ async def nitro(ctx: Context, hex_color: str = None, name: str = None, emoji: st
     emoji = (
         (CDN_URL + CDN_Endpoints.Role_Icon.value.format(role_id=role.id, role_icon=role.icon))
         if role.icon
-        else role.unicode_emoji
-        if role.unicode_emoji
-        else None
+        else role.unicode_emoji if role.unicode_emoji else None
     )
 
     if not c.get_setting(db.types.Setting.Custom):

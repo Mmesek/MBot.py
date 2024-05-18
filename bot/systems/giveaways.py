@@ -22,7 +22,7 @@ from mlib.converters import total_seconds
 from mlib.database import Base, Timestamp
 from mlib.random import chance, pick
 
-from ..utils.scheduler import wait_for_scheduled_task
+from bot.utils.scheduler import wait_for_scheduled_task
 
 
 class Giveaway(Timestamp, ServerID, db_Snowflake, Base):

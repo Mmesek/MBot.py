@@ -9,7 +9,7 @@ from mlib.colors import buffered_image
 from mlib.database import Base
 from PIL import Image, ImageDraw, ImageFont
 
-from .general import compatibility, valentines
+from bot.events.Valentines.general import compatibility, valentines
 
 
 class Matchmaker(Base):

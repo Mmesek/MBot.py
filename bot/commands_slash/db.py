@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from MFramework import Context, Embed, Groups, NotFound, RoleID, User, register
 
-from .. import database as db
+from bot import database as db
 
 
 @register(group=Groups.NITRO)

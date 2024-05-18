@@ -3,9 +3,9 @@ from datetime import date, datetime
 from MFramework import Context, Embed, Groups, Interaction, User, register
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 
-from .Christmas import general, snowballs  # noqa: F401
-from .Halloween import fear, general  # noqa: F401
-from .Valentines import general, heartbreaking, matchmaker  # noqa: F401
+from bot.events.Christmas import general, snowballs  # noqa: F401
+from bot.events.Halloween import fear, general  # noqa: F401
+from bot.events.Valentines import general, heartbreaking, matchmaker  # noqa: F401
 
 
 @register(group=Groups.GLOBAL)

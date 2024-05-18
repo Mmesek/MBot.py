@@ -10,10 +10,10 @@ from MFramework import (
     onDispatch,
     register,
 )
-from MFramework.database.alchemy import models, types
 from mlib.utils import replace_multiple
 
-from . import role
+from bot.database import models, types
+from bot.systems.roles import role
 
 
 @register(group=Groups.MODERATOR, main=role)

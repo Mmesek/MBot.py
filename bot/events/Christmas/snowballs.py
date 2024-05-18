@@ -4,7 +4,7 @@ from MFramework import Context, Embed, Event, Groups, User, register
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.commands.exceptions import Error
 
-from ...database import models, types
+from bot.database import models, types
 
 
 class SnowballError(Error):

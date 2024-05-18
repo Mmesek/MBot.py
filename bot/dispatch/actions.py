@@ -33,7 +33,7 @@ async def message_create(self: Bot, data: Message):
             ctx = Context(self.cache, self, data)
             r = []
             for snippet in snippets:
-                from .. import database as db
+                from bot import database as db
 
                 cmd = snippet.group("cmd")
                 try:
@@ -197,7 +197,7 @@ async def remove_links(self: Bot, data: Message) -> bool:
             except:
                 pass
             await self.remove_guild_member(data.guild_id, data.author.id, "Hijacked account")
-            from ..infractions.models import Types
+            from bot.infractions.models import Types
 
             await self.cache[data.guild_id].logging["infraction"](
                 guild_id=data.guild_id,

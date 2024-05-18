@@ -17,7 +17,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import declared_attr
 
-from . import types
+from bot.database import types
 
 
 class UserID:

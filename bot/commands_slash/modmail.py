@@ -15,7 +15,7 @@ from MFramework.commands.components import Select, Select_Option
 from MFramework.utils.log import Log
 from MFramework.utils.log import Message as MessageLog
 
-from ..infractions.interactions import instant_actions
+from bot.infractions.interactions import instant_actions
 
 
 @onDispatch
@@ -213,7 +213,7 @@ class Direct_Message(MessageLog):
                     _msg.id = None
                     _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
                     ctx = Context(self.bot.cache, self.bot, _msg)
-                    from .info import user
+                    from bot.commands_slash.info import user
 
                     await user(ctx)
                 except:
@@ -261,7 +261,7 @@ class Direct_Message(MessageLog):
                     _msg.id = None
                     _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
                     ctx = Context(self.bot.cache, self.bot, _msg)
-                    from .info import user
+                    from bot.commands_slash.info import user
 
                     await user(ctx)
                 except:

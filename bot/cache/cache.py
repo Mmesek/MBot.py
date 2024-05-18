@@ -4,8 +4,8 @@ from MFramework import Bot, Guild, Message, Snowflake, log
 from MFramework.cache.base import BasicCache
 from sqlalchemy.orm import Session
 
-from ..database import models as db
-from ..utils.scheduler import tasks as TASK_FUNCTIONS
+from bot.database import models as db
+from bot.utils.scheduler import tasks as TASK_FUNCTIONS
 
 
 class Tasks(BasicCache):

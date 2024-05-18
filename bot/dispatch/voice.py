@@ -1,6 +1,6 @@
 from MFramework import Bot, Snowflake, Voice_Server_Update, Voice_State, onDispatch
 
-from ..utils import levels, timers
+from bot.utils import levels, timers
 
 
 async def _handle_dynamic_channel(self: Bot, data: Voice_State):

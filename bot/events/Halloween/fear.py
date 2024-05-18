@@ -10,9 +10,9 @@ from MFramework.database.alchemy.mixins import ServerID
 from mlib.database import Base, Timestamp
 from mlib.types import Enum
 
-from ...database import models, types
-from ...database.mixins import UserID
-from .general import (
+from bot.database import models, types
+from bot.database.mixins import UserID
+from bot.events.Halloween.general import (
     HUNTERS,
     IMMUNE_TABLE,
     Halloween,

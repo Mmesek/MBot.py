@@ -15,7 +15,7 @@ class ExpireInfractions(Select):
     @classmethod
     async def execute(cls, ctx: "Context", data: str, values: list[str], not_selected: list[Select_Option]):
         if ctx.permission_group.can_use(Groups.ADMIN):
-            from .commands import expire
+            from bot.infractions.commands import expire
 
             ctx = Context(ctx.bot.cache, ctx.bot, ctx.data, expire._cmd)
 
@@ -34,7 +34,7 @@ class Reason(Modal):
             user = member.user
         else:
             user = User(id=int(id))
-        from .commands import ban, kick, timeout, warn
+        from bot.infractions.commands import ban, kick, timeout, warn
 
         ctx = Context(ctx.bot.cache, ctx.bot, ctx.data, warn._cmd)
 

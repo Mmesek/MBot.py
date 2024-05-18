@@ -1,12 +1,10 @@
 from MFramework import Bot, Guild, Snowflake
 from sqlalchemy.orm import Query, Session
 
+from bot.cache.channels import Channels
+from bot.cache.database import fetch_or_add
+from bot.cache.roles import Roles
 from bot.database import models as db
-
-from ..database import models as db
-from .channels import Channels
-from .database import fetch_or_add
-from .roles import Roles
 
 
 class Experience(Channels, Roles):

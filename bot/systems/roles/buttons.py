@@ -13,7 +13,7 @@ from MFramework import (
 )
 from MFramework.commands.components import Button, Option, Row, Select
 
-from . import role
+from bot.systems.roles import role
 
 
 @register(group=Groups.MODERATOR, main=role)

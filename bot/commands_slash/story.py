@@ -283,7 +283,7 @@ async def story(ctx: Context, name: str, *, language):
     language = "pl"
     story = ContextStory(ctx, name, language)
     session = ctx.db.sql.session()
-    from ..database import log, types
+    from bot.database import log, types
 
     # log.Statistic.increment(session, ctx.guild_id, 0, types.Statistic.Story_Start)
     session.commit()
@@ -295,7 +295,7 @@ async def story(ctx: Context, name: str, *, language):
 async def createcharacter(
     ctx: Context, answers: Dict[str, str], translated: Dict[str, str] = None, wid: Snowflake = None, wtoken: str = None
 ):
-    from ..database import rp as db
+    from bot.database import rp as db
 
     s = ctx.db.sql.session()
     character = db.Character.filter(s, user_id=ctx.user_id).first()
@@ -324,9 +324,11 @@ async def createcharacter(
             deduplicated_items_values = list(deduplicated_items.values())
             deduplicated_items = list(deduplicated_items.keys())
             _items = [
-                f"- ||{i}||" + f" x {deduplicated_items_values[x]}"
-                if deduplicated_items_values[x] > 1
-                else f"- ||{i}||"
+                (
+                    f"- ||{i}||" + f" x {deduplicated_items_values[x]}"
+                    if deduplicated_items_values[x] > 1
+                    else f"- ||{i}||"
+                )
                 for x, i in enumerate(deduplicated_items[:3])
             ]
             items_ = "\n".join(_items)

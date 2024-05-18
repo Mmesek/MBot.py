@@ -4,8 +4,8 @@ from datetime import date
 from MFramework import Attachment, Context, Groups, UserID, register
 from mlib.utils import truncate
 
-from . import models
-from .commands import infraction
+from bot.infractions import models
+from bot.infractions.commands import infraction
 
 
 @register(group=Groups.ADMIN, main=infraction)

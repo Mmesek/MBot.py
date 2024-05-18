@@ -1,16 +1,15 @@
 import re
 from typing import Union
 
+from MFramework import Bot
 from MFramework.cache.base import RuntimeCommands, Trigger
 from MFramework.cache.guild import GuildCache
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from MFramework import Bot
-
-from ..database import models as db
-from ..database import types
-from .database import Database
+from bot.cache.database import Database
+from bot.database import models as db
+from bot.database import types
 
 
 async def query_snippet(session: Session, guild_id: int, type: types.Snippet) -> list[db.Snippet]:

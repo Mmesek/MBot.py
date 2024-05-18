@@ -7,4 +7,4 @@ async def role():
     pass
 
 
-from . import buttons, levels, reactions  # noqa: F401
+from bot.systems.roles import buttons, levels, reactions  # noqa: F401

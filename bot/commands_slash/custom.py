@@ -135,7 +135,12 @@ async def loadout(ctx: Context) -> Embed:
             "LG-97 Grom",
             "Łucznik",
         ],
-        "anti_titan_mods": ["Szybkie Przeładowanie", "Rewolwerowiec", "Dobycie Broni", "Dodatkowa Amunicja"],
+        "anti_titan_mods": [
+            "Szybkie Przeładowanie",
+            "Rewolwerowiec",
+            "Dobycie Broni",
+            "Dodatkowa Amunicja",
+        ],
         "ordnance": [
             "Odłamkowy",
             "Łukowy",
@@ -177,7 +182,13 @@ async def loadout(ctx: Context) -> Embed:
             "Holopilot",
         ],
         "pilot_kit": ["Bateria", "Szybka Regeneracja", "Gadżeciarz", "Wejście Fazowe"],
-        "pilot_kit_2": ["Raport o Poległych", "Ścianołaz", "Zawis", "Cichociemny", "Łowca Tytanów"],
+        "pilot_kit_2": [
+            "Raport o Poległych",
+            "Ścianołaz",
+            "Zawis",
+            "Cichociemny",
+            "Łowca Tytanów",
+        ],
         "titan": {
             "Kationa": [
                 "Splątana Energia",
@@ -186,7 +197,13 @@ async def loadout(ctx: Context) -> Embed:
                 "Megadziałko",
                 "Soczewka Refrakcyjna",
             ],
-            "Spopielacz": ["Pożoga", "Wzmocnione Poszycie", "Piekielna Tarcza", "Zapas Paliwa", "Spalona Ziemia"],
+            "Spopielacz": [
+                "Pożoga",
+                "Wzmocnione Poszycie",
+                "Piekielna Tarcza",
+                "Zapas Paliwa",
+                "Spalona Ziemia",
+            ],
             "Polaris": [
                 "Strzał Penetrujący",
                 "Zwiększony Ładunek",
@@ -194,7 +211,13 @@ async def loadout(ctx: Context) -> Embed:
                 "Silniki pomocnicze Żmija",
                 "Optyka Detektorowa",
             ],
-            "Ronin": ["Naboje Rykoszetujące", "Gromowładny", "Anomalia Czasowa", "Fechmistrz", "Unik Fazowy"],
+            "Ronin": [
+                "Naboje Rykoszetujące",
+                "Gromowładny",
+                "Anomalia Czasowa",
+                "Fechmistrz",
+                "Unik Fazowy",
+            ],
             "Ton": [
                 "Pociski Śledzące +",
                 "Wzmocniona Ściana Energetyczna",
@@ -202,8 +225,19 @@ async def loadout(ctx: Context) -> Embed:
                 "Rakietowa Salwa",
                 "Zasobnik Seryjny",
             ],
-            "Legion": ["Większy Zasób Amunicji", "Siatka Czujników", "Zapora", "Lekkie Materiały", "Ukryta Komora"],
-            "Monarcha": ["Wzmacniacz Tarczy", "Złodziej Energii", "Szybkie Przezbrojenie", "Przetrwają Najsilniejsi"],
+            "Legion": [
+                "Większy Zasób Amunicji",
+                "Siatka Czujników",
+                "Zapora",
+                "Lekkie Materiały",
+                "Ukryta Komora",
+            ],
+            "Monarcha": [
+                "Wzmacniacz Tarczy",
+                "Złodziej Energii",
+                "Szybkie Przezbrojenie",
+                "Przetrwają Najsilniejsi",
+            ],
         },
         "titan_kit": [
             "Chip Szturmowy",
@@ -595,7 +629,10 @@ class ReviewScores(Base):
 
 from MFramework.commands.components import Modal, TextInput
 
-games = {"938473018500464700": "Dying Light 2: Stay Human", "1040393182548066364": "Dying Light 2: Bloody Ties"}
+games = {
+    "938473018500464700": "Dying Light 2: Stay Human",
+    "1040393182548066364": "Dying Light 2: Bloody Ties",
+}
 
 
 @register(group=Groups.GLOBAL, guild=289739584546275339, private_response=True)
@@ -673,7 +710,7 @@ async def biomarker(ctx: Interaction) -> Embed:
     """
     Shows your infection state
     """
-    from ..systems.xp import progress
+    from bot.systems.xp import progress
 
     return await progress(ctx)
 
@@ -683,7 +720,7 @@ async def Biomarker(ctx: Context, user: User):
     """
     Shows user infection state
     """
-    from ..systems.xp import progress
+    from bot.systems.xp import progress
 
     return await progress(ctx, user)
 
@@ -803,7 +840,7 @@ async def hat(ctx: Context, user: User, hat: hats, x: int, y: int) -> Attachment
     y:
         Vertical pixel where to start hat
     """
-    from ..utils.utils import layer_picture
+    from bot.utils.utils import layer_picture
 
     return Attachment(
         file=await layer_picture(user.get_avatar() + "?size=2048", f"images/memes/{hat[1]}", x, y),

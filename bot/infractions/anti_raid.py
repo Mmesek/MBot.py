@@ -11,7 +11,7 @@ from MFramework import (
     register,
 )
 
-from .internal import kick_user
+from bot.infractions.internal import kick_user
 
 
 # @onDispatch

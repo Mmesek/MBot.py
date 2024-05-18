@@ -24,7 +24,7 @@ from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.database import Base
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ..commands_slash.answer import Answers_Puzzle, Answers_Registered
+from bot.commands_slash.answer import Answers_Puzzle, Answers_Registered
 
 ATTACK_COOLDOWN = timedelta(seconds=30)
 

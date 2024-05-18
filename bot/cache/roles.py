@@ -2,11 +2,9 @@ from MFramework import Bot, Groups, Guild, Snowflake
 from MFramework.cache.guild import Base, ObjectCollections
 from sqlalchemy.orm import Query, Session
 
+from bot.cache.database import Database, fetch_or_add
 from bot.database import models as db
-
-from ..database import models as db
-from ..database import types
-from .database import Database, fetch_or_add
+from bot.database import types
 
 
 class Roles(Database, ObjectCollections, Base):

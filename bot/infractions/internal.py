@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from MFramework import Bot, Cache, Snowflake, User
 
-from . import models
+from bot.infractions import models
 
 
 async def log_action(

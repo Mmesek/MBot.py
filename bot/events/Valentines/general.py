@@ -4,7 +4,7 @@ import functools
 from MFramework import Allowed_Mentions, Context, Embed, Event, Groups, User, register
 from MFramework.commands.cooldowns import CacheCooldown, cooldown
 
-from ... import database as db
+from bot import database as db
 
 
 def _t(key, language="en", **kwargs):

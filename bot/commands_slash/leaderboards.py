@@ -5,7 +5,7 @@ from MFramework.bot import Context
 from MFramework.utils.leaderboards import Leaderboard, Leaderboard_Entry
 from mlib.localization import secondsToText
 
-from ..database import types
+from bot.database import types
 
 
 @register()
@@ -153,9 +153,7 @@ def activity_leaderboard(
     value_processing = lambda x: (
         secondsToText(x, ctx.language)
         if (voice or types.Statistic.Game in stats) and not count
-        else (x // 60 // 10)
-        if voice and count
-        else x
+        else (x // 60 // 10) if voice and count else x
     )
     results = set(Leaderboard_Entry(ctx, k, v, value_processing) for k, v in results.items())
 
@@ -432,7 +430,7 @@ class LeaderboardPosition(Leaderboard):
 @register(group=Groups.GLOBAL, main=leaderboard)
 async def levels(ctx: Context, limit: int = 10) -> Embed:
     """Shows levels leaderboard"""
-    from ..systems.xp import User_Experience
+    from bot.systems.xp import User_Experience
 
     session = ctx.db.sql.session()
     entries = (

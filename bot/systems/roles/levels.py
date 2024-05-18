@@ -1,8 +1,8 @@
 from MFramework import Context, Groups, Role, register
-from MFramework.database.alchemy import Role as db_Role
-from MFramework.database.alchemy import types
 
-from . import role
+from bot.database import Role as db_Role
+from bot.database import types
+from bot.systems.roles import role
 
 
 @register(group=Groups.ADMIN, main=role)

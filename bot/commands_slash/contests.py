@@ -330,7 +330,7 @@ async def msi_activity(ctx: Context, *, language):
                 ce = Contest_Entries.filter(session, msg=msg.id).first()
                 if ce:
                     users.append(ce.id)
-    from ..systems.xp import User_Experience
+    from bot.systems.xp import User_Experience
 
     new_xp = (
         session.query(User_Experience.user_id, User_Experience.value)

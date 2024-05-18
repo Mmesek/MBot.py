@@ -3,7 +3,7 @@ import datetime
 
 from MFramework import Bot, Snowflake
 
-from .. import database as db
+from bot import database as db
 
 tasks: dict[str, callable] = {}
 

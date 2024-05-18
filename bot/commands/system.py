@@ -1,7 +1,7 @@
 from MFramework import Context, Groups, log, register
 
-from ..database.types import Flags
-from ..utils.timers import finalize
+from bot.database.types import Flags
+from bot.utils.timers import finalize
 
 
 @register(group=Groups.SYSTEM, interaction=False)
