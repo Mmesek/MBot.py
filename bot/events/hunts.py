@@ -1,159 +1,350 @@
+import asyncio
+import functools
 from datetime import datetime
 from random import SystemRandom
 
 random = SystemRandom()
 
-from mdiscord import onDispatch, Message, Allowed_Mentions
-from MFramework import Bot, log, Chance, Event
-from ..database import types
+import sqlalchemy as sa
+from mdiscord import (
+    Allowed_Mention_Types,
+    Allowed_Mentions,
+    Message,
+    Message_Reaction_Add,
+    onDispatch,
+)
+from MFramework import (
+    Bot,
+    Chance,
+    Context,
+    Cooldown,
+    EventBetween,
+    Groups,
+    log,
+    register,
+)
 
-async def _handle_reaction(ctx: Bot, data: Message, reaction: str, name: str, 
-                    _type: types.Item=types.Item.Event, 
-                    delete_own: bool=True, first_only: bool=False, 
-                    logger: str=None, statistic: types.Statistic=None, announce_msg: bool = False,
-                    quantity: int = 1,
-                    require: str = None, require_quantity: int = 1):
-    import random, asyncio
+from ..database import items
+
+
+class Hunts:
+    server_id = sa.Column(sa.ForeignKey("Server.id"))
+    start = sa.Column(sa.DateTime)
+    end = sa.Column(sa.DateTime)
+    item_id = sa.Column(sa.ForeignKey("Item.id"))
+    item: items.Item = sa.orm.relationship("Item")
+    min_quantity = sa.Column(sa.Integer)
+    max_quantity = sa.Column(sa.Integer)
+    delete_own = sa.Column(sa.Boolean)
+    min_participants = sa.Column(sa.Integer)
+    max_participants = sa.Column(sa.Integer)
+    loterry = sa.Column(sa.Boolean)
+    required_item_id = sa.Column(sa.ForeignKey("Item.id"))
+    required_min_quantity = sa.Column(sa.Integer)
+    required_max_quantity = sa.Column(sa.Integer)
+    min_delay = sa.Column(sa.Integer)
+    max_delay = sa.Column(sa.Integer)
+    min_wait = sa.Column(sa.Integer)
+    max_wait = sa.Column(sa.Integer)
+    cleanup = sa.Column(sa.Boolean)
+    cleanup_after = sa.Column(sa.Integer)
+    require_recent_activity = sa.Column(sa.Integer)
+    logger = sa.Column(sa.String)
+    announce = sa.Column(sa.Boolean)
+
+
+async def handle_drop(
+    ctx: Bot,
+    data: Message,
+    reaction: str,
+    name: str,
+    instance_id: int,
+    min_quantity: float = 1,
+    max_quantity: float = 1,
+    delete_own: bool = True,
+    max_participants: int = 0,
+    lottery: bool = False,
+    active_in_last_msgs: int = None,
+    logger: str = None,
+    announce_msg: bool = False,
+    consume_on_failure: bool = False,
+    require_instance_id: int = None,
+    require_min_quantity: float = 1,
+    require_max_quantity: float = 1,
+    quantity_exchange_ratio: float = 1,
+    min_initial_delay: int = 0,
+    max_initial_delay: int = 10,
+    stealth: bool = False,
+    min_wait: int = 15,
+    max_wait: int = 60,
+    cleanup_after: int = 60,
+):
+    """
+    Main Hunt event logic
+
+    Parameters
+    ----------
+    reaction:
+        Reaction to spawn under message
+    name:
+        Name of item to claim
+    instance_id:
+        Instance of item to claim
+    min_quantity:
+        Minimum quantity that can be claimed
+    max_quantity:
+        Maximum quantity that can be claimed
+    delete_own:
+        Whether bot should remove own reaction afterwards
+        (Always True when `cleanup_after` is set)
+    max_participants:
+        Maximum amount of participants that can claim item.
+        `1` Means only first person to react will win (Unless `lottery` is True)
+    lottery:
+        Whether winners should be randomised between participants
+    active_in_last_msgs:
+        Participant needs to have sent message within x previous messages in a channel in order to participate
+    logger:
+        Logger to use after each
+    announce_msg:
+        Whether winners should be announced afterwards
+    consume_on_failure:
+        Consume instance instead if user doesn't have enough of required instance
+    require_instance_id:
+        Instance of item that needs to be in participant inventory
+    require_min_quantity:
+        Minimum quantity that is required to claim an item.
+        Mutualy exclusive with `quantity_exchange_ratio`.
+    require_max_quantity:
+        Maximum quantity that is required to claim an item.
+        Mutualy exclusive with `quantity_exchange_ratio`.
+    quantity_exchange_ratio:
+        When True, instead of randomising required quantity it'll calculate required quantity based on claimable quantity.
+        Disables both `require_min_quantity` and `require_max_quantity`.
+    min_initial_delay:
+        Minimum delay between when bot sends typing notification and sends reaction.
+    max_initial_delay:
+        Maximum delay between when bot sends typing notification and sends reaction.
+    stealth:
+        Disables bot from sending typing notification.
+        Disables both `min_initial_delay` and `max_initial_delay`.
+    min_wait:
+        Minimum delay between spawning reaction and calculating winners
+    max_wait:
+        Maximum delay between spawning reaction and calculating winners
+    cleanup_after:
+        After how long bot should perform cleanup
+    """
     log.debug("Spawning reaction with %s", name)
-    await data.typing()
-    await asyncio.sleep(random.SystemRandom().randint(0, 10))
-    await data.react(reaction)
-    t = random.SystemRandom().randint(15, 60)
 
-    if first_only:
+    if not stealth:
+        await data.typing()
+    await asyncio.sleep(random.randint(min_initial_delay, max_initial_delay))
+    await data.react(reaction)
+
+    quantity = random.randint(min_quantity, max_quantity)
+    if quantity_exchange_ratio:
+        require_quantity = quantity * quantity_exchange_ratio
+    else:
+        require_quantity = random.randint(require_min_quantity, require_max_quantity)
+
+    sleep = random.randint(min_wait, max_wait)
+
+    if max_participants == 1 and not lottery:
+
+        def first_only_predicate(x: Message_Reaction_Add) -> bool:
+            if (
+                x.channel_id == data.channel_id
+                and x.message_id == data.id
+                and x.user_id != ctx.user_id
+                and x.emoji.name == reaction.split(":")[0]
+                # TODO Check here if user sent message within last x messages
+            ):
+                return True
+            return False
+
         try:
-            user = await ctx.wait_for("message_reaction_add", check=lambda x: 
-                x.channel_id == data.channel_id and 
-                x.message_id == data.id and 
-                x.user_id != ctx.user_id and
-                x.emoji.name == reaction.split(':')[0], timeout=t)
+            user = await ctx.wait_for("message_reaction_add", check=first_only_predicate, timeout=sleep)
+            users = [user.user_id]
         except asyncio.TimeoutError:
             log.debug("No one reacted. Removing reaction")
             return await data.delete_reaction(reaction)
     else:
-        await asyncio.sleep(t)
+        await asyncio.sleep(sleep)
+        users = [i.id for i in await data.get_reactions(reaction)]
+
+    if active_in_last_msgs:
+        # TODO: Get from cache, check if users were active
+        pass
+
+    if max_participants and lottery:
+        users = random.choices(users, k=max_participants)
 
     if delete_own:
         await data.delete_reaction(reaction)
 
-    s = ctx.db.sql.Session()
-    
-    from ..database import models, Statistic
-    if statistic:
-        year = models.User.fetch_or_add(s, id=datetime.now().year)
-        Statistic.increment(s, server_id=data.guild_id, user_id=datetime.now().year, name=statistic)
-    if not first_only:
-        users = await data.get_reactions(reaction)
-    else:
-        users = [user]
-    
-    from ..database import items
-    if require:
-        required_item = items.Item.fetch_or_add(s, name=require)
-
-    item = items.Item.fetch_or_add(s, name=name, type=_type)
-    claimed_by = []
-    not_enough = []
-    for _user in users:
-        uid = getattr(_user, 'id', None) or getattr(_user, 'user_id')
-        u = models.User.fetch_or_add(s, id=uid)
-        has = False
-        if require:
-            required_inv = items.Inventory(required_item, quantity=require_quantity)
-            has = next(filter(lambda x: x.item_id == required_item.id and x.quantity >= required_inv.quantity, u.items), None)
-        else:
-            has = True
-        if not has:
-            not_enough.append(u.id)
-            if require and next(filter(lambda x: x.item_id == item.id and x.quantity >= quantity, u.items), False):
-                u.remove_item(required_inv)
-            continue
-        i = items.Inventory(item, quantity)
-        t = u.claim_items(data.guild_id, [i])
-        if require:
-            u.remove_item(required_inv, transaction=t)
-        s.add(t)
-        claimed_by.append(u.id)
-    if not claimed_by and not_enough:
-        users = ", ".join([f"<@{i}>" for i in not_enough])
-        result = f"{users} didn't have enough candies ({require_quantity}) and ran away scared"
-        if quantity:
-            result += f" losing {quantity} fear"
-        result += "!"
-        await data.reply(result)
+    if not users:
         return
+
+    users = users[: max_participants or None]
+    _claimed_by = await ctx.db.supabase.rpc(
+        "add_item",
+        server_id=data.guild_id,
+        user_ids=users,
+        instance_id=instance_id,
+        quantity=quantity,
+        required_instance_id=require_instance_id,
+        required_quantity=require_quantity,
+    )
+    _not_enough = [user for user in users if user not in _claimed_by]
+    if consume_on_failure:
+        await ctx.db.supabase.rpc(
+            "remove_item",
+            server_id=data.guild_id,
+            user_ids=_not_enough,
+            instance_id=instance_id,
+            quantity=quantity,
+            minimum=True,
+        )
+
     await ctx.cache[data.guild_id].logging[logger](data, users)
-    s.commit()
-    if announce_msg and claimed_by:
-        # TODO If it's not first-only, there should be some additional logic to get list
-        users = ", ".join([f"<@{i}>" for i in claimed_by])
-        if ":" in reaction:
-            reaction = f"<a:{reaction}>"
-        result= f"{users} got {reaction} {item.name}"
+
+    if announce_msg:
+        result = ""
+        if not _claimed_by and _not_enough:
+            users_not_claimed = ", ".join([f"<@{i}>" for i in _not_enough])
+        users_claimed = ", ".join([f"<@{i}>" for i in _claimed_by])
+        # TODO: Finish formatting message!
+
         if quantity > 1:
-            result += f" x {quantity}"
-        if require:
-            result += f" for {required_item.emoji} {required_item.name}"
+            pass
+            # result += f" x {quantity}"
+        if require_instance_id:
+            pass
+            # result += f" for {required_item.emoji} {required_item.name}"
             if require_quantity > 1:
-                result += f" x {require_quantity}" 
-        result += "!"
-        #if require and not_enough:
-        #    result+=" Rest didn't have enough and ran away scared!"
-        await data.reply(result, allowed_mentions=Allowed_Mentions())
+                pass
+                # result += f" x {require_quantity}"
 
-@onDispatch(event="message_create")
-@Event(month=4)
-@Chance(2.5)
-async def egg_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "🥚", "Easter Egg", logger="egg_hunt", statistic=types.Statistic.Spawned_Eggs)
+        msg = await data.reply(result, allowed_mentions=Allowed_Mentions(parse=[Allowed_Mention_Types.User_Mentions]))
 
-@onDispatch(event="message_create")
-@Event(month=12)
-@Chance(3)
-async def present_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "🎁", "Present", delete_own=False, first_only=True, logger="present_hunt", statistic=types.Statistic.Spawned_Presents)
+    if cleanup_after:
+        await asyncio.sleep(cleanup_after)
+        await ctx.delete_all_reactions_for_emoji(data.channel_id, data.id, emoji=reaction, reason="Cleanup")
+        await msg.delete(reason="Cleanup")
 
-@onDispatch(event="message_create")
-@Event(month=12)
-@Chance(10)
-async def snowball_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "❄", "Snowball", delete_own=False, first_only=True, logger="snowball_hunt", statistic=types.Statistic.Spawned_Snowballs)
 
-@onDispatch(event="message_create")
-@Event(month=10)
-@Chance(1)
-async def halloween_hunt(ctx: Bot, data: Message):
-    await _handle_reaction(ctx, data, "🎃", "Pumpkin", delete_own=False, first_only=True, logger="halloween_hunt", statistic=types.Statistic.Spawned_Pumpkins, announce_msg=True)
+async def get_hunts(ctx: Bot):
+    # TODO: Get Hunts from Database and set them up here!
+    s = ctx.db.sql.session
+    hunts = s.query(Hunts).all()
+    # hunts = []
+    for hunt in hunts:
+        # TODO: Add support for total reactions/claims possible
+        handler = functools.partial(
+            handle_drop,
+            reaction=hunt.item.emoji,
+            name=hunt.item.name,
+            quantity=hunt.min_quantity,
+            delete_own=hunt.delete_own,
+            max_participants=hunt.max_participants,
+            lottery=hunt.lottery,
+            logger=hunt.logger,
+            announce_msg=hunt.announce,
+            require=hunt.required_item_id,
+            require_quantity=hunt.required_min_quantity,
+            min_initial_delay=hunt.min_delay,
+            max_initial_delay=hunt.max_delay,
+            min_wait=hunt.min_wait,
+            max_wait=hunt.max_wait,
+            cleanup=hunt.cleanup,
+            cleanup_after=hunt.cleanup_after,
+            active_in_last_msgs=hunt.require_recent_activity,
+        )
+        from MFramework.commands.decorators import InGuild
 
-#@EventBetween(after_month=10, after_day=26, before_month=11, before_day=4)
-@onDispatch(event="message_create")
-@Event(month=10)
-@Chance(1.5)
-async def treat_hunt(ctx: Bot, data: Message):
-    import random
-    q = random.SystemRandom().randint(1,5)
-    emoji = random.SystemRandom().choice(["🍬", "🧁", "🍭", "🍫", "🍪"])
-    await _handle_reaction(ctx, data, emoji, "Halloween Treats", delete_own=False, first_only=False, logger="halloween_hunt", announce_msg=True, quantity=q)
+        def before_execution(**kwargs):
+            quantity = random.randint(hunt.min_quantity, hunt.max_quantity)
+            required_quantity = random.randint(hunt.required_min_quantity, hunt.required_max_quantity)
+            # FIXME: Run pre-execution randomizations?
+            return handler(**kwargs)
 
-#@EventBetween(after_month=10, after_day=28, before_month=11, before_day=4)
-@onDispatch(event="message_create")
-@Event(month=10)
-@Chance(3)
-async def fear_hunt(ctx: Bot, data: Message):
-    import random
-    q = random.SystemRandom().randint(10, 32)
-    rq = random.SystemRandom().randint(1,5)
-    emoji = random.SystemRandom().choice(["💀", "🕷", "🕸", "🦇", "🦴", "☠", "🕯", "👻"])
-    await _handle_reaction(ctx, data, emoji, "Fear", _type=types.Item.Currency, delete_own=False, first_only=True, logger="halloween_hunt", announce_msg=True, quantity=q, require="Halloween Treats", require_quantity=rq)
+        handler = before_execution
 
-@onDispatch(event="message_create")
-@Event(month=11, day=5)
-@Chance(7)
-async def moka_hunt(ctx: Bot, data: Message):
-    if data.guild_id == 289739584546275339:
-        from random import SystemRandom as random
-        if random().randint(1,10) <= 1:
-            await _handle_reaction(ctx, data, "mokaFoil:905061222846697503", "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True, quantity=10, statistic=types.Statistic.Spawned_GoldMoka)
-        else:
-            emoji = random().choice(['🐟', '🐔'])
-            await _handle_reaction(ctx, data, emoji, "Moka Treats", delete_own=False, first_only=True, logger="moka_hunt", announce_msg=True, statistic=types.Statistic.Spawned_Moka)
+        handler = Chance(hunt.chance)(handler)
+        if hunt.cooldown:
+            handler = Cooldown(delta=hunt.cooldown)(handler)
+        handler = EventBetween(after_timestamp=hunt.start, before_timestamp=hunt.end)(handler)
+        if hunt.guild_id:
+            handler = InGuild(hunt.guild_id)(handler)
+        onDispatch(f=handler, priority=200, event="message_create")
+
+
+@register(group=Groups.ADMIN)
+async def hunt():
+    """Base command for managing hunts"""
+    pass
+
+
+@register(group=Groups.ADMIN, main=hunt)
+async def create(
+    ctx: Context,
+    name: str,
+    description: str,
+    start_date: datetime,
+    end_date: datetime,
+    reactions: str,
+    item_name: str,
+    quantity: str = 1,
+    require_item: str = None,
+    require_quantity: str = 0,
+    exchange_ratio: float = 1,
+    max_winners: int = 1,
+    lottery: bool = False,
+    active_within: int = None,
+    repeating: bool = True,
+):
+    """
+    Allows creating new Hunts
+    Params
+    ------
+    name:
+        Name of the hunt
+    description:
+        Description of the hunt
+    start_date:
+        When should hunt start
+    end_date:
+        When should hunt end
+    repeating:
+        Whether this hunt should be repeating
+    reactions:
+        List (comma separated) of possible reactions in this hunt
+    item_name:
+        Name of an item that should be given to person that reacted
+    quantity:
+        Amount of items that should be given. For range specify min and max value
+    require_item:
+        Item required and removed upon upon reacting
+    require_quantity:
+        Amount of items needed in order to claim. For range specify min and max value
+    exchange_ratio:
+        Ratio of Required to Received items. Set to 0 for random
+    max_winners:
+        Limit of winners per each drop. Set to 0 for no limit
+    lottery:
+        Whether all or random should receive reward (Depending on max_winners)
+    active_within:
+        Amount of last messages in a channel in which user should be present to be eligible
+    """
+    pass
+
+
+# Month  | Chance | Item             | First Only | Quantity | Required Quantity
+# 4      | 2.5%   | Easter Egg       | False
+# 10     | 1%     | Pumpkin          | True
+# 10     | 1.5%   | Halloween Treats | False      | 1-5
+# 10     | 3%     | Fear             | True       | 10-32    | 1-5
+# 11.05  | 7%     | Moka Treats      | True a:mokaFoil:905061222846697503 / a:petmoka:856587425043578900
+# 12     | 3%     | Present          | True
+# 12     | 10     | Snowball         | True
