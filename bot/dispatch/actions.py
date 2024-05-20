@@ -367,3 +367,16 @@ async def tag_replies(self: Bot, data: Channel):
 
     if replies:
         await self.create_message(data.id, "\n\n".join(replies))
+
+
+@onDispatch(event="message_create", predicate=lambda x: x.channel_id == 938817083553251328)
+async def welcome_reaction(self: Bot, data: Message):
+    await data.react("👋")
+
+
+@onDispatch(
+    event="bot_message_create",
+    predicate=lambda x: x.author.id == 656621136808902656 and x.channel_id == 1228814297233358979,
+)
+async def birthday_reaction(self: Bot, data: Message):
+    await data.react("🎉")
