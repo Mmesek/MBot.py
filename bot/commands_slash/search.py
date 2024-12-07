@@ -1,5 +1,5 @@
 import requests
-from MFramework import Context, Embed, Groups, register
+from MFramework import Context, Embed, Groups, Interaction, register
 
 
 @register(group=Groups.GLOBAL)
@@ -58,7 +58,7 @@ async def api(
         r = requests.get(url)
         response = r.json()["entries"][0]
         e = Embed().setTitle(response["API"]).setDescription(response["Description"])
-        e.addField("HTTPS", f'{response["HTTPS"]}', True).addField("Category", response["Category"], True).addField(
+        e.addField("HTTPS", f"{response['HTTPS']}", True).addField("Category", response["Category"], True).addField(
             "Cross-Origin Resource Sharing", response["Cors"], True
         ).addField("URL", response["Link"], True)
         if response["Auth"] != "":
@@ -76,7 +76,7 @@ async def api(
     embed = Embed().setTitle(category).setFooter("", f"Total: {response['count']}")
     for api in response["entries"]:
         title = api["API"]
-        _ = f'- {api["Description"]}\n{api["Link"]}'
+        _ = f"- {api['Description']}\n{api['Link']}"
         if response["count"] < 25:
             embed.addField(title, _, True)
         else:
@@ -100,19 +100,19 @@ async def stack(ctx: Context, search: str) -> Embed:
     # Inspired by https://github.com/Vik0105/Devscord
     r = requests.get("https://api.stackexchange.com/2.2/search?order=desc&site=stackoverflow&intitle=" + search)
     r = r.json()
-    size = f'Total Questions: {len(r["items"])}'
+    size = f"Total Questions: {len(r['items'])}"
     if r["has_more"]:
         size += "+"
     e = Embed().setTitle(search).setFooter(size)
     desc = ""
     for q in r["items"]:
-        question = f'- [{q["title"]}]({q["link"]})\nTags: {", ".join(q["tags"])}'
+        question = f"- [{q['title']}]({q['link']})\nTags: {', '.join(q['tags'])}"
         answered = q["is_answered"]
         if answered:
             question = "☑️" + question
         else:
             question = "❌" + question
-        question += f'\nAnswers/Views: {q["answer_count"]}/{q["view_count"]}\n'
+        question += f"\nAnswers/Views: {q['answer_count']}/{q['view_count']}\n"
         if len(r["items"]) < 25:
             e.addField(q["title"], question, True)
         else:
@@ -425,8 +425,21 @@ async def fuzzy_word(ctx: Context, word: str, letter_count: int = None) -> Embed
     return embed
 
 
+import json
+
+try:
+    with open("data/chords.json", "r", newline="", encoding="utf-8") as file:
+        CHORDS = json.load(file)
+except:
+    CHORDS = {}
+
+
+async def Chords(interaction: Interaction, current: str) -> list[str]:
+    return [c for c in CHORDS.keys() if c.startswith(current)][:25]
+
+
 @register(group=Groups.GLOBAL, main=search)
-async def chord(ctx: Context, chords: str, all: bool = False) -> Embed:
+async def chord(ctx: Context, chords: Chords, all: bool = False) -> Embed:
     """
     Shows guitar chord(s) diagram(s)
     Params
@@ -436,10 +449,7 @@ async def chord(ctx: Context, chords: str, all: bool = False) -> Embed:
         all:
             Whether to show all combinations or not
     """
-    import json
-
-    with open("data/chords.json", "r", newline="", encoding="utf-8") as file:
-        _chords = json.load(file)
+    _chords = CHORDS
     # _chords = {"Em": "022000", "C": "x32010", "A":"x02220", "G": "320033", "E": "022100", "D": "xx0232", "F": "x3321x", "Am": "x02210", "Dm": "xx0231"}
     chords = chords.split(" ")
     base_notes = "EADGBE"
@@ -452,13 +462,13 @@ async def chord(ctx: Context, chords: str, all: bool = False) -> Embed:
                     if _chord in chords:
                         _all.append(f"{_chord}")
                         for i in range(5):
-                            if _chord + f"_a{i+1}" in _chords:
-                                _all.append(f"{_chord}_a{i+1}")
-                if _chord + f"_{x+1}" in _chords:
-                    _all.append(f"{_chord}_{x+1}")
+                            if _chord + f"_a{i + 1}" in _chords:
+                                _all.append(f"{_chord}_a{i + 1}")
+                if _chord + f"_{x + 1}" in _chords:
+                    _all.append(f"{_chord}_{x + 1}")
                     for i in range(5):
-                        if _chord + f"_{x+1}_a{i+1}" in _chords:
-                            _all.append(f"{_chord}_{x+1}_a{i+1}")
+                        if _chord + f"_{x + 1}_a{i + 1}" in _chords:
+                            _all.append(f"{_chord}_{x + 1}_a{i + 1}")
         chords = _all
     for _chord in chords:
         text = "```\n"
