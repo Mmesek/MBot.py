@@ -2,7 +2,7 @@ from MFramework import Bot
 from MFramework import Cache as DefaultCache
 from MFramework import Guild
 
-from . import cache, channels, experience, responses, roles, settings, voice
+from bot.cache import cache, channels, experience, responses, roles, settings, voice
 
 
 class Cache(

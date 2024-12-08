@@ -1,8 +1,7 @@
 import time
 
-from MFramework.cache.guild import ObjectCollections
-
 from MFramework import Snowflake, Voice_State, log
+from MFramework.cache.guild import ObjectCollections
 
 
 class Voice(ObjectCollections):
@@ -22,9 +21,10 @@ class Voice(ObjectCollections):
         #    self.load_voice_states(guild.voice_states)
         super().__init__(**kwargs)
 
-    def load_voice_states(self, voice_states: list[Voice_State]):
+    async def load_voice_states(self, voice_states: list[Voice_State]):
         for vc in voice_states:
-            if self.members[vc.user_id].user.bot:
+            member = await self.members[vc.user_id]
+            if member.user.bot or not vc.channel_id:
                 continue
             if vc.channel_id not in self.voice:
                 self.voice[vc.channel_id] = {}
@@ -47,7 +47,5 @@ class Voice(ObjectCollections):
     def cached_voice(self, data: Voice_State):
         join = self.voice.pop(data.user_id, None)
         if join is not None:
-            import time
-
             return time.time() - join
         return 0

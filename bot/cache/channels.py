@@ -1,10 +1,9 @@
 from MFramework import Bot, Guild, Snowflake
 from MFramework.cache.guild import ObjectCollections
-from sqlalchemy.orm import Query, Session
+from sqlalchemy import Select, select
 
-from bot.cache.database import Database, fetch_or_add
-from bot.database import models as db
-from bot.database import types
+from bot import database as db
+from bot.cache.database import Database
 
 
 class Channels(Database, ObjectCollections):
@@ -19,21 +18,21 @@ class Channels(Database, ObjectCollections):
         self.dynamic_channels = {}
         super().__init__(guild=guild, **kwargs)
 
-    async def initialize(self, bot: Bot, session: Session, guild: Guild, **kwargs) -> None:
+    async def initialize(self, bot: Bot, session: db.Session, guild: Guild, **kwargs) -> None:
         await super().initialize(bot=bot, guild=guild, session=session, **kwargs)
-        channels = session.query(db.Channel).filter(db.Channel.server_id == self.guild_id)
-        await self.get_channels(channels)
+        channels = select(db.Channel).filter(db.Channel.server_id == self.guild_id)
+        await self.get_channels(session, channels)
 
         self.set_channels()
 
-    async def get_channels(self, channels: Query):
+    async def get_channels(self, session: db.Session, channels: Select[tuple[db.Channel]]):
         pass
 
-    async def save_in_database(self, session: Session):
+    async def save_in_database(self, session: db.Session):
         if self.nitro_channel:
-            nitro_channel = await fetch_or_add(db.Channel, session, server_id=self.guild_id, id=self.nitro_channel)
-            nitro_channel.flags |= types.Flags.Nitro
-            session.merge(nitro_channel)
+            nitro_channel = await db.Channel.fetch_or_add(session, server_id=self.guild_id, id=self.nitro_channel)
+            nitro_channel.flags |= db.types.Flags.Nitro
+            await session.merge(nitro_channel)
 
         return await super().save_in_database(session)
 
@@ -57,8 +56,9 @@ class RPG(Channels):
 
         super().__init__(guild=guild, **kwargs)
 
-    async def get_channels(self, channels: Query):
-        rpg_channels = channels.filter(db.Channel.type == "RPG").all()
+    async def get_channels(self, session: db.Session, channels: Select[tuple[db.Channel]]):
+        rpg_channels = channels.filter(db.Channel.type == "RPG")
+        rpg_channels = await session.query(rpg_channels)
         self.rpg_channels = {channel.id for channel in rpg_channels}
 
-        return await super().get_channels(channels)
+        return await super().get_channels(session, channels)

@@ -1,29 +1,28 @@
 from MFramework import Bot, Groups, Guild, Snowflake
 from MFramework.cache.guild import Base, ObjectCollections
-from sqlalchemy.orm import Query, Session
+from sqlalchemy import Select, select
 
-from bot.cache.database import Database, fetch_or_add
-from bot.database import models as db
-from bot.database import types
+from bot import database as db
+from bot.cache.database import Database
 
 
 class Roles(Database, ObjectCollections, Base):
     voice_link: Snowflake = None
     """Ephemeral Role to grant when user is connected to a Voice channel"""
 
-    async def initialize(self, *, bot: Bot, guild: Guild, session: Session, **kwargs) -> None:
+    async def initialize(self, *, bot: Bot, guild: Guild, session: db.Session, **kwargs) -> None:
         await super().initialize(bot=bot, guild=guild, session=session, **kwargs)
         self.set_roles()
-        roles = session.query(db.Role).filter(db.Role.server_id == self.guild_id)
-        await self.get_roles(roles)
+        roles = select(db.Role).filter(db.Role.server_id == self.guild_id)
+        await self.get_roles(session, roles)
 
-    async def save_in_database(self, session: Session):
+    async def save_in_database(self, session: db.Session):
         for group in self.groups:
             for role in self.groups[group]:
-                _role: db.Role = await fetch_or_add(db.Role, session, server_id=self.guild_id, id=role)
+                _role = await db.Role.fetch_or_add(session, server_id=self.guild_id, id=role)
                 if not _role.permissions:
                     _role.permissions = group
-                session.merge(_role)
+                await session.merge(_role)
 
         return await super().save_in_database(session)
 
@@ -33,9 +32,10 @@ class Roles(Database, ObjectCollections, Base):
             if role.name == "Voice":
                 self.voice_link = id
 
-    async def get_roles(self, roles: Query[db.Role]):
+    async def get_roles(self, session: db.Session, roles: Select):
         """Retrieves role settings from Database"""
-        permissions = roles.filter(db.Role.permissions).all()
+        statement = roles.filter(db.Role.permissions.is_not(None))
+        permissions = await session.query(statement)
         for role in permissions:
             g = Groups.get(role.permissions)
             if g in self.groups:
@@ -51,17 +51,18 @@ class ReactionRoles(Roles):
 
         super().__init__(guild=guild, **kwargs)
 
-    async def get_roles(self, roles: Query[db.Role]):
+    async def get_roles(self, session: db.Session, roles: Select[tuple[db.Role]]):
         # NOTE: Rework necessary
-        reactions = roles.filter(db.Role.type == "Reaction").all()
+        reactions = roles.filter(db.Role.type == "Reaction")
+        reactions = await session.query(roles)
         _reactions = {}
         for reaction in reactions:
-            if types.Setting.Group in reaction.settings:
-                group = reaction.settings[types.Setting.Group].str
+            if db.types.Setting.Group in reaction.settings:
+                group = reaction.settings[db.types.Setting.Group].str
             else:
                 group = None
-            message = reaction.settings[types.Setting.MessageID].snowflake
-            _reaction = reaction.settings[types.Setting.Reaction].str
+            message = reaction.settings[db.types.Setting.MessageID].snowflake
+            _reaction = reaction.settings[db.types.Setting.Reaction].str
             if group not in _reactions:
                 _reactions[group] = {}
             if message not in _reactions[group]:
@@ -70,7 +71,7 @@ class ReactionRoles(Roles):
                 _reactions[group][message][_reaction] = []
             _reactions[group][message][_reaction].append(reaction.id)
         self.reaction_roles = _reactions
-        return await super().get_roles(roles)
+        return await super().get_roles(session, roles)
 
 
 class PresenceRoles(Roles):
@@ -82,10 +83,11 @@ class PresenceRoles(Roles):
 
         super().__init__(guild=guild, **kwargs)
 
-    async def get_roles(self, roles: Query[db.Role]):
-        activitites = roles.filter(db.Role.type == "Presence").all()
+    async def get_roles(self, session: db.Session, roles: Select[tuple[db.Role]]):
+        activitites = roles.filter(db.Role.type == "Presence")
+        activitites = await session.query(activitites)
 
         for presence in activitites:
             self.presence_roles[presence.string] = presence.id
 
-        return await super().get_roles(roles)
+        return await super().get_roles(session, roles)
