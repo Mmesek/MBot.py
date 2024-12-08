@@ -28,7 +28,7 @@ from MFramework.commands.cooldowns import CacheCooldown, cooldown
 from MFramework.database.alchemy.mixins import ServerID
 from mlib.database import Base, Timestamp
 
-from bot.database.mixins import UserID
+from bot.database.models import UserID
 from bot.database.types import HalloweenRaces as Race
 from bot.database.types import Statistic
 

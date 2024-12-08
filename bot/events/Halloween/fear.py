@@ -11,7 +11,7 @@ from mlib.database import Base, Timestamp
 from mlib.types import Enum
 
 from bot.database import models, types
-from bot.database.mixins import UserID
+from bot.database.models import UserID
 from bot.events.Halloween.general import (
     HUNTERS,
     IMMUNE_TABLE,
