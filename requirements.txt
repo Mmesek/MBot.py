@@ -1,6 +1,6 @@
-git+https://github.com/Mmesek/MFramework.py.git
-git+https://github.com/Mmesek/mdiscord.git
-git+https://github.com/Mmesek/mlib.git@main
+MFramework.py @ git+https://github.com/Mmesek/MFramework.py.git
+mdiscord @ git+https://github.com/Mmesek/mdiscord.git
+mlib @ git+https://github.com/Mmesek/mlib.git
 beautifulsoup4
 html2text
 lxml
