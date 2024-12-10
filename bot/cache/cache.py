@@ -17,9 +17,7 @@ class Tasks(BasicCache):
         super().__init__(guild=guild, **kwargs)
 
     async def initialize(self, bot: Bot, session: db.Session, guild: Guild, **kwargs) -> None:
-        _tasks = await session.query(
-            select(db.Task).filter(db.Task.server_id == guild.id, db.Task.finished == False)
-        )  # noqa: E712
+        _tasks = await session.query(select(db.Task).filter(db.Task.server_id == guild.id, db.Task.finished.is_(False)))
         if _tasks:
             log.debug("Adding Tasks for guild %s", guild.id)
         for task in _tasks:
