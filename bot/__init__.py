@@ -8,6 +8,7 @@ MBot.py
 # Do any additional bot initialization (like loading data or setting things up once) as well as GLOBALLY available variables/constants here
 import logging
 
+import MFramework
 from MFramework import Context as BaseContext
 from MFramework.bot import Bot as BaseBot
 from MFramework.bot import Snowflake
@@ -30,5 +31,10 @@ class Bot(BaseBot):
     _Context: Context = Context
     cache: dict[Snowflake, Cache]
 
+    async def init(self):
+        await self.db.sql.extend_enums(self.db.sql.session, database.types)
+
+
+MFramework.Bot = Bot
 
 create_cache_listeners(Cache)
