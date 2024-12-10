@@ -3,9 +3,7 @@ from datetime import datetime, timezone
 
 import sqlalchemy as sa
 from MFramework import (
-    Bot,
     ChannelID,
-    Context,
     Embed,
     Groups,
     Guild,
@@ -21,22 +19,26 @@ from MFramework.database.alchemy.mixins import Snowflake as db_Snowflake
 from mlib.converters import total_seconds
 from mlib.database import Base, Timestamp
 from mlib.random import chance, pick
+from sqlalchemy import orm
+from sqlalchemy.orm import mapped_column as Column
 
+from bot import Bot, Context
+from bot import database as db
 from bot.utils.scheduler import wait_for_scheduled_task
 
 
 class Giveaway(Timestamp, ServerID, db_Snowflake, Base):
-    channel_id: Snowflake = sa.Column(sa.BigInteger, nullable=False)
+    channel_id: orm.Mapped[Snowflake] = Column(sa.BigInteger, nullable=False)
     """Channel in which Giveaway is being held"""
-    user_id: Snowflake = sa.Column(sa.BigInteger, nullable=False)
+    user_id: orm.Mapped[Snowflake] = Column(sa.BigInteger, nullable=False)
     """User that hosts this giveaway"""
-    ends_at: datetime = sa.Column(sa.TIMESTAMP(timezone=True))
+    ends_at: orm.Mapped[datetime] = Column(sa.TIMESTAMP(timezone=True))
     """Date when giveaway ends"""
-    prize: str = sa.Column(sa.String, nullable=True)
+    prize: orm.Mapped[str] = Column(nullable=True)
     """Prize in a giveaway"""
-    amount: int = sa.Column(sa.Integer, default=1)
+    amount: orm.Mapped[int] = Column(default=1)
     """Amount of winners"""
-    finished: bool = sa.Column(sa.Boolean, default=False)
+    finished: orm.Mapped[bool] = Column(default=False)
     """Whether it's finished"""
 
     def create_embed(
@@ -113,7 +115,8 @@ class Giveaway(Timestamp, ServerID, db_Snowflake, Base):
 async def giveaway(
     *,
     bot: Bot,
-    t: Giveaway = None,
+    session: db.Session,
+    t: Giveaway | None = None,
     message_id: Snowflake = None,
     amount: int = None,
     instant_end: bool = False,
@@ -139,14 +142,12 @@ async def giveaway(
     if t and not instant_end:
         await wait_for_scheduled_task(t.ends_at)
 
-    s = bot.db.sql.session()
-    t = s.query(Giveaway).filter(Giveaway.id == (message_id or t.id), Giveaway.finished == False if t else True).first()
+    t = await Giveaway.get(session, Giveaway.id == (message_id or t.id), Giveaway.finished.is_(False if t else True))
     if instant_end:
         t.ends_at = datetime.now(tz=timezone.utc)
 
     ctx = ctx or Context(bot.cache, bot, Message(author=User()), giveaway._cmd)
     await t.finish(ctx, amount, key)
-    s.commit()
 
 
 @register(group=Groups.MODERATOR, main=giveaway, private_response=True)
@@ -158,6 +159,8 @@ async def create(
     description: str = None,
     channel: ChannelID = None,
     user: User = None,
+    *,
+    session: db.Session,
 ):
     """
     Create new giveaway
@@ -189,9 +192,8 @@ async def create(
     )
     await _giveaway.create_message(ctx, description=description)
 
-    s = ctx.db.sql.session()
-    s.add(_giveaway)
-    s.commit()
+    session.add(_giveaway)
+    await session.commit()
 
     add_giveaway(ctx.bot, ctx.guild_id, _giveaway)
 
@@ -199,7 +201,7 @@ async def create(
 
 
 @register(group=Groups.MODERATOR, main=giveaway, private_response=True)
-async def end(ctx: Context, message_id: Snowflake):
+async def end(ctx: Context, message_id: Snowflake, *, session: db.Session):
     """
     Ends Giveaway
 
@@ -211,12 +213,12 @@ async def end(ctx: Context, message_id: Snowflake):
     task = ctx.cache.tasks.get("giveaways", {}).get(message_id, None)
     task.cancel()
 
-    await giveaway(bot=ctx.bot, message_id=message_id, instant_end=True, ctx=ctx, key="end_message")
+    await giveaway(bot=ctx.bot, message_id=message_id, instant_end=True, ctx=ctx, key="end_message", session=session)
     return ctx.t("success")
 
 
 @register(group=Groups.MODERATOR, main=giveaway, private_response=True)
-async def reroll(ctx: Context, message_id: Snowflake, amount: int = 0):
+async def reroll(ctx: Context, message_id: Snowflake, amount: int = 0, *, session: db.Session):
     """
     Rerolls giveaway
 
@@ -227,35 +229,35 @@ async def reroll(ctx: Context, message_id: Snowflake, amount: int = 0):
     amount:
         Amount of rewards to reroll, defaults to all
     """
-    await giveaway(bot=ctx.bot, message_id=message_id, amount=amount, ctx=ctx, key="reroll_message")
+    await giveaway(bot=ctx.bot, message_id=message_id, amount=amount, ctx=ctx, key="reroll_message", session=session)
     return ctx.t("success")
 
 
 @onDispatch(event="message_delete")
-async def delete(self: Bot, data: Message):
+async def delete(self: Bot, data: Message, *, session: db.Session):
     """Deletes Giveaway"""
     task = self.cache[data.guild_id].tasks.get("giveaways", {}).get(data.id, None)
     if not task:
         return
     task.cancel()
 
-    s = self.db.sql.session()
-    g = s.query(Giveaway).filter(Giveaway.id == data.id, Giveaway.finished == False).first()
-    s.delete(g)
-    s.commit()
+    g = await Giveaway.get(session, Giveaway.id == data.id, Giveaway.finished.is_(False))
+    await session.delete(g)
+    await session.commit()
 
 
-def add_giveaway(self: Bot, guild_id: Snowflake, _giveaway: Giveaway):
+def add_giveaway(self: Bot, guild_id: Snowflake, _giveaway: Giveaway, *, session: db.Session):
     if "giveaways" not in self.cache[guild_id].tasks:
         self.cache[guild_id].tasks["giveaways"] = {}
     if _giveaway.id not in self.cache[guild_id].tasks["giveaways"]:
         log.debug("Adding Giveaway %s task to guild %s", _giveaway.id, guild_id)
-        self.cache[guild_id].tasks["giveaways"][_giveaway.id] = asyncio.create_task(giveaway(bot=self, t=_giveaway))
+        self.cache[guild_id].tasks["giveaways"][_giveaway.id] = asyncio.create_task(
+            giveaway(bot=self, t=_giveaway, session=session)
+        )
 
 
 @onDispatch(event="guild_create", priority=101)
-async def add_giveaways(self: Bot, data: Guild):
-    s = self.db.sql.session()
-    giveaways = s.query(Giveaway).filter(Giveaway.server_id == data.id, Giveaway.finished == False).all()
+async def add_giveaways(self: Bot, data: Guild, *, session: db.Session):
+    giveaways = await Giveaway.filter(session, Giveaway.server_id == data.id, Giveaway.finished.is_(False))
     for _giveaway in giveaways:
-        add_giveaway(self, data.id, _giveaway)
+        add_giveaway(self, data.id, _giveaway, session=session)
