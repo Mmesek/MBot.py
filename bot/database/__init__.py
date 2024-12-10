@@ -7,6 +7,7 @@ from bot.database.models import (  # noqa: F401
     Role,
     Server,
     Snippet,
+    Statistic,
     Task,
     User,
     UserID,

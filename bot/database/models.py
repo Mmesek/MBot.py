@@ -3,9 +3,9 @@ from typing import Annotated, Optional
 
 from MFramework import Snowflake
 from MFramework.commands import Groups
-from MFramework.database.alchemy.mixins import ChannelID, RoleID, ServerID
+from MFramework.database.alchemy.mixins import ChannelID, ServerID
 from MFramework.database.alchemy.mixins import Snowflake as db_Snowflake
-from mlib.database import Base, File, Timestamp
+from mlib.database import Base, File, Timestamp, TimestampUpdate
 from mlib.logger import log
 from sqlalchemy import TIMESTAMP, BigInteger, Enum, ForeignKey, Interval, UnicodeText
 from sqlalchemy.orm import Mapped, MappedAsDataclass, declared_attr
@@ -65,6 +65,18 @@ class UserID(MappedAsDataclass):
     @declared_attr
     def user(cls) -> Mapped[User]:
         return relationship(lazy=True)  # foreign_keys=f"{cls.__name__}.user_id",
+
+
+class Statistic(TimestampUpdate, Base):
+    server_id: Mapped[int] = Column(
+        BigInteger, ForeignKey("Server.id", ondelete="Cascade", onupdate="Cascade"), primary_key=True, nullable=False
+    )
+    user_id: Mapped[int] = Column(
+        BigInteger, ForeignKey("User.id", ondelete="Cascade", onupdate="Cascade"), nullable=False, primary_key=True
+    )
+    type: Mapped[type_] = Column(primary_key=True)
+    name: Mapped[Optional[str]] = Column(primary_key=True, nullable=True, default=None)
+    value: Mapped[int] = Column(default=0)
 
 
 class Role(ExpRate, Flags, ServerID, db_Snowflake, Eigth_columns, Base):
