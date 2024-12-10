@@ -7,7 +7,7 @@ from bot.cache.database import Database
 
 
 class Roles(Database, ObjectCollections, Base):
-    voice_link: Snowflake = None
+    voice_link: Snowflake | None = None
     """Ephemeral Role to grant when user is connected to a Voice channel"""
 
     async def initialize(self, *, bot: Bot, guild: Guild, session: db.Session, **kwargs) -> None:

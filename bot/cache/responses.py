@@ -18,7 +18,7 @@ class Responses(Database, GuildCache, RuntimeCommands):
     """Mapping of Trigger names to Responses"""
     canned: dict[str, re.Pattern]
     """Mapping of Trigger names to Mapping of Type to Regular Expression"""
-    blacklisted_words: re.Pattern = None
+    blacklisted_words: re.Pattern[str] | None
     """Regular Expression from blacklisted words"""
     tracked_streams: list[str]
     """List of Stream names to track & Notify of"""
@@ -50,7 +50,7 @@ class Responses(Database, GuildCache, RuntimeCommands):
             if not emoji.filename:
                 custom_emojis[emoji.name.lower()] = emoji.content
             else:
-                custom_emojis[emoji.name.lower()] = (emoji.filename, emoji.image)
+                custom_emojis[emoji.name.lower()] = (emoji.filename, emoji.content)
         return custom_emojis
 
     async def recompile_canned(self, session: db.Session):
