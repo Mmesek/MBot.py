@@ -13,3 +13,4 @@ local/*
 data/*
 tools/*
 extensions/*
+.coverage
