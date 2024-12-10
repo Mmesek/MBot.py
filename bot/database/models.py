@@ -56,6 +56,16 @@ class User(ExpRate, Flags, db_Snowflake, Eigth_columns, Base):
     timezone: Mapped[str | None] = Column(default=None)
     # NOTE 2 more slots available
 
+    statistics: Mapped[list["Statistic"]] = relationship(
+        foreign_keys="Statistic.user_id", back_populates="user", default_factory=list, lazy=True
+    )
+    snippets: Mapped[list["Snippet"]] = relationship(
+        foreign_keys="Snippet.user_id", back_populates="user", default_factory=list, lazy=True
+    )
+    tasks: Mapped[list["Task"]] = relationship(
+        foreign_keys="Task.user_id", back_populates="user", default_factory=list, lazy=True
+    )
+
 
 class UserID(MappedAsDataclass):
     user_id: Mapped[int] = Column(
