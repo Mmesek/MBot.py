@@ -1,3 +1,5 @@
+from typing import Callable
+
 from MFramework import (
     CDN_URL,
     Attachment,
@@ -13,6 +15,7 @@ from MFramework import (
     RoleID,
     Snowflake,
     User_Flags,
+    log,
     menu,
     register,
 )
@@ -51,7 +54,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
         dates.append(("Joined Server at", f"<t:{int(member.joined_at.timestamp())}>"))
         try:
             dates.append(("Booster since", f"<t:{int(member.premium_since.timestamp())}>"))
-        except:
+        except Exception:
             pass
     embed.addField("Dates", "\n".join(format_values(dates)))
 
@@ -89,11 +92,13 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
 
     try:
         permissions = Bitwise_Permission_Flags.current_permissions(Bitwise_Permission_Flags, int(member.permissions))
+        everyone_role = await ctx.cache.roles[ctx.guild_id]
         everyone = Bitwise_Permission_Flags.current_permissions(
-            Bitwise_Permission_Flags, int(await ctx.cache.roles[ctx.guild_id].permissions)
+            Bitwise_Permission_Flags, int(everyone_role.permissions)
         )
         permissions = [i for i in permissions if i not in everyone]
-    except:
+    except Exception as ex:
+        log.warning(ex)
         permissions = []
 
     if permissions:
@@ -104,7 +109,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     s = ctx.db.sql.session()
     from bot.database import User
 
-    u = User.by_id(s, id=member.user.id)
+    u = await User.by_id(s, id=member.user.id)
     if u:
         from datetime import datetime
 
@@ -147,7 +152,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
             embed.addField("Statistics", "\n".join(format_values(_stats)), False)
         from bot.systems.xp import User_Experience
 
-        xp = User_Experience.fetch_or_add(s, user_id=member.user.id, server_id=ctx.guild_id)
+        xp = await User_Experience.fetch_or_add(s, user_id=member.user.id, server_id=ctx.guild_id)
         if ctx.permission_group.can_use(Groups.MODERATOR) and xp.value:
             embed.addField("XP", str(xp.value), True)
 
@@ -155,7 +160,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
             try:
                 _ban = await ctx.bot.get_guild_ban(ctx.guild_id, member.user.id)
                 embed.addField("Reason of Current Ban", _ban.reason, True)
-            except:
+            except Exception:
                 pass
     components = []
     if ctx.permission_group.can_use(Groups.MODERATOR):
@@ -165,10 +170,7 @@ async def user(ctx: Context, member: Guild_Member = None) -> Embed:
     await ctx.reply(embeds=[embed], components=components)
 
 
-from typing import Callable, List, Tuple
-
-
-def format_values(iterable: List[Tuple[str, str]], check: Callable = None):
+def format_values(iterable: list[tuple[str, str]], check: Callable = None):
     if check:
         iterable = list(filter(check, iterable))
     longest_string = max([len(i[0]) for i in iterable])
@@ -223,7 +225,7 @@ async def server(ctx: Context) -> Embed:
 
     bans = await ctx.bot.get_guild_bans(ctx.guild_id)
     if bans != []:
-        embed.addField(f"Amount of Bans", str(len(bans)), True)
+        embed.addField("Amount of Bans", str(len(bans)), True)
 
     return embed
 
@@ -284,7 +286,7 @@ async def channel(ctx: Context, channel_id: ChannelID = 0) -> Embed:
         channel_id = ctx.channel_id
     channel = await ctx.bot.get_channel(channel_id)
 
-    embed = Embed().setTitle("Channel Info").setThumbnail("").setDescription("")
+    embed = Embed().setTitle("Channel Info").setThumbnail("").setDescription(f"Name: {channel.name}")
 
     return embed
 
@@ -337,7 +339,7 @@ async def created(ctx: Context, snowflake: Snowflake) -> Embed:
     _member, _channel, _role = None, None, None
     try:
         _member = await ctx.bot.get_guild_member(ctx.guild_id, snowflake)
-    except:
+    except Exception:
         _role = [i for i in ctx.cache.roles if i == snowflake]  # FIXME?
         if _role:
             names.append(("Role", f"<@&{snowflake}>"))
@@ -351,7 +353,7 @@ async def created(ctx: Context, snowflake: Snowflake) -> Embed:
         names.append(("Joined Server at", f"<t:{int(_member.joined_at.timestamp())}>"))
         try:
             names.append(("Booster since", f"<t:{int(_member.premium_since.timestamp())}>"))
-        except:
+        except Exception:
             pass
     embed = Embed()
     embed.addField(f"{snowflake}", "\n".join(format_values(names)))
