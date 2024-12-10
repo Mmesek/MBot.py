@@ -109,13 +109,13 @@ class Channel(ExpRate, Flags, ServerID, db_Snowflake, Eigth_columns, Base):
 class Snippet(Timestamp, File, UserID, ServerID, Eigth_columns, Base):
     """Snippets related to Server"""
 
-    role_id: Mapped[Snowflake] = Column(ForeignKey("Role.id", ondelete="SET NULL", onupdate="Cascade"))
+    role_id: Mapped[Snowflake | None] = Column(ForeignKey("Role.id", ondelete="SET NULL", onupdate="Cascade"))
     group: Mapped[Groups] = Column(Enum(Groups))
     type: Mapped[types.Snippet] = Column(Enum(types.Snippet))
     name: Mapped[str]
     trigger: Mapped[str]
-    content: Mapped[str] = Column(UnicodeText)
-    cooldown: Mapped[timedelta] = Column(Interval)
+    content: Mapped[str | None] = Column(UnicodeText)
+    cooldown: Mapped[timedelta | None] = Column(Interval)
     locale: Mapped[str]
 
 
