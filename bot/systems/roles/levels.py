@@ -1,7 +1,7 @@
-from MFramework import Context, Groups, Role, register
+from MFramework import Groups, Role, register
 
-from bot.database import Role as db_Role
-from bot.database import types
+from bot import Context
+from bot import database as db
 from bot.systems.roles import role
 
 
@@ -12,7 +12,7 @@ async def level():
 
 
 @register(group=Groups.ADMIN, main=level, private_response=True)
-async def create(ctx: Context, role: Role, exp: int = 0) -> str:
+async def create(ctx: Context, role: Role, exp: int = 0, *, session: db.Session) -> str:
     """Create/Update level role
 
     Params
@@ -26,10 +26,8 @@ async def create(ctx: Context, role: Role, exp: int = 0) -> str:
     type:
         Whether both, either or in total exp should award this role
     """
-    session = ctx.db.sql.session()
-    r = db_Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
-    r.add_setting(types.Setting.Level, exp)
-    session.commit()
+    r = await db.Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
+    r.exp_req = exp
 
     ctx.cache.level_roles.append((r.id, exp))
     ctx.cache.level_roles.sort(key=lambda x: x[1])
@@ -47,7 +45,7 @@ async def list_(ctx: Context) -> str:
 
 
 @register(group=Groups.ADMIN, main=level, private_response=True)
-async def remove(ctx: Context, role: Role) -> str:
+async def remove(ctx: Context, role: Role, *, session: db.Session) -> str:
     """
     Removes level role
     Params
@@ -55,13 +53,11 @@ async def remove(ctx: Context, role: Role) -> str:
     role:
         role to remove
     """
-    session = ctx.db.sql.session()
-    r = session.query(db_Role).filter(db_Role.server_id == ctx.guild_id, db_Role.id == role.id).first()
+    r = await db.Role.get(session, db.Role.server_id == ctx.guild_id, db.Role.id == role.id)
     if r:
-        ctx.cache.level_roles.remove((r.id, r.get_setting(types.Setting.Level)))
+        ctx.cache.level_roles.remove((r.id, r.exp_req))
         ctx.cache.level_roles.sort(key=lambda x: x[1])
-        r.remove_setting(types.Setting.Level)
-        session.commit()
+        r.exp_req = None
         return f"Level {role.name} removed successfully"
 
     return f"Level role {role.name} doesn't exist!"

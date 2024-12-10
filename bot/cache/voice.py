@@ -1,25 +1,31 @@
 import time
 
-from MFramework import Snowflake, Voice_State, log
-from MFramework.cache.guild import ObjectCollections
+from MFramework import Guild, Snowflake, Voice_State, log
+
+from bot import database as db
+from bot.cache.settings import Settings
+from bot.utils.timers import startTimer
 
 
-class Voice(ObjectCollections):
+class Voice(Settings):
     voice: dict[Snowflake, dict[Snowflake, float]]
     """Mapping of Channel IDs to Mapping of User IDs to Unix Timestamp since user's activity is tracked"""
     voice_states: dict[Snowflake, Voice_State] = {}
     """Mapping of User IDs to Voice States data"""
 
     def __init__(self, **kwargs) -> None:
-        # for vs in guild.voice_states:
-        # from MFramework.utils.timers2 import _startTimer
-        # if not vs.self_mute and not vs.self_deaf:
-        #    _startTimer(self.voice_channels, vs.channel_id, vs.user_id) # Don't start if users are muted! TODO
-        # self.voice_states = {i.user_id:i for i in guild.voice_states}
         self.voice = {}
-        # if self.is_tracking(types.Flags.Voice):
-        #    self.load_voice_states(guild.voice_states)
         super().__init__(**kwargs)
+
+    async def initialize(self, *, bot, guild: Guild, **kwargs):
+        self.voice_states = {i.user_id: i for i in guild.voice_states}
+        for vs in guild.voice_states:
+            if not vs.self_mute and not vs.self_deaf:
+                # Don't start if users are muted! TODO
+                startTimer(bot, guild, vs.channel_id, vs.user_id)
+        if self.is_tracking(db.types.Flags.Voice):
+            await self.load_voice_states(guild.voice_states)
+        return await super().initialize(bot=bot, guild=guild, **kwargs)
 
     async def load_voice_states(self, voice_states: list[Voice_State]):
         for vc in voice_states:
@@ -45,7 +51,7 @@ class Voice(ObjectCollections):
                 self.voice[c][u] = time.time()
 
     def cached_voice(self, data: Voice_State):
-        join = self.voice.pop(data.user_id, None)
+        join = self.voice[data.channel_id].pop(data.user_id, None)
         if join is not None:
             return time.time() - join
         return 0
