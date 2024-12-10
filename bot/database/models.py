@@ -88,6 +88,8 @@ class Statistic(TimestampUpdate, Base):
     name: Mapped[Optional[str]] = Column(primary_key=True, nullable=True, default=None)
     value: Mapped[int] = Column(default=0)
 
+    user: Mapped[User] = relationship(back_populates="statistics", lazy=True, default=None)
+
 
 class Role(ExpRate, Flags, ServerID, db_Snowflake, Eigth_columns, Base):
     """Roles table representing role in Database"""
@@ -133,3 +135,5 @@ class Task(Timestamp, ServerID, ChannelID, Eigth_columns, Base):
     count: Mapped[int]
 
     finished: Mapped[bool] = Column(default=False)
+
+    user: Mapped[User] = relationship(back_populates="tasks", lazy=True, default=None)
