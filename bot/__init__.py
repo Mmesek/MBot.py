@@ -32,7 +32,7 @@ class Bot(BaseBot):
     cache: dict[Snowflake, Cache]
 
     async def init(self):
-        await self.db.sql.extend_enums(self.db.sql.session, database.types)
+        await self.db.sql.extend_enums(self.db.sql.session, database.db_types)
 
 
 MFramework.Bot = Bot
