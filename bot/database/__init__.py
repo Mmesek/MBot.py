@@ -8,7 +8,9 @@ from bot.database.models import (  # noqa: F401
     Server,
     Snippet,
     Statistic,
+    Subscription,
     Task,
     User,
     UserID,
+    Webhook,
 )

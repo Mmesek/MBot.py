@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
 
@@ -46,6 +47,26 @@ class Server(ExpRate, Flags, db_Snowflake, Eigth_columns, Base):
     auto_mute: Mapped[Optional[int]] = Column(default=None)
     mute_duration: Mapped[Optional[timedelta]] = Column(default=None)
     auto_ban: Mapped[Optional[int]] = Column(default=None)
+
+
+class Subscription(Base):
+    webhook_id: Mapped[int] = Column(ForeignKey("Webhook.id", ondelete="Cascade", onupdate="Cascade"), primary_key=True)
+    thread_id: Mapped[int | None] = Column(BigInteger)
+    source: Mapped[str] = Column(primary_key=True)
+    pattern: Mapped[str] = Column(primary_key=True, default="", kw_only=True)
+    content: Mapped[str | None] = Column(default=None)
+
+    regex: re.Pattern | None = None
+
+    def compile(self):
+        self.regex = re.compile(self.pattern)
+
+
+class Webhook(ChannelID, ServerID, db_Snowflake, Base):
+    token: Mapped[str]
+    subscriptions: Mapped[list[Subscription]] = relationship(
+        foreign_keys="Subscription.webhook_id", kw_only=True, default_factory=list
+    )
 
 
 class User(ExpRate, Flags, db_Snowflake, Eigth_columns, Base):
