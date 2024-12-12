@@ -6,13 +6,10 @@ from MFramework import (
     ChannelID,
     Context,
     Groups,
-    Interaction,
     Overwrite,
     RoleID,
     register,
 )
-from MFramework.utils.log import Log
-from mlib.utils import all_subclasses
 
 from bot.database import models, types
 
@@ -71,112 +68,6 @@ async def tracking(ctx: Context, type: Tracking):
 
     ctx.cache.load_settings(server)
     return f"Tracking {state} for {type.name}. Bitflag change: `{tracking}` -> `{new_tracking}`"
-
-
-@register(group=Groups.ADMIN, main=settings)
-async def webhooks():
-    """Management of webhooks related bot settings"""
-    pass
-
-
-async def get_logger(interaction: Interaction, current: str):
-    return [i.__name__ for i in all_subclasses(Log) if current in i.__name__]
-
-
-async def configured_loggers(interaction: Interaction, current: str):
-    return [i for i in interaction._Client.cache[interaction.guild_id].webhooks.keys() if current in i]
-
-
-@register(group=Groups.ADMIN, main=webhooks)
-async def subscribe(ctx: Context, logger: get_logger, channel: Channel = None):
-    """Subscribe channel to specified logger source
-
-    Params
-    ------
-    logger:
-        Source to which this channel should be subscribed to
-    channel:
-        Channel which should subscribe to this logger. Default is current channel
-    """
-    if channel.type in {10, 11, 12}:
-        thread = channel.id
-        channel_id = channel.parent_id
-    elif channel.type not in {0, 2, 5}:
-        # NOTE: Forum channels require specific behaviour on logger side, therefore they aren't included here
-        return "Specify either a Thread or a regular text channel."
-    else:
-        thread = None
-        channel_id = channel.id
-
-    s = ctx.db.sql.session()
-
-    _c = (
-        s.query(models.Channel)
-        .filter(models.Channel.server_id == ctx.guild_id, models.Channel.id == channel_id)
-        .first()
-    )
-    if not _c:
-        s.add(models.Channel(server_id=ctx.guild_id, id=channel_id))
-
-    _w = (
-        s.query(models.Webhook)
-        .filter(models.Webhook.server_id == ctx.guild_id, models.Webhook.channel_id == channel_id)
-        .first()
-    )
-    if not _w:
-        _w = models.Webhook(server_id=ctx.guild_id, channel_id=channel_id)
-
-        webhooks = await ctx.bot.get_channel_webhooks(channel_id or ctx.channel_id)
-        for wh in webhooks:
-            if wh.user.id == ctx.bot.user_id:
-                _w.id = wh.id
-                _w.token = wh.token
-                break
-        if not _w.id:
-            wh = await ctx.bot.create_webhook(
-                channel_id, f"{ctx.bot.username} Logging", f"Requested by {ctx.user.username}"
-            )
-            _w.id = wh.id
-            _w.token = wh.token
-
-        s.add(_w)
-
-    _w.subscriptions.append(models.Subscription(source=f"logging-{logger.lower()}", thread_id=thread, regex=""))
-    s.commit()
-    await ctx.cache.get_Webhooks(s)
-    await ctx.cache.set_loggers(ctx.bot)
-    return f"Channel <#{channel_id}> is now subscribed to {logger}"
-
-
-@register(group=Groups.ADMIN, main=webhooks)
-async def unsubscribe(ctx: Context, logger: configured_loggers, channel: ChannelID = None):
-    """Unsubscribe this channel from provided logger
-
-    Params
-    ------
-    logger:
-        Source to unsubscribe from
-    channel:
-        Channel which should unsubscribe
-    """
-    s = ctx.db.sql.session()
-
-    _w = (
-        s.query(models.Webhook)
-        .filter(models.Webhook.server_id == ctx.guild_id, models.Webhook.channel_id == channel)
-        .first()
-    )
-    if not _w:
-        return "This channel doesn't have any webhooks associated with it"
-    s.delete(
-        s.query(models.Subscription)
-        .filter(models.Subscription.webhook_id == _w.id, models.Subscription.source == f"logging-{logger}")
-        .first()
-    )
-    s.commit()
-    ctx.cache.get_Webhooks(s)
-    ctx.cache.set_loggers(ctx.bot)
-    return f"Unsubscribed from {logger} on channel <#{channel}>"
 
 
 @register(group=Groups.ADMIN, main=settings)
@@ -274,7 +165,7 @@ async def slowmode(ctx: Context, limit: int = 0, duration: int = 0, channel: Cha
     """
     channels = {}
     d = int(duration)
-    m = await ctx.reply(f"Applying Slowmode in progress...")
+    m = await ctx.reply("Applying Slowmode in progress...")
     if all:
         for channel in ctx.cache.channels.values():
             if channel.type == 0:
@@ -283,7 +174,7 @@ async def slowmode(ctx: Context, limit: int = 0, duration: int = 0, channel: Cha
                     await ctx.bot.modify_channel(
                         channel.id, rate_limit_per_user=limit, reason="Global Slow mode command"
                     )
-                except:
+                except Exception:
                     pass
     else:
         channels[channel] = await ctx.cache.channels.get(channel, Channel).rate_limit_per_user
@@ -296,7 +187,7 @@ async def slowmode(ctx: Context, limit: int = 0, duration: int = 0, channel: Cha
         for channel, previous_limit in channels.items():
             try:
                 await ctx.bot.modify_channel(channel, rate_limit_per_user=previous_limit, reason="Slow mode expired")
-            except Exception as ex:
+            except Exception:
                 pass
         await ctx.reply(f"{'Server wide ' if all else ''}Slow mode finished")
 
@@ -317,7 +208,7 @@ async def lockdown(ctx: Context, duration: int = 0, channel: ChannelID = None, a
     channels = {}
     d = int(duration)
     lockdown = Bitwise_Permission_Flags.SEND_MESSAGES.value | Bitwise_Permission_Flags.ADD_REACTIONS.value
-    m = await ctx.reply(f"Applying Lockdown in progress...")
+    m = await ctx.reply("Applying Lockdown in progress...")
     if all:
         for channel in ctx.cache.channels.values():  # FIXME?
             channels[channel.id] = channel.permission_overwrites

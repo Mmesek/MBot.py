@@ -2,14 +2,14 @@ from MFramework import Channel, Channel_Types, Groups, Interaction, Webhook, reg
 from MFramework.utils.log import Log
 from mlib.types import aInvalid
 from mlib.utils import all_subclasses
+from sqlalchemy import select
 
 from bot import Context
 from bot import database as db
+from bot.settings import settings
 
 # TODO:
-# - Add flow where only Webhooks with subscriptions are listed for unsubscribe
-# - Improve flow where Subscriptions are listed according to selected thread/webhook combo for unsubscribe
-# - Don't show subscriptions if different channel/webhook is selected when unsubscribing
+# - Only show related subscriptions to a selected channel when unsubscribing
 
 
 async def ChannelWebhooks(interaction: Interaction, current: str):
@@ -64,7 +64,7 @@ async def AvailableLoggers(ctx: Interaction, current: str):
     return loggers if loggers else {"There are no available loggers to subscribe to": ""}
 
 
-@register(Groups.ADMIN, private_response=True)
+@register(Groups.ADMIN, main=settings, private_response=True)
 async def logging():
     pass
 
@@ -115,21 +115,17 @@ async def subscribe(
     await session.commit()
     ctx.cache.set_loggers(await ctx.cache.get_subscriptions(session))
 
-    return f"Subscribed to events {logger} on webhook {_webhook.name} in {'thread' if thread_id else 'channel'} <#{thread_id or channel_id}>"
+    return f"Subscribed to events `{logger}` on webhook {_webhook.name} in {'thread' if thread_id else 'channel'} <#{thread_id or channel_id}>"
 
 
 @register(Groups.ADMIN, main=logging, private_response=True)
-async def unsubscribe(
-    ctx: Context, channel: Channel, webhook: ChannelWebhooks, subscription: ChannelSubscriptions, *, session: db.Session
-):
+async def unsubscribe(ctx: Context, channel: Channel, subscription: ChannelSubscriptions, *, session: db.Session):
     """
-    Unsubscribe from events on a webhook
+    Unsubscribe Webhook from event logging
     Params
     ------
     channel: guild_text, public_thread, private_thread
         Channel to unsubscribe events from
-    webhook:
-        Webhook to unsubscribe with
     logger:
         Which event to unsubscribe from
     """
@@ -137,14 +133,18 @@ async def unsubscribe(
         return "No subscription specified to unsubscribe!"
 
     sub = await db.Subscription.get(
-        session, db.Subscription.webhook_id == webhook, db.Subscription.source == subscription
+        session,
+        db.Subscription.webhook_id.in_(
+            select(db.Webhook.id).where(db.Webhook.server_id == ctx.guild_id, db.Webhook.channel_id == ctx.channel_id)
+        ),
+        db.Subscription.source == subscription,
     )
 
     await session.delete(sub)
     await session.commit()
     ctx.cache.set_loggers(await ctx.cache.get_subscriptions(session))
 
-    return f"Unsubscribed event {subscription} from {'channel' if channel.type is Channel_Types.GUILD_TEXT else 'thread'} <#{channel.id}>"
+    return f"Unsubscribed event `{subscription}` from {'channel' if channel.type is Channel_Types.GUILD_TEXT else 'thread'} <#{channel.id}>"
 
 
 @register(group=Groups.ADMIN, main=logging, private_response=True)
