@@ -6,6 +6,8 @@ from MFramework import Context, Discord_Paths, Groups
 from MFramework.database.alchemy.mixins import ServerID, Snowflake
 from mlib.database import ID, Base, Timestamp
 from mlib.localization import secondsToText
+from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import mapped_column as Column
 
 from bot.database.types import Permissions
 
@@ -39,33 +41,33 @@ Types = Infraction_Types
 class Infraction(Timestamp, ServerID, ID, Base):
     """Infraction object"""
 
-    user_id: Snowflake = sa.Column(
+    user_id: Mapped[Snowflake] = Column(
         sa.BigInteger,
         nullable=False,
         # sa.ForeignKey("User.id", ondelete="SET DEFAULT", onupdate="Cascade"), nullable=False, default=0
     )
     """ID of User that is infracted"""
-    moderator_id: Optional[Snowflake] = sa.Column(
+    moderator_id: Mapped[Optional[Snowflake]] = Column(
         sa.BigInteger,
         nullable=False,
         # sa.ForeignKey("User.id", ondelete="SET DEFAULT", onupdate="Cascade"), nullable=True, default=0
     )
     """ID of Moderator that issued this infraction"""
 
-    type: Infraction_Types = sa.Column(sa.Enum(Infraction_Types))
+    type: Mapped[Infraction_Types] = Column(sa.Enum(Infraction_Types))
     """`Infractions` type of this infraction"""
-    reason: Optional[str] = sa.Column(sa.UnicodeText, nullable=True)
+    reason: Mapped[Optional[str]] = Column(sa.UnicodeText, nullable=True)
     """Reason of this infraction"""
-    duration: Optional[timedelta] = sa.Column(sa.Interval, nullable=True)
+    duration: Mapped[Optional[timedelta]] = Column(sa.Interval, nullable=True)
     """How long this infraction should be valid/active"""
 
-    channel_id: Optional[Snowflake] = sa.Column(sa.BigInteger, nullable=True)
+    channel_id: Mapped[Optional[Snowflake]] = Column(sa.BigInteger, nullable=True)
     """Channel where this infraction happened"""
-    message_id: Optional[Snowflake] = sa.Column(sa.BigInteger, nullable=True)
+    message_id: Mapped[Optional[Snowflake]] = Column(sa.BigInteger, nullable=True)
     """Message that caused this infraction (or moderator message that issued infraction)"""
-    expires_at: Optional[datetime] = sa.Column(sa.TIMESTAMP(timezone=True), nullable=True)
+    expires_at: Mapped[Optional[datetime]] = Column(sa.TIMESTAMP(timezone=True), nullable=True)
     """When this infraction was added"""
-    weight: float = sa.Column(sa.Float, nullable=False, default=1)
+    weight: Mapped[float] = Column(sa.Float, nullable=False, default=1)
     """Weight of this infraction"""
 
     def as_string(self, ctx: Context, width: int, id_width: int):
