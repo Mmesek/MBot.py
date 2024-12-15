@@ -8,9 +8,6 @@ from bot import Context
 from bot import database as db
 from bot.settings import settings
 
-# TODO:
-# - Only show related subscriptions to a selected channel when unsubscribing
-
 
 async def ChannelWebhooks(interaction: Interaction, current: str):
     channel_id = interaction.channel_id
@@ -38,27 +35,36 @@ async def ChannelWebhooks(interaction: Interaction, current: str):
     return mapped
 
 
-async def ChannelSubscriptions(ctx: Interaction, current: str, session: db.Session):
-    webhook_id = None
-    if webhook := next(filter(lambda x: x.name == "webhook" and x.value, ctx.data.options), None):
-        webhook_id = int(webhook.value)
+async def ChannelSubscriptions(interaction: Interaction, current: str, session: db.Session):
+    channel_id = None
+    if channel := next(filter(lambda x: x.name == "channel" and x.value, interaction.data.options), None):
+        channel_id = int(channel.value)
 
     _webhooks = await db.Webhook.filter(
         session,
-        db.Webhook.id == webhook_id if webhook_id else db.Webhook.server_id == ctx.guild_id,
+        db.Webhook.server_id == interaction.guild_id,
+        db.Webhook.channel_id == channel_id if channel_id else True,
         db.Webhook.subscriptions.any(db.Subscription.source.contains(current)),
     )
     subs = [sub.source for webhook in _webhooks for sub in await webhook.awaitable_attrs.subscriptions][:25]
-    return subs if subs else {"There are no subscriptions on this webhook": ""}
+    return subs if subs else {"There are no subscriptions on this channel": ""}
 
 
-async def AvailableLoggers(ctx: Interaction, current: str):
-    dd = ctx._Client.cache[ctx.guild_id].logging
+async def AvailableLoggers(interaction: Interaction, current: str):
+    dd = interaction._Client.cache[interaction.guild_id].logging
     subs = [k for k, v in dd.items() if v is not aInvalid]
+
+    channel_id = interaction.channel_id
+    if channel_option := next(filter(lambda x: x.name == "channel" and x.value, interaction.data.options), None):
+        channel_id = int(channel_option.value)
+
+    if not (channel := await interaction._Client.cache[interaction.guild_id].channels[channel_id]):
+        channel = await interaction._Client.get_channel(channel_id)
+
     loggers = [
         i.__name__
         for i in all_subclasses(Log)
-        if current.lower() in i.__name__.lower()
+        if (current.lower() in i.__name__.lower() and channel.type in i.supported_channel_types if channel else True)
         if i.__name__.lower() not in subs
     ][:25]
     return loggers if loggers else {"There are no available loggers to subscribe to": ""}
@@ -77,7 +83,7 @@ async def subscribe(
     Subscribe to events via a webhook
     Params
     ------
-    channel: guild_text, public_thread, private_thread
+    channel: guild_text, public_thread, private_thread, guild_forum
         Channel to log events to
     webhook:
         Webhook to use for logging. Leave empty to use existing bot-created or create new webhook
@@ -86,14 +92,16 @@ async def subscribe(
     """
     if not logger:
         return "No event specified to subscribe to!"
+
     if channel.type in {Channel_Types.PUBLIC_THREAD, Channel_Types.PRIVATE_THREAD}:
         channel_id = channel.parent_id
         thread_id = channel.id
+    elif channel.type not in getattr(ctx.cache.logging[logger], "supported_channels", {}):
+        return "Provided logger does not support selected channel"
     else:
         channel_id = channel.id
         thread_id = None
 
-    token = ""
     if not webhook:
         _webhook: Webhook = await ctx.bot.create_webhook(
             channel_id, "Logger", reason="Subscribing to log event in a new channel"
@@ -124,7 +132,7 @@ async def unsubscribe(ctx: Context, channel: Channel, subscription: ChannelSubsc
     Unsubscribe Webhook from event logging
     Params
     ------
-    channel: guild_text, public_thread, private_thread
+    channel: guild_text, public_thread, private_thread, guild_forum
         Channel to unsubscribe events from
     logger:
         Which event to unsubscribe from
@@ -155,10 +163,11 @@ async def list_(ctx: Context, *, session: db.Session):
     webhooks = await db.Webhook.filter(session, db.Webhook.server_id == ctx.guild_id)
     subs = []
     for webhook in webhooks:
-        sub: db.Subscription
         wh = await ctx.bot.get_webhook(webhook.id)
-        for sub in await webhook.awaitable_attrs.subscriptions:
-            subs.append(
+        subs.extend(
+            [
                 f"- `{sub.source}`: <#{sub.thread_id if sub.thread_id else webhook.channel_id}> @ {wh.name} by <@{wh.user.id}>"
-            )
+                for sub in await webhook.awaitable_attrs.subscriptions
+            ]
+        )
     return "\n".join(subs)
