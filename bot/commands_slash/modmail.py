@@ -1,9 +1,10 @@
-from typing import List
+import re
+from copy import copy
 
+from mdiscord.exceptions import NotFound
 from MFramework import (
-    Bot,
     Channel_Types,
-    Context,
+    Embed,
     Groups,
     Message,
     Snowflake,
@@ -11,10 +12,14 @@ from MFramework import (
     onDispatch,
     register,
 )
-from MFramework.commands.components import Select, Select_Option
+from MFramework.commands._utils import detect_group
+from MFramework.commands.components import Row, Select, Select_Option
+from MFramework.utils.localizations import translate as tr
 from MFramework.utils.log import Log
 from MFramework.utils.log import Message as MessageLog
 
+from bot import Bot, Context
+from bot2.commands_slash.info import user
 from bot.infractions.interactions import instant_actions
 
 
@@ -30,7 +35,6 @@ async def direct_message_create(self: Bot, data: Message):
             ],
         )
     )
-    _bot = self
 
     if len(guilds) > 1:
         guilds = {x: guild for x, guild in enumerate(guilds)}
@@ -45,7 +49,7 @@ async def direct_message_create(self: Bot, data: Message):
                 timeout=30,
             )
             cache = guilds[int(answer.content)]
-        except Exception as ex:
+        except TimeoutError:
             await data.reply("Timed out. Message __is not__ forwarded. Resend your message if you want to try again")
             return
     elif len(guilds) == 1:
@@ -53,16 +57,12 @@ async def direct_message_create(self: Bot, data: Message):
     else:
         cache = self.cache[self.primary_guild]
 
-    if cache.guild_id == 1104062636892639262:
-        cache = _bot.cache[289739584546275339]
+    if hasattr(cache, "appeal_server_id"):
+        cache = self.cache[cache.appeal_server_id]
         data._server_type = "appeal"
 
     await cache.logging["direct_message"](data)
-    if data.channel_id not in self.cache[0]:
-        from MFramework.database.cache_internal.models import Collection
-
-        self.cache[data.guild_id].channels[data.channel_id] = Collection()
-    await self.cache[data.guild_id].channels[data.channel_id].store(data)
+    await cache.channels.store(data)
 
 
 @register(group=Groups.MODERATOR, private_response=True)
@@ -79,33 +79,28 @@ async def dm(ctx: Context, user: UserID, message: str) -> str:
     try:
         dm = await ctx.bot.create_dm(user)
         msg = await ctx.bot.create_message(dm.id, message)
-    except Exception as ex:
+    except NotFound:
         return "Couldn't Deliver message to specified user."
-    try:
-        msg.author = ctx.user
-        log = ctx.cache.logging["direct_message"]
-        e = log._create_embed(msg)
-        e.setColor("#0fc130")
-        threads = {v: k for k, v in ctx.cache.dm_threads.items()}
-        thread_id = threads.get(user, None)
-        await log._log(
-            content=f"This message has been sent to <@!{int(user)}>",
-            embeds=[e],
-            username=f"{ctx.user.username}#{ctx.user.discriminator}",
-            avatar=ctx.user.get_avatar(),
-            thread_id=thread_id,
-        )
-    except:
-        pass
+    msg.author = ctx.user
+    log: Direct_Message = ctx.cache.logging["direct_message"]
+    e = log._create_embed(msg)
+    e.set_color("#0fc130")
+    threads = {v: k for k, v in ctx.cache.dm_threads.items()}
+    thread_id = threads.get(user, None)
+    await log._log(
+        content=f"This message has been sent to <@!{int(user)}>",
+        embeds=[e],
+        username=f"{ctx.user.username}#{ctx.user.discriminator}",
+        avatar=ctx.user.get_avatar(),
+        thread_id=thread_id,
+    )
     return f"Message sent.\nChannelID: {dm.id}\nMessageID: {msg.id}"
 
 
 @onDispatch(event="message_create")
 async def dm_thread(ctx: Bot, msg: Message):
-    from MFramework.commands._utils import detect_group
-
     channel = ctx.cache[msg.guild_id].threads.get(msg.channel_id, msg.channel_id)
-    _dm = ctx.cache[msg.guild_id].logging["direct_message"]
+    _dm: Direct_Message = ctx.cache[msg.guild_id].logging["direct_message"]
     if not issubclass(type(_dm), Log):
         return
 
@@ -114,20 +109,21 @@ async def dm_thread(ctx: Bot, msg: Message):
 
     if channel != _dm.channel_id:
         return
-    _g = detect_group(ctx, msg.author.id, msg.guild_id, msg.member.roles)
-    if _g > Groups.HELPER:
-        return
+    if detect_group(ctx, msg.author.id, msg.guild_id, msg.member.roles) > Groups.HELPER:
+        return await msg.react(ctx.emoji["blocked"])
     user_id = ctx.cache[msg.guild_id].dm_threads.get(msg.channel_id, None)
     if user_id:
         dm = await ctx.create_dm(user_id)
         try:
             await ctx.create_message(dm.id, msg.content or None, embeds=msg.attachments_as_embed())
             return await msg.react(ctx.emoji["success"])
-        except:
+        except NotFound:
             return await msg.react(ctx.emoji["failure"])
 
 
 class Direct_Message(MessageLog):
+    supported_channel_types: list[Channel_Types] = [Channel_Types.GUILD_TEXT, Channel_Types.GUILD_FORUM]
+
     def __init__(self, bot: Bot, guild_id: Snowflake, type: str, id: Snowflake, token: str) -> None:
         self.channel_id = None
         self.is_forum = False
@@ -163,8 +159,6 @@ class Direct_Message(MessageLog):
         embed.setColor(self.bot.cache[self.guild_id].color)
         canned = self.bot.cache[self.guild_id].canned
 
-        from mlib.localization import tr
-
         if (len(set(msg.content.lower().split(" "))) < 2) and len(msg.attachments) == 0:
             return await msg.reply(
                 tr(
@@ -181,8 +175,6 @@ class Direct_Message(MessageLog):
                 and self.bot.cache[0][msg.channel_id][s[-1]].attachments == msg.attachments
             ):
                 return await msg.reply(tr("commands.dm.sameMessageError", self.bot.cache[self.guild_id].language))
-
-        import re
 
         reg = re.search(canned["patterns"], msg.content)
         content = ""
@@ -205,18 +197,15 @@ class Direct_Message(MessageLog):
                     reason="Received DM from new user",
                 )
                 try:
-                    from copy import copy
-
                     _msg = copy(msg)
                     _msg.guild_id = self.guild_id
                     _msg.channel_id = thread.id
                     _msg.id = None
                     _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
                     ctx = Context(self.bot.cache, self.bot, _msg)
-                    from bot.commands_slash.info import user
 
                     await user(ctx)
-                except:
+                except Exception:
                     pass
                 thread_id = thread.id
                 self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
@@ -230,9 +219,12 @@ class Direct_Message(MessageLog):
                     elif not _msg.content and len(_msg.stickers):
                         _msg.content = f"[Stickers: {len(_msg.stickers)}]"
                     _past_messages.append(
-                        (f"<t:{int(_msg.timestamp.timestamp())}:R>", _msg.author.username, _msg.content)
+                        (
+                            f"<t:{int(_msg.timestamp.timestamp())}:R>",
+                            _msg.author.username,
+                            _msg.content,
+                        )
                     )
-                from MFramework import Embed
 
                 _past_messages = "\n".join(
                     "[{}] [**`{}`**]: {}".format(i[0], i[1], i[2]) for i in reversed(_past_messages)
@@ -253,18 +245,15 @@ class Direct_Message(MessageLog):
                 )
                 embeds = []
                 try:
-                    from copy import copy
-
                     _msg = copy(msg)
                     _msg.guild_id = self.guild_id
                     _msg.channel_id = thread.id
                     _msg.id = None
                     _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
                     ctx = Context(self.bot.cache, self.bot, _msg)
-                    from bot.commands_slash.info import user
 
                     await user(ctx)
-                except:
+                except Exception:
                     pass
                 thread_id = thread.id
                 self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
@@ -282,13 +271,11 @@ class Direct_Message(MessageLog):
                 embeds.append(linked)
         try:
             if self.bot.cache[self.guild_id].dm_replies:
-                from MFramework.commands.components import Option, Row
-
                 dm_components = [
                     Row(
                         CannedResponses(
                             *[
-                                Option(label=k, value=k, description=v[:100])
+                                Select_Option(label=k, value=k, description=v[:100])
                                 for k, v in self.bot.cache[self.guild_id].dm_replies.items()
                             ][:25],
                             custom_id=msg.channel_id,
@@ -308,7 +295,7 @@ class Direct_Message(MessageLog):
                 components=dm_components,
             )
             await msg.react(self.bot.emoji["success"])
-        except:
+        except Exception:
             await msg.react(self.bot.emoji["failure"])
 
     async def _log(
@@ -329,12 +316,12 @@ class CannedResponses(Select):
     private_response = False
 
     @classmethod
-    async def execute(cls, ctx: Context, data: str, values: List[str], not_selected: List[Select_Option]):
+    async def execute(cls, ctx: Context, data: str, values: list[str], not_selected: list[Select_Option]):
         ctx.data.message._Client = ctx.bot
         ctx.data.message.components = []
         await ctx.data.message.edit()
         msg = await ctx.bot.create_message(data, ctx.bot.cache[ctx.guild_id].dm_replies[values[0]])
-        log = ctx.cache.logging["direct_message"]
+        log: Direct_Message = ctx.cache.logging["direct_message"]
         if not log:
             return
         msg.author = ctx.user
