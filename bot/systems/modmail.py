@@ -22,6 +22,14 @@ from bot import Bot, Context
 from bot2.commands_slash.info import user
 from bot.infractions.interactions import instant_actions
 
+GREEN = "#0fc130"
+ORANGE = "#ff8f00"
+BLUE = "#068dd1"
+GRAY = "#646363"
+EMOJI_SUCCESS = "success"
+EMOJI_FAILURE = "failure"
+EMOJI_BLOCKED = "blocked"
+
 
 @onDispatch
 async def direct_message_create(self: Bot, data: Message):
@@ -80,17 +88,21 @@ async def dm(ctx: Context, user: UserID, message: str) -> str:
         dm = await ctx.bot.create_dm(user)
         msg = await ctx.bot.create_message(dm.id, message)
     except NotFound:
-        return "Couldn't Deliver message to specified user."
+        return "Couldn't deliver message to specified user."
+
     msg.author = ctx.user
     log: Direct_Message = ctx.cache.logging["direct_message"]
+
     e = log._create_embed(msg)
-    e.set_color("#0fc130")
+    e.set_color(GREEN)
+
     threads = {v: k for k, v in ctx.cache.dm_threads.items()}
     thread_id = threads.get(user, None)
+
     await log._log(
         content=f"This message has been sent to <@!{int(user)}>",
-        embeds=[e],
-        username=f"{ctx.user.username}#{ctx.user.discriminator}",
+        embeds=e,
+        username=ctx.user.username,
         avatar=ctx.user.get_avatar(),
         thread_id=thread_id,
     )
@@ -110,15 +122,16 @@ async def dm_thread(ctx: Bot, msg: Message):
     if channel != _dm.channel_id:
         return
     if detect_group(ctx, msg.author.id, msg.guild_id, msg.member.roles) > Groups.HELPER:
-        return await msg.react(ctx.emoji["blocked"])
+        return await msg.react(ctx.emoji[EMOJI_BLOCKED])
+
     user_id = ctx.cache[msg.guild_id].dm_threads.get(msg.channel_id, None)
-    if user_id:
-        dm = await ctx.create_dm(user_id)
-        try:
-            await ctx.create_message(dm.id, msg.content or None, embeds=msg.attachments_as_embed())
-            return await msg.react(ctx.emoji["success"])
-        except NotFound:
-            return await msg.react(ctx.emoji["failure"])
+    dm = await ctx.create_dm(user_id)
+
+    try:
+        await ctx.create_message(dm.id, msg.content or None, embeds=msg.attachments_as_embed())
+        return await msg.react(ctx.emoji[EMOJI_SUCCESS])
+    except NotFound:
+        return await msg.react(ctx.emoji[EMOJI_FAILURE])
 
 
 class Direct_Message(MessageLog):
@@ -164,7 +177,7 @@ class Direct_Message(MessageLog):
                 tr(
                     "commands.dm.singleWordError",
                     self.bot.cache[self.guild_id].language,
-                    emoji_success=self.bot.emoji["success"],
+                    emoji_success=self.bot.emoji[EMOJI_SUCCESS],
                 )
             )
 
@@ -265,7 +278,7 @@ class Direct_Message(MessageLog):
             for channel_id, message_id in msg_links[:5]:
                 linked_msg = await self.bot.get_channel_message(channel_id, message_id)
                 linked = self._create_embed(linked_msg)
-                linked.setColor("#068dd1")
+                linked.setColor(BLUE)
                 linked.addField("Channel", f"<#{channel_id}>")
                 linked.setTitle("Referenced Message")
                 embeds.append(linked)
@@ -294,9 +307,9 @@ class Direct_Message(MessageLog):
                 thread_id=thread_id,
                 components=dm_components,
             )
-            await msg.react(self.bot.emoji["success"])
+            await msg.react(self.bot.emoji[EMOJI_SUCCESS])
         except Exception:
-            await msg.react(self.bot.emoji["failure"])
+            await msg.react(self.bot.emoji[EMOJI_FAILURE])
 
     async def _log(
         self,
@@ -326,5 +339,5 @@ class CannedResponses(Select):
             return
         msg.author = ctx.user
         e = log._create_embed(msg)
-        e.setColor("#ff8f00")
+        e.setColor(ORANGE)
         await ctx.reply(embeds=[e])
