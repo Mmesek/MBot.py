@@ -3,6 +3,7 @@ from copy import copy
 
 from mdiscord.exceptions import NotFound
 from MFramework import (
+    Channel,
     Channel_Types,
     Embed,
     Groups,
@@ -31,8 +32,7 @@ EMOJI_FAILURE = "failure"
 EMOJI_BLOCKED = "blocked"
 
 
-@onDispatch
-async def direct_message_create(self: Bot, data: Message):
+async def select_guild(self, data: Message):
     guilds = list(
         filter(
             lambda x: data.author.id in x.members,
@@ -56,14 +56,20 @@ async def direct_message_create(self: Bot, data: Message):
                 check=lambda x: x.channel_id == data.channel_id and x.author.id == data.author.id,
                 timeout=30,
             )
-            cache = guilds[int(answer.content)]
+            return guilds[int(answer.content)]
         except TimeoutError:
             await data.reply("Timed out. Message __is not__ forwarded. Resend your message if you want to try again")
             return
     elif len(guilds) == 1:
-        cache = self.cache[guilds[0].guild_id]
+        return self.cache[guilds[0].guild_id]
     else:
-        cache = self.cache[self.primary_guild]
+        return self.cache[self.primary_guild]
+
+
+@onDispatch
+async def direct_message_create(self: Bot, data: Message):
+    if not (cache := await select_guild(self, data)):
+        return
 
     if hasattr(cache, "appeal_server_id"):
         cache = self.cache[cache.appeal_server_id]
@@ -147,7 +153,7 @@ class Direct_Message(MessageLog):
         webhook = await self.bot.get_webhook_with_token(self.webhook_id, self.webhook_token)
         self.channel_id = webhook.channel_id
         channel = await self.bot.get_channel(webhook.channel_id)
-        self.is_forum = channel.type == 15
+        self.is_forum = channel.type == Channel_Types.GUILD_FORUM
         if self.is_forum:
             threads = await self.bot.list_public_archived_threads(self.channel_id)
             self.forum_threads = {
@@ -157,7 +163,7 @@ class Direct_Message(MessageLog):
             }
             self.bot.cache[self.guild_id].dm_threads.update(self.forum_threads)
 
-    def _create_embed(self, msg: Message):
+    def _create_embed(self, msg: Message) -> Embed:
         embed = self.set_metadata(msg)
         avatar = msg.author.get_avatar()
         embed.author.icon_url = None
@@ -166,20 +172,16 @@ class Direct_Message(MessageLog):
         embed = msg.attachments_as_embed(embed)
         return embed
 
-    async def log(self, msg: Message) -> Message:
-        embed = self._create_embed(msg)
-        avatar = embed.footer.icon_url
-        embed.setColor(self.bot.cache[self.guild_id].color)
-        canned = self.bot.cache[self.guild_id].canned
-
+    async def check_errors(self, msg: Message) -> bool:
         if (len(set(msg.content.lower().split(" "))) < 2) and len(msg.attachments) == 0:
-            return await msg.reply(
+            await msg.reply(
                 tr(
                     "commands.dm.singleWordError",
                     self.bot.cache[self.guild_id].language,
                     emoji_success=self.bot.emoji[EMOJI_SUCCESS],
                 )
             )
+            return True
 
         if msg.channel_id in self.bot.cache[0]:
             s = list(self.bot.cache[0][msg.channel_id].keys())
@@ -187,92 +189,67 @@ class Direct_Message(MessageLog):
                 self.bot.cache[0][msg.channel_id][s[-1]].content == msg.content
                 and self.bot.cache[0][msg.channel_id][s[-1]].attachments == msg.attachments
             ):
-                return await msg.reply(tr("commands.dm.sameMessageError", self.bot.cache[self.guild_id].language))
+                await msg.reply(tr("commands.dm.sameMessageError", self.bot.cache[self.guild_id].language))
+                return True
 
-        reg = re.search(canned["patterns"], msg.content)
-        content = ""
-        if reg and reg.lastgroup is not None:
-            await msg.reply(canned["responses"][reg.lastgroup])
-            content = tr("commands.dm.cannedResponseSent", self.bot.cache[self.guild_id].language, name=reg.lastgroup)
-        if not self.channel_id:
-            await self.get_wh_channel()
-        threads = {v: k for k, v in self.bot.cache[self.guild_id].dm_threads.items()}
-        thread_id = threads.get(msg.author.id, None)
-        if not thread_id and self.is_forum:
-            thread_id = self.forum_threads.get(msg.author.id, None)
-        embeds = []
-        if thread_id is None:
-            if not self.is_forum:
-                thread = await self.bot.start_thread_without_message(
-                    channel_id=self.channel_id,
-                    name=f"{msg.author.username} - {msg.author.id}",
-                    type=Channel_Types.GUILD_PUBLIC_THREAD,
-                    reason="Received DM from new user",
-                )
-                try:
-                    _msg = copy(msg)
-                    _msg.guild_id = self.guild_id
-                    _msg.channel_id = thread.id
-                    _msg.id = None
-                    _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
-                    ctx = Context(self.bot.cache, self.bot, _msg)
+    async def get_user_info(self, thread: Channel, msg: Message):
+        try:
+            _msg = copy(msg)
+            _msg.guild_id = self.guild_id
+            _msg.channel_id = thread.id
+            _msg.id = None
+            _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
+            ctx = Context(self.bot.cache, self.bot, _msg)
 
-                    await user(ctx)
-                except Exception:
-                    pass
-                thread_id = thread.id
-                self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
+            await user(ctx)
+        except Exception:
+            pass
 
-            past_messages = await self.bot.get_channel_messages(msg.channel_id, before=msg.id, limit=15)
-            if past_messages:
-                _past_messages = []
-                for _msg in past_messages:
-                    if not _msg.content and len(_msg.attachments):
-                        _msg.content = f"[Attachments: {len(_msg.attachments)}]"
-                    elif not _msg.content and len(_msg.stickers):
-                        _msg.content = f"[Stickers: {len(_msg.stickers)}]"
-                    _past_messages.append(
-                        (
-                            f"<t:{int(_msg.timestamp.timestamp())}:R>",
-                            _msg.author.username,
-                            _msg.content,
-                        )
+    async def create_thread(self, msg: Message):
+        thread = await self.bot.start_thread_without_message(
+            channel_id=self.channel_id,
+            name=f"{msg.author.username} - {msg.author.id}",
+            type=Channel_Types.GUILD_PUBLIC_THREAD,
+            reason="Received DM from new user",
+        )
+        return thread.id
+
+    async def create_forum_thread(self, msg: Message, embeds: list[Embed]):
+        thread = await self.bot.start_thread_in_forum_or_media_channel(
+            channel_id=self.channel_id,
+            name=f"{msg.author.username} - {msg.author.id}",
+            message=Message(embeds=embeds),
+            # type=Channel_Types.GUILD_PUBLIC_THREAD,
+            reason="Received DM from new user",
+            applied_tags=[self.bot.cache[self.guild_id].appeal_tag]
+            if getattr(msg, "_server_type", None) == "appeal"
+            else None,
+        )
+        return thread.id
+
+    async def past_messages(self, msg):
+        if past_messages := await self.bot.get_channel_messages(msg.channel_id, before=msg.id, limit=15):
+            _past_messages = []
+            for _msg in past_messages:
+                if not _msg.content and len(_msg.attachments):
+                    _msg.content = f"[Attachments: {len(_msg.attachments)}]"
+                elif not _msg.content and len(_msg.stickers):
+                    _msg.content = f"[Stickers: {len(_msg.stickers)}]"
+                _past_messages.append(
+                    (
+                        f"<t:{int(_msg.timestamp.timestamp())}:R>",
+                        _msg.author.username,
+                        _msg.content,
                     )
+                )
 
-                _past_messages = "\n".join(
-                    "[{}] [**`{}`**]: {}".format(i[0], i[1], i[2]) for i in reversed(_past_messages)
-                )
-                embeds.append(
-                    Embed(title=f"Previous messages (#{len(past_messages)})")
-                    .setDescription(_past_messages)
-                    .setColor("#646363")
-                )
-            if self.is_forum:
-                thread = await self.bot.start_thread_in_forum_channel(
-                    channel_id=self.channel_id,
-                    name=f"{msg.author.username} - {msg.author.id}",
-                    message=Message(embeds=embeds),
-                    # type=Channel_Types.GUILD_PUBLIC_THREAD,
-                    reason="Received DM from new user",
-                    applied_tags=[1104073269625237526] if getattr(msg, "_server_type", None) == "appeal" else None,
-                )
-                embeds = []
-                try:
-                    _msg = copy(msg)
-                    _msg.guild_id = self.guild_id
-                    _msg.channel_id = thread.id
-                    _msg.id = None
-                    _msg.member = await self.bot.cache[self.guild_id].members.get(msg.author.id)
-                    ctx = Context(self.bot.cache, self.bot, _msg)
+            _past_messages = "\n".join("[{}] [**`{}`**]: {}".format(i[0], i[1], i[2]) for i in reversed(_past_messages))
+            return (
+                Embed(title=f"Previous messages (#{len(past_messages)})").setDescription(_past_messages).setColor(GRAY)
+            )
 
-                    await user(ctx)
-                except Exception:
-                    pass
-                thread_id = thread.id
-                self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
-            # for moderator in filter(lambda x: self.channel_id in x["moderated_channels"], self.bot.cache[self.guild_id].moderators):
-            #    await self.bot.add_thread_member(thread_id, moderator, "Added User to DM thread")
-        embeds.append(embed)
+    async def get_referenced_messages(self, msg: Message) -> list[Embed]:
+        embeds = []
         msg_links = re.findall(rf"https:\/\/discord\.com\/channels\/{self.guild_id}\/(\d+)\/(\d+)", msg.content)
         if msg_links:
             for channel_id, message_id in msg_links[:5]:
@@ -282,30 +259,68 @@ class Direct_Message(MessageLog):
                 linked.addField("Channel", f"<#{channel_id}>")
                 linked.setTitle("Referenced Message")
                 embeds.append(linked)
-        try:
-            if self.bot.cache[self.guild_id].dm_replies:
-                dm_components = [
-                    Row(
-                        CannedResponses(
-                            *[
-                                Select_Option(label=k, value=k, description=v[:100])
-                                for k, v in self.bot.cache[self.guild_id].dm_replies.items()
-                            ][:25],
-                            custom_id=msg.channel_id,
-                            placeholder="Send Canned Response",
-                        )
-                    )
-                ]
+        return embeds
+
+    def make_canned_responses(self, msg: Message):
+        if self.bot.cache[self.guild_id].dm_replies:
+            return Row(
+                CannedResponses(
+                    *[
+                        Select_Option(label=k, value=k, description=v[:100])
+                        for k, v in self.bot.cache[self.guild_id].dm_replies.items()
+                    ][:25],
+                    custom_id=msg.channel_id,
+                    placeholder="Send Canned Response",
+                )
+            )
+
+    async def check_canned_responses(self, msg: Message):
+        canned = self.bot.cache[self.guild_id].canned
+        reg = re.search(canned["patterns"], msg.content)
+        if reg and reg.lastgroup is not None:
+            await msg.reply(canned["responses"][reg.lastgroup])
+            return tr("commands.dm.cannedResponseSent", self.bot.cache[self.guild_id].language, name=reg.lastgroup)
+
+    async def log(self, msg: Message) -> Message:
+        embed = self._create_embed(msg)
+        embed.set_color(self.bot.cache[self.guild_id].color)
+        avatar = embed.footer.icon_url
+        if self.check_errors(msg):
+            return
+        if not self.channel_id:
+            await self.get_wh_channel()
+
+        content = await self.check_canned_responses(msg) or ""
+        embeds = []
+        if e := await self.past_messages(msg):
+            embeds.append(e)
+
+        threads = {v: k for k, v in self.bot.cache[self.guild_id].dm_threads.items()}
+        thread_id = threads.get(msg.author.id, None)
+        if not thread_id and self.is_forum:
+            thread_id = self.forum_threads.get(msg.author.id, None)
+        if thread_id is None:
+            if self.is_forum:
+                thread_id = await self.create_forum_thread(msg, embeds)
+                embeds = []
             else:
-                dm_components = []
-            dm_components.append(instant_actions(msg.author.id))
+                thread_id = await self.create_thread(msg)
+            self.bot.cache[self.guild_id].dm_threads[thread_id] = msg.author.id
+            await self.get_user_info(thread_id, msg)
+
+        # for moderator in filter(lambda x: self.channel_id in x["moderated_channels"], self.bot.cache[self.guild_id].moderators):
+        #    await self.bot.add_thread_member(thread_id, moderator, "Added User to DM thread")
+        embeds.append(embed)
+        embeds.extend(self.get_referenced_messages(msg))
+
+        try:
             await self._log(
                 content=content + f" <@!{msg.author.id}>",
                 embeds=embeds,
-                username=f"{msg.author.username}#{msg.author.discriminator}",
+                username=msg.author.username,
                 avatar=avatar,
                 thread_id=thread_id,
-                components=dm_components,
+                components=[self.make_canned_responses(msg), instant_actions(msg.author.id)],
             )
             await msg.react(self.bot.emoji[EMOJI_SUCCESS])
         except Exception:
