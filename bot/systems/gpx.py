@@ -13,6 +13,7 @@ async def message_create(bot: Bot, data: Message):
     s = time.time()
     embeds = []
     attachments = []
+    files = []
     for attachment in data.attachments:
         if attachment.filename.endswith("gpx"):
             async with httpx.AsyncClient() as client:
@@ -39,7 +40,8 @@ async def message_create(bot: Bot, data: Message):
                     True,
                 )
             )
-            attachments.append(Attachment(filename=f"{attachment.filename}.png", file=await map(gpx)))
+            files.append(gpx)
+    attachments.append(Attachment(filename=f"{attachment.filename}.png", file=await map(*files)))
     e = time.time()
     await bot.create_message(
         data.channel_id,

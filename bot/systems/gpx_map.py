@@ -64,27 +64,47 @@ async def fetch_street_data(bbox):
         raise Exception(f"Error fetching data: {response.status_code}")
 
 
-async def map(g: gpxpy.gpx.GPX):
-    b = g.get_bounds()
-    world = await fetch_street_data([b.min_longitude, b.min_latitude, b.max_longitude, b.max_latitude])
+def check_lower(x, y):
+    if not x or y <= x:
+        return y
+    return x
+
+
+def check_higher(x, y):
+    if not x or y >= x:
+        return y
+    return x
+
+
+async def map(*files: gpxpy.gpx.GPX):
+    x0, x1, y0, y1 = 0, 0, 0, 0
+    for g in files:
+        b = g.get_bounds()
+        x0 = check_lower(x0, b.min_longitude)
+        y0 = check_lower(y0, b.min_latitude)
+        x1 = check_higher(x1, b.max_longitude)
+        y1 = check_higher(y1, b.max_latitude)
+    # world = await fetch_street_data([b.min_longitude, b.min_latitude, b.max_longitude, b.max_latitude])
+    world = await fetch_street_data([x0, y0, x1, y1])
 
     data = {"latitude": [], "longitude": [], "speed": [], "age": [], "time": []}
-    for track in g.tracks:
-        for segment in track.segments:
-            last_point = None
-            for point in segment.points:
-                if (
-                    point.speed
-                    or last_point
-                    and (last_point.latitude != point.latitude and last_point.longitude != point.longitude)
-                ):
-                    data["latitude"].append(point.latitude)
-                    data["longitude"].append(point.longitude)
-                    data["speed"].append(point.speed)
-                    data["age"].append(point.age_of_dgps_data)
-                    data["time"].append(point.time)
+    for g in sorted(files, key=lambda x: x.time):
+        for track in g.tracks:
+            for segment in track.segments:
+                last_point = None
+                for point in segment.points:
+                    if (
+                        point.speed
+                        or last_point
+                        and (last_point.latitude != point.latitude and last_point.longitude != point.longitude)
+                    ):
+                        data["latitude"].append(point.latitude)
+                        data["longitude"].append(point.longitude)
+                        data["speed"].append(point.speed)
+                        data["age"].append(point.age_of_dgps_data)
+                        data["time"].append(point.time)
 
-                last_point = point
+                    last_point = point
     df = pd.DataFrame(data)
     df = gpd.GeoDataFrame(df, geometry=gpd.points_from_xy(df["longitude"], df["latitude"]), crs="EPSG:4326")
     df.set_index("time")
@@ -99,12 +119,12 @@ async def map(g: gpxpy.gpx.GPX):
             ax.plot(
                 [row.geometry.x, data[idx - 1][1].geometry.x],
                 [row.geometry.y, data[idx - 1][1].geometry.y],
-                color="#0281f8",
+                color="#f88102",
             )
 
     # Set map boundaries
-    ax.set_xlim(b.min_longitude, b.max_longitude)  # Longitude range
-    ax.set_ylim(b.min_latitude, b.max_latitude)  # Latitude range
+    ax.set_xlim(x0, x1)  # Longitude range
+    ax.set_ylim(y0, y1)  # Latitude range
 
     plt.title("Approximate Travel Route")
     plt.xlabel("Longitude")
