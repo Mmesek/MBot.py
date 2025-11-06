@@ -19,6 +19,18 @@ LETTER_VALUES.update({"Ą": 1, "Ć": 3, "Ę": 5, "Ń": 5, "Ó": 6, "Ś": 1, "Ź"
 VOWEL_VALUES = {"A": 1, "E": 5, "I": 9, "O": 6, "U": 3, "Y": 7}
 MASTER_NUMBERS = {11, 22, 33}
 
+CHALDEAN_VALUES = {
+    "1": ["A", "I", "J", "Q", "Y", "Ą"],
+    "2": ["B", "K", "R"],
+    "3": ["C", "G", "L", "S", "Ć", "Ś", "Ł"],
+    "4": ["D", "M", "T"],
+    "5": ["E", "N", "H", "Ę", "Ń"],
+    "6": ["U", "V", "W"],
+    "7": ["F", "P", "X"],
+    "8": ["Z", "O", "Ó", "Ź", "Ż"],
+}
+
+
 EMPTY_FIELD = Embed_Field(name="\u200b", value="\u200b", inline=True)
 with open("data/numerology_traits.json", "r", newline="", encoding="utf-8") as file:
     TRAITS = json.load(file)
@@ -130,8 +142,15 @@ async def numerology(full_name: str, birth_date: str = "") -> Embed:
         _birth_str = [get_title(_birth_day)]
     embed.add_field(f"Birthday number ({_birth_day}/{_birth_month}/{_birth_year})", "\n".join(_birth_str), True)
 
+    _name = full_name.replace(" ", "").upper()
+    for _number in CHALDEAN_VALUES:
+        for _letter in CHALDEAN_VALUES[_number]:
+            _name = _name.replace(_letter, _number)
+    _chaldean = reduce(int(_name))
+    embed.add_field("Chaldean's Destiny", get_title(_chaldean), True)
+
     intersection = set()
-    for v in [_path, _desire, _expression, _personality, _birth_day]:
+    for v in [_path, _desire, _expression, _personality, _birth_day, _chaldean]:
         if v:
             intersection.intersection_update(set(TRAITS[str(v)]["traits"]))
     embed.add_field("Number Repeatitions", "\n".join([f"{get_title(k)}: {v}" for k, v in _counter.items() if k]), True)
