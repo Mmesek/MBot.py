@@ -93,11 +93,13 @@ async def subscribe(
     if not logger:
         return "No event specified to subscribe to!"
 
+    _classes: dict[str, Log] = {i.__name__.lower(): i for i in all_subclasses(Log)}
     if channel.type in {Channel_Types.PUBLIC_THREAD, Channel_Types.PRIVATE_THREAD}:
         channel_id = channel.parent_id
         thread_id = channel.id
-    elif channel.type not in getattr(ctx.cache.logging[logger], "supported_channels", {}):
-        return "Provided logger does not support selected channel"
+    elif channel.type not in _classes[logger.lower()].supported_channel_types:
+        _types = ", ".join(f"`{i}`" for i in [ctx.cache.logging[logger].supported_channel_types])
+        return f"Provided logger does not support selected channel. Supported channels for this logger: {_types}"
     else:
         channel_id = channel.id
         thread_id = None
@@ -110,10 +112,7 @@ async def subscribe(
         token = _webhook.token
     else:
         channel_webhooks = await ctx.bot.get_channel_webhooks(channel_id)
-        _webhook = next(
-            filter(lambda x: x.id == webhook, channel_webhooks),
-            next(filter(lambda x: x.user.id == ctx.bot.user_id, channel_webhooks)),
-        )
+        _webhook = next(filter(lambda x: x.id == webhook, channel_webhooks))
         token = _webhook.token
 
     await db.Channel.fetch_or_add(session, id=channel_id, server_id=ctx.guild_id)
@@ -164,10 +163,8 @@ async def list_(ctx: Context, *, session: db.Session):
     subs = []
     for webhook in webhooks:
         wh = await ctx.bot.get_webhook(webhook.id)
-        subs.extend(
-            [
-                f"- `{sub.source}`: <#{sub.thread_id if sub.thread_id else webhook.channel_id}> @ {wh.name} by <@{wh.user.id}>"
-                for sub in await webhook.awaitable_attrs.subscriptions
-            ]
-        )
+        subs.extend([
+            f"- `{sub.source}`: <#{sub.thread_id if sub.thread_id else webhook.channel_id}> @ {wh.name} by <@{wh.user.id}>"
+            for sub in await webhook.awaitable_attrs.subscriptions
+        ])
     return "\n".join(subs)
