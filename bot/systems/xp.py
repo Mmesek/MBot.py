@@ -1,26 +1,24 @@
 from datetime import datetime, timedelta, timezone
 
 import sqlalchemy as sa
-from MFramework import Bot, Channel, Embed, Message, Role, onDispatch
+from MFramework import Channel, Embed, Groups, Message, Role, User, onDispatch, register
 from MFramework.database.alchemy.mixins import Snowflake
 from mlib.database import Base, TimestampUpdate
+from sqlalchemy.orm import Mapped, mapped_column as Column
+
+from bot import Bot, Context
+from bot.database import models
 
 
 class User_Experience(TimestampUpdate, Base):
-    server_id: Snowflake = sa.Column(
+    server_id: Mapped[Snowflake] = Column(
         sa.ForeignKey("Server.id", ondelete="Cascade", onupdate="Cascade"), primary_key=True, nullable=False, default=0
     )
-    user_id: Snowflake = sa.Column(
+    user_id: Mapped[Snowflake] = Column(
         sa.ForeignKey("User.id", ondelete="Cascade", onupdate="Cascade"), primary_key=True, nullable=False, default=0
     )
-    type: int = sa.Column(sa.Integer, nullable=False, default=0)
-    value: float = sa.Column(sa.Float, nullable=False, default=0)
-
-    def __init__(self, server_id: Snowflake, user_id: Snowflake, type: int = 0, value: float = 0) -> None:
-        self.server_id = server_id
-        self.user_id = user_id
-        self.type = type
-        self.value = value
+    type: Mapped[int] = Column(nullable=False, default=0)
+    value: Mapped[float] = Column(nullable=False, default=0)
 
 
 @onDispatch(event="message_create")
@@ -42,7 +40,7 @@ async def exp(self: Bot, data: Message):
             role_boosts += self.cache[data.guild_id].role_rates.get(role, 0) or 0
 
     rate = 1 * (
-        ((self.cache[data.guild_id].exp_rates.get(data.channel_id, 1.0) or 0) + role_boosts)
+        ((self.cache[data.guild_id].channel_rates.get(data.channel_id, 1.0) or 0) + role_boosts)
         * self.cache[data.guild_id].server_exp_rate
     )
     if (
@@ -55,7 +53,7 @@ async def exp(self: Bot, data: Message):
 
     # user = models.User.fetch_or_add(session, id=data.author.id)
     # boost = user.get_setting(db.types.Setting.Exp) or 1.0
-    # FIXME: Reenable user boost on SQL side?
+    # FIXME: Re-enable user boost on SQL side?
     exp = await self.db.supabase.increase_exp(data.guild_id, data.author.id, rate)  # * boost)
     await self.cache[data.guild_id].cooldowns.store(data.guild_id, data.author.id, "ChatExp")
 
@@ -69,7 +67,6 @@ async def exp(self: Bot, data: Message):
             previous_level = role
         if exp >= req:
             level_up = role
-
     from bot.database import log, types
 
     if self.cache[data.guild_id].is_tracking(types.Flags.Chat):
@@ -85,9 +82,6 @@ async def exp(self: Bot, data: Message):
         await self.add_guild_member_role(data.guild_id, data.author.id, level_up, "Level Role")
     if previous_level:
         await self.remove_guild_member_role(data.guild_id, data.author.id, previous_level, "Level Role")
-
-
-from MFramework import Context, Groups, User, register
 
 
 @register(group=Groups.ADMIN)
@@ -122,11 +116,10 @@ async def remove(ctx: Context, user: User, xp: float) -> str:
     xp:
         XP to remove
     """
-    from bot.database import models
 
     session = ctx.db.sql.session()
-    _user = models.User.fetch_or_add(session, id=user.id)
-    exp = User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
+    _user = await models.User.fetch_or_add(session, id=user.id)
+    exp = await User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
     exp.value -= xp
     session.commit()
     return f"Removed {xp} XP from user {user.username}"
@@ -151,35 +144,31 @@ async def rate(
     server:
         Whether this should affect server instead. Formula: Rate = Rate * ServerRate
     """
-    from MFramework.database.alchemy import Channel, Role, Server, types
-
     session = ctx.db.sql.session()
     result = []
 
     if channel:
-        c = Channel.fetch_or_add(session, server_id=ctx.guild_id, id=channel.id)
-        previous = c.get_setting(types.Setting.Exp) or 1.0
-        c.add_setting(types.Setting.Exp, rate)
-        ctx.cache.exp_rates[channel.id] = rate
+        c = await models.Channel.fetch_or_add(session, server_id=ctx.guild_id, id=channel.id)
+        previous = c.exp_rate or 1.0
+        c.exp_rate = rate
+        ctx.cache.channel_rates[channel.id] = rate
         result.append(("Channel", channel.name, rate, previous))
     if role:
-        r = Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
-        previous = r.get_setting(types.Setting.Exp) or 1.0
-        r.add_setting(types.Setting.Exp, rate)
+        r = await models.Role.fetch_or_add(session, server_id=ctx.guild_id, id=role.id)
+        previous = r.exp_rate or 1.0
+        r.exp_rate = rate
         ctx.cache.role_rates[role.id] = rate
         # ctx.cache.role_rates.sort(key=lambda x: x[1])
         result.append(("Role", role.name, rate, previous))
     if user:
-        from bot.database import models
-
-        _user = models.User.fetch_or_add(session, id=user.id)
-        previous = _user.get_setting(types.Setting.Exp) or 1.0
-        _user.add_setting(types.Setting.Exp, rate)
+        _user = await models.User.fetch_or_add(session, id=user.id)
+        previous = _user.exp_rate or 1.0
+        _user.exp_rate = rate
         result.append(("User", user.username, rate, previous))
     if server:
-        s = Server.fetch_or_add(session, id=ctx.guild_id)
-        previous = s.get_setting(types.Setting.Exp) or 1.0
-        s.add_setting(types.Setting.Exp, rate)
+        s = await models.Server.fetch_or_add(session, id=ctx.guild_id)
+        previous = s.exp_rate or 1.0
+        s.exp_rate = rate
         ctx.cache.server_exp_rate = rate
         result.append(("Server", ctx.cache.guild.name, rate, previous))
 
@@ -207,11 +196,10 @@ async def progress(ctx: Context, user: User = None) -> Embed:
     """
     user_id = ctx.user_id if not user else user.id
     user = ctx.user if not user else user
-    from bot.database import models
 
     session = ctx.db.sql.session()
-    _user = models.User.fetch_or_add(session, id=user_id)
-    exp = User_Experience.fetch_or_add(session, user_id=user_id, server_id=ctx.guild_id)
+    _user = await models.User.fetch_or_add(session, id=user_id)
+    exp = await User_Experience.fetch_or_add(session, user_id=user_id, server_id=ctx.guild_id)
     last = 0
     next = 0
     for x, (role, req) in enumerate(list(ctx.cache.level_roles)):
@@ -258,6 +246,7 @@ async def boost(ctx: Context, duration: timedelta = timedelta(hours=1), rate: fl
     rate:
         Boosted rate. Default is x2.
     """
+    # TODO: Add config to boost per channel/server and reflect in cache properly
     ctx.cache.boosted_until = datetime.now(timezone.utc) + duration
     ctx.cache.boosted_rate = rate
     return f"Boosted all XP gains on server by {rate} for {duration}!"
@@ -274,7 +263,7 @@ async def reset(ctx: Context, user: User):
     """
     session = ctx.db.sql.session()
     try:
-        exp = User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
+        exp = await User_Experience.fetch_or_add(session, user_id=user.id, server_id=ctx.guild_id)
         exp.value = 0
         session.commit()
         return f"Reset {user.username} XP back to 0"
