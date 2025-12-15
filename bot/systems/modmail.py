@@ -143,11 +143,13 @@ async def dm_thread(ctx: Bot, msg: Message):
 class Direct_Message(MessageLog):
     supported_channel_types: list[Channel_Types] = [Channel_Types.GUILD_TEXT, Channel_Types.GUILD_FORUM]
 
-    def __init__(self, bot: Bot, guild_id: Snowflake, type: str, id: Snowflake, token: str) -> None:
+    def __init__(
+        self, bot: Bot, guild_id: Snowflake, type: str, id: Snowflake, token: str, thread_id: Snowflake = None
+    ) -> None:
         self.channel_id = None
         self.is_forum = False
         self.forum_threads = {}
-        super().__init__(bot, guild_id, type, id, token)
+        super().__init__(bot, guild_id, type, id, token, thread_id)
 
     async def get_wh_channel(self):
         webhook = await self.bot.get_webhook_with_token(self.webhook_id, self.webhook_token)
@@ -231,22 +233,27 @@ class Direct_Message(MessageLog):
         if past_messages := await self.bot.get_channel_messages(msg.channel_id, before=msg.id, limit=15):
             _past_messages = []
             for _msg in past_messages:
+                if _msg.reactions:
+                    break
+                if _msg.author.id != msg.author.id:
+                    continue
                 if not _msg.content and len(_msg.attachments):
                     _msg.content = f"[Attachments: {len(_msg.attachments)}]"
                 elif not _msg.content and len(_msg.stickers):
                     _msg.content = f"[Stickers: {len(_msg.stickers)}]"
-                _past_messages.append(
-                    (
-                        f"<t:{int(_msg.timestamp.timestamp())}:R>",
-                        _msg.author.username,
-                        _msg.content,
-                    )
-                )
+                _past_messages.append((
+                    f"<t:{int(_msg.timestamp.timestamp())}:R>",
+                    _msg.author.username,
+                    _msg.content,
+                ))
 
             _past_messages = "\n".join("[{}] [**`{}`**]: {}".format(i[0], i[1], i[2]) for i in reversed(_past_messages))
-            return (
-                Embed(title=f"Previous messages (#{len(past_messages)})").setDescription(_past_messages).setColor(GRAY)
-            )
+            if _past_messages:
+                return (
+                    Embed(title=f"Previous messages (#{len(past_messages)})")
+                    .setDescription(_past_messages)
+                    .setColor(GRAY)
+                )
 
     async def get_referenced_messages(self, msg: Message) -> list[Embed]:
         embeds = []
@@ -276,7 +283,7 @@ class Direct_Message(MessageLog):
 
     async def check_canned_responses(self, msg: Message):
         canned = self.bot.cache[self.guild_id].canned
-        reg = re.search(canned["patterns"], msg.content)
+        reg = re.search(canned.get("patterns", ""), msg.content)
         if reg and reg.lastgroup is not None:
             await msg.reply(canned["responses"][reg.lastgroup])
             return tr("commands.dm.cannedResponseSent", self.bot.cache[self.guild_id].language, name=reg.lastgroup)
@@ -285,7 +292,7 @@ class Direct_Message(MessageLog):
         embed = self._create_embed(msg)
         embed.set_color(self.bot.cache[self.guild_id].color)
         avatar = embed.footer.icon_url
-        if self.check_errors(msg):
+        if await self.check_errors(msg):
             return
         if not self.channel_id:
             await self.get_wh_channel()
@@ -311,7 +318,7 @@ class Direct_Message(MessageLog):
         # for moderator in filter(lambda x: self.channel_id in x["moderated_channels"], self.bot.cache[self.guild_id].moderators):
         #    await self.bot.add_thread_member(thread_id, moderator, "Added User to DM thread")
         embeds.append(embed)
-        embeds.extend(self.get_referenced_messages(msg))
+        embeds.extend(await self.get_referenced_messages(msg))
 
         try:
             await self._log(
@@ -320,10 +327,10 @@ class Direct_Message(MessageLog):
                 username=msg.author.username,
                 avatar=avatar,
                 thread_id=thread_id,
-                components=[self.make_canned_responses(msg), instant_actions(msg.author.id)],
+                components=[i for i in [self.make_canned_responses(msg), instant_actions(msg.author.id)] if i],
             )
             await msg.react(self.bot.emoji[EMOJI_SUCCESS])
-        except Exception:
+        except Exception as ex:
             await msg.react(self.bot.emoji[EMOJI_FAILURE])
 
     async def _log(
