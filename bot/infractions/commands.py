@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, timezone
 import sqlalchemy as sa
 from MFramework import (
     Bot,
-    Context,
     Discord_Paths,
     Embed,
     Groups,
@@ -23,7 +22,7 @@ from MFramework.commands.components import LinkButton, Row, Select_Option
 from MFramework.commands.exceptions import Error
 from mlib.converters import total_seconds
 
-from bot.database import types
+from bot import Context
 from bot.infractions import models
 from bot.infractions.interactions import ExpireInfractions, instant_actions
 from bot.infractions.internal import log_action
@@ -114,14 +113,17 @@ async def infraction(
         active = round(active[0] or 0)
     else:
         active = 0
-    automute = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, 4)
-    autoban = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, None)
+    automute = ctx.cache.auto_mute
+    autoban = ctx.cache.auto_ban
     if autoban and active >= autoban and type_ is not models.Types.Ban:
         await ban(ctx=ctx, user=user, reason=ctx.t("active_infractions", active=active))
     elif automute and active >= automute and active <= (autoban or active + 1) and type_ is not models.Types.Timeout:
-        duration = ctx.cache.settings.get(types.Setting.Auto_Mute_Duration, "12h")
         await timeout(
-            ctx=ctx, user=user, duration=duration, reason=ctx.t("active_infractions", active=active), weight=0
+            ctx=ctx,
+            user=user,
+            duration=ctx.cache.mute_duration,
+            reason=ctx.t("active_infractions", active=active),
+            weight=0,
         )
 
     return response + ctx.t("success_add", type=ctx.t(type_.name).title(), user_id=user.id, reason=reason)
@@ -389,8 +391,8 @@ async def list_(ctx: Context, user: User = None) -> Embed:
 
     active = round(active)
 
-    total = ctx.cache.settings.get(types.Setting.Auto_Ban_Infractions, 5)
-    danger = ctx.cache.settings.get(types.Setting.Auto_Mute_Infractions, 3)
+    total = ctx.cache.auto_ban or 5
+    danger = ctx.cache.auto_mute or 3
 
     remaining_to_auto_mute = danger - active
     remaining_to_auto_ban = total - danger
@@ -518,7 +520,7 @@ async def report(ctx: Context, msg: str) -> str:
 
     end = time.time()
     if reported_to:
-        await _msg.edit(ctx.t("result", amount=reported_to, duration=f"{end-start:.2}"))
+        await _msg.edit(ctx.t("result", amount=reported_to, duration=f"{end - start:.2}"))
         await ctx.data.react(ctx.bot.emoji.get("success"))
     else:
         await _msg.edit(ctx.t("no_online"))
