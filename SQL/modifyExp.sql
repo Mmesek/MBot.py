@@ -2,12 +2,10 @@ CREATE OR REPLACE FUNCTION "modifyExp" ("user_id" bigint, "server_id" bigint, "v
 BEGIN
     INSERT INTO "User" ("id") VALUES (user_id) ON CONFLICT DO NOTHING;
     value := value * SELECT COALESCE(
-        SELECT "Setting_User"."float" 
-        FROM "Setting_User" 
+        SELECT "User"."exp_rate" 
+        FROM "User" 
         WHERE 
-        "Setting_User"."id" = "user_id"
-        AND "Setting_User"."name" = "Exp" 
-        AND "Setting_User"."snowflake" = "server_id"), 
+        "User"."id" = "user_id"), 
         1.0);
 
     IF NOT EXISTS(
