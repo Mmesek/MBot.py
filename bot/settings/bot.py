@@ -13,8 +13,9 @@ async def bot():
 
 
 async def get_attachment(url: str):
-    result = await httpx.get(url)
-    if result.ok:
+    async with httpx.AsyncClient() as client:
+        result = await client.get(url)
+    if result.status_code == 200:
         return f"data:image/{url.split('.')[-1] if '.' in url else 'png'};base64,{b2a_base64(result.content).decode()}"
 
 
@@ -71,7 +72,7 @@ async def reset(ctx: Context, field: str):
             bio = bio
             banner = banner
     """
-    kwargs = {field: None}
+    kwargs = {field: ""}
     await ctx.bot.modify_current_member(ctx.guild_id, **kwargs, reason=f"Request made by {ctx.user.username}")
     return f"Reverted `{field}`"
 
